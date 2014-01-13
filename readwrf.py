@@ -32,7 +32,7 @@ class getpfd:
 # Read in data from single location -> all time
 #----------------------------------------------
 class readwrf_loc:
-  def __init__(self,file,glon,glat):
+  def __init__(self,file,domain,glon,glat):
     import sys
 
     wrfin            = Dataset(file,'r')
@@ -41,60 +41,68 @@ class readwrf_loc:
     self.lon         = wrfin.variables["XLONG"][0,:,:] 
 
     # Find gridpoint nearest to glon,glat
-    idx  = (((self.lat-glat)**2.+(self.lon-glon)**2.)**0.5).argmin()
-    i1   =idx/float(len(self.lat[0,:]))
-    glat = int(np.floor(i1))
-    glon = int((i1-glat)*len(self.lat[0,:]))
-
+    idx              = (((self.lat-glat)**2.+(self.lon-glon)**2.)**0.5).argmin()
+    i1               = idx/float(len(self.lat[0,:]))
+    glat             = int(np.floor(i1))
+    glon             = int((i1-glat)*len(self.lat[0,:]))
     self.lat         = self.lat[glat,glon]
     self.lon         = self.lon[glat,glon]
 
     print 'Reading 1D at lon=%.3f, lat=%.3f'%(self.lon,self.lat)
 
-    self.t           = wrfin.variables["XTIME"][:]
+    self.time        = wrfin.variables["XTIME"][:] * 60.
     self.T00         = wrfin.variables["T00"][:]
     self.P00         = wrfin.variables["P00"][:]
-    self.p           = wrfin.variables["P"][:,:,glat,glon]
-    self.pb          = wrfin.variables["PB"][:,:,glat,glon]
-    self.phb         = wrfin.variables["PHB"][:,:,glat,glon]
-    self.p           = self.p + self.pb 
-    self.z           = (wrfin.variables["PH"][:,:,glat,glon] + wrfin.variables["PHB"][:,:,glat,glon]) / 9.81
-    self.zf          = (self.z[:,1:]+self.z[:,:-1])/2.  
+    self.p           = wrfin.variables["P"][:,:,glat,glon] + wrfin.variables["PB"][:,:,glat,glon]
+    self.z           = (wrfin.variables["PH"][:,:,glat,glon] + wrfin.variables["PHB"][:,:,glat,glon]) / g
+    self.zf          = (self.z[:,1:]+self.z[:,:-1])/2. 
 
-    try: 
-      self.wTEMF     = wrfin.variables["WUPD_TEMF"][:,:,glat,glon] # updraft velocity 
-      self.thlTEMF   = wrfin.variables["THUP_TEMF"][:,:,glat,glon] # Pot. temp updraft 
-      self.qtTEMF    = wrfin.variables["QTUP_TEMF"][:,:,glat,glon] # Updraft mix rat
-      self.qlTEMF    = wrfin.variables["QLUP_TEMF"][:,:,glat,glon] # Updraft mix rat
-      self.ziTEMF    = wrfin.variables["HD_TEMF"][:,glat,glon]     # dry thermal top TEMF
-      self.ctTEMF    = wrfin.variables["HCT_TEMF"][:,glat,glon]    # cloud top TEMF
-      self.ccTEMF    = wrfin.variables["CFM_TEMF"][:,glat,glon]    # Column cloud frac TEMF
-      self.lclTEMF   = wrfin.variables["LCL_TEMF"][:,glat,glon]    # LCL from TEMF
-    except KeyError:
-      print 'no TEMF data'
+    self.ps          = wrfin.variables["PSFC"][:,glat,glon] 
+    self.T2          = wrfin.variables["T2"][:,glat,glon] 
+    self.hfx         = wrfin.variables["HFX"][:,glat,glon] 
+    self.lh          = wrfin.variables["LH"][:,glat,glon] 
 
     self.th          = wrfin.variables["T"][:,:,glat,glon]
     self.qv          = wrfin.variables["QVAPOR"][:,:,glat,glon]
     self.ql          = wrfin.variables["QCLOUD"][:,:,glat,glon]
-    self.qt          = self.qv + self.ql
-    self.t           = np.zeros_like(self.th)
-    self.pf          = np.zeros_like(self.th)
-    self.T           = np.zeros_like(self.th)
-    self.Td          = np.zeros_like(self.th)
-    self.Thu         = np.zeros_like(self.th)
-    self.Tup         = np.zeros_like(self.th)
+    self.cc          = wrfin.variables["CLDFRA"][:,:,glat,glon]
+
+    if(domain==2): 
+      self.w         = wrfin.variables["WUPD_TEMF"][:,:,glat,glon] # updraft velocity 
+      #self.thlu      = wrfin.variables["THUP_TEMF"][:,:,glat,glon] # Pot. temp updraft 
+      #self.qtu       = wrfin.variables["QTUP_TEMF"][:,:,glat,glon] # Updraft mix rat
+      #self.qlu       = wrfin.variables["QLUP_TEMF"][:,:,glat,glon] # Updraft liquid mix rat
+      self.zi        = wrfin.variables["HD_TEMF"][:,glat,glon]     # dry thermal top TEMF
+      self.ct        = wrfin.variables["HCT_TEMF"][:,glat,glon]    # cloud top TEMF
+      #self.cc        = wrfin.variables["CFM_TEMF"][:,glat,glon]    # Column cloud frac TEMF
+      #self.lcl       = wrfin.variables["LCL_TEMF"][:,glat,glon]    # LCL from TEMF
+    elif(domain==1):
+      self.zi        = wrfin.variables["PBLH"][:,glat,glon]
+
+    rhos  = self.ps / (Rd * self.T2)
+    wthvs = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv))
+    wthvs[np.where(wthvs<0)] = 0.                             # remove negative flux for w* calc 
+    self.wstar = (g * self.zi * wthvs/tref)**(1./3.)
+    self.wstar[np.where(self.wstar<-supd)] = 0.               # convective velocity scale w* - sink glider
+
+    #self.qt          = self.qv + self.ql
+    #self.t           = np.zeros_like(self.th)
+    #self.pf          = np.zeros_like(self.th)
+    #self.T           = np.zeros_like(self.th)
+    #self.Td          = np.zeros_like(self.th)
+    #self.Thu         = np.zeros_like(self.th)
+    #self.Tup         = np.zeros_like(self.th)
 
     # CHECK CALCULATIONS!!!!!!!!!
-    for t in range(nt):
-      self.th[t,:]   = self.th[t,:] + 300.
-      self.T[t,:]    = self.th[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.)
-      self.Td[t,:]   = (5.42e3 / np.log((0.622 * 2.53e11) / (self.qt[t,:] * self.p[t,:])))
-      self.Thu[t,:]  = self.thlTEMF[t,:] + (2.45e6/1004.)*self.ql[t,:]
-      self.Tup[t,:]  = self.Thu[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.)
+    #for t in range(nt):
+    #  self.th[t,:]   = self.th[t,:] + 300.
+    #  self.T[t,:]    = self.th[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.)
+    #  self.Td[t,:]   = (5.42e3 / np.log((0.622 * 2.53e11) / (self.qt[t,:] * self.p[t,:])))
+    #  if(temf):
+    #    self.Thu[t,:]  = self.thlTEMF[t,:] + (2.45e6/1004.)*self.ql[t,:]
+    #    self.Tup[t,:]  = self.Thu[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.)
 
-
-#d = readwrf_loc('../dataWRF/20130602/wrfout_d02_2013-06-02_00:00:00',6.93146,52.2913)
-#d = readwrf_loc('../dataWRF/20130602/wrfout_d02_2013-06-02_00:00:00',6.97028,51.3907)
+#d = readwrf_loc('../dataWRF/20080512/wrfout_d02_2008-05-12_00:00:00',2,6.93146,52.2913)
 
 # ---------------------------------------------
 # Read in data: all locations -> all time
@@ -102,8 +110,6 @@ class readwrf_loc:
 class readwrf_all:
   def __init__(self,file,domain):
     print 'reading file %s'%file
-
-    sinkglider       = -0.6                                   # Average sink speed glider (...)
 
     wrfin            = Dataset(file,'r')
     nt               = len(wrfin.variables["XTIME"][:])
@@ -118,9 +124,12 @@ class readwrf_all:
     self.P00         = wrfin.variables["P00"][:]
     #self.z           = (wrfin.variables["PH"][t,:,:,:] + wrfin.variables["PHB"][t,:,:,:]) / 9.81
     #self.p           = (wrfin.variables["PH"][t,:,:,:] + wrfin.variables["PHB"][t,:,:,:]) + self.P00[0]
+    self.ps          = wrfin.variables["PSFC"][:,:,:] 
+    self.T2          = wrfin.variables["T2"][:,:,:]             # 2m temperature [K]
 
     # read in for all domains:
     self.hfx         = wrfin.variables["HFX"][:,:,:]          # sensible heat flux [W/m2]
+    self.lh          = wrfin.variables["LH"][:,:,:]           # latent heat flux [W/m2]
     self.rr_mp       = wrfin.variables["RAINNC"][:,:,:]       # total microphysical rain [mm]
     self.rr_con      = wrfin.variables["RAINC"][:,:,:]        # total convective rain [mm]
 
@@ -145,7 +154,6 @@ class readwrf_all:
     # specific for domain 1 (large):
     if(domain==1):
       self.zi        = wrfin.variables["PBLH"][:,:,:]         # boundary layer height [m]
-      self.T2        = wrfin.variables["T2"][:,:,:]           # 2m temperature [K]
       self.U10       = wrfin.variables["U10"][:,:,:]          # 10m u-wind [m/s]
       self.V10       = wrfin.variables["V10"][:,:,:]          # 10m v-wind [m/s]
       self.slps      = wrfin.variables["PSFC"][:,:,:] / (1.-2.25577e-5 * self.hgt[:,:])**5.25588
@@ -156,10 +164,11 @@ class readwrf_all:
       self.zct       = wrfin.variables["HCT_TEMF"][:,:,:]     # cloud top TEMF
 
     # Derived variables:
-    hfxp = deepcopy(self.hfx)
-    hfxp[np.where(self.hfx<0)] = 0.                           # remove negative flux for w* calc 
-    self.wstar = (g * self.zi[:,:] * (hfxp[:,:]/(rho*cp))/tref)**(1./3.)
-    self.wstar[np.where(self.wstar<-sinkglider)] = 0.         # convective velocity scale w* - sink glider
+    rhos  = self.ps / (Rd * self.T2)
+    wthvs = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv))
+    wthvs[np.where(wthvs<0)] = 0.                             # remove negative flux for w* calc 
+    self.wstar = (g * self.zi[:,:] * wthvs/tref)**(1./3.)
+    self.wstar[np.where(self.wstar<-supd)] = 0.               # convective velocity scale w* - sink glider
  
 #d = readwrf_all('../dataWRF/20130602/wrfout_d01_2013-06-02_00:00:00',domain=1)
 

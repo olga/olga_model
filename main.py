@@ -51,4 +51,3 @@ elif(dom==2):
 # 6. Create maps
 create_maps(wrfout,dom,date,t0,t1,variables,m,filter=True)
 
-  

@@ -203,3 +203,6 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
       gc.collect()
  
   
+
+
+
