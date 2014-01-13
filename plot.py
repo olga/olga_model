@@ -118,7 +118,7 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
       if(var == 'wstar'):
         title = 'Updraft velocity (w*) [m/s]'
         levs  = np.arange(0,3.001,0.5)
-        data  = gausf(d.wstar[t,:,:],fsigma,mode=reflect) \
+        data  = gausf(d.wstar[t,:,:],fsigma,mode='reflect') \
                 if filter else d.wstar[t,:,:]
         cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
         doplot = True 
@@ -128,7 +128,7 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
       if(var == 'zidry'):
         title = 'Updraft height [m]'
         levs  = np.arange(0,2500.01,150)
-        data  = gausf(d.zi[t,:,:],fsigma,mode=reflect) \
+        data  = gausf(d.zi[t,:,:],fsigma,mode='reflect') \
                 if filter else d.zi[t,:,:]
         cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
         doplot = True 
@@ -138,7 +138,7 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
       if(var == 'cudepth'):
         title = 'Cumulus depth [m]'
         levs  = np.arange(0,2000,100)
-        data  = gausf(d.zct[t,:,:]-d.zi[t,:,:],fsigma,mode=reflect) \
+        data  = gausf(d.zct[t,:,:]-d.zi[t,:,:],fsigma,mode='reflect') \
                 if filter else d.zct[t,:,:]-d.zi[t,:,:]
         cf =  m.contourf(lon,lat,data,levs,extend='both',cmap=wupnl)
         doplot = True 
@@ -149,7 +149,7 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
         pfd   = getpfd(wrfout)
         title = 'Potential flight distance [km]'
         levs  = np.arange(0,1000.1,100)
-        data  = gausf(pfd.pfd,fsigma,mode=reflect) \
+        data  = gausf(pfd.pfd,fsigma,mode='reflect') \
                 if filter else pfd.pfd[-1,:,:]
         cf    =  m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
         makepfd = False
@@ -201,4 +201,5 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
       fig.clf()
       plt.close()
       gc.collect()
+ 
   
