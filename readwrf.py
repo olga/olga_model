@@ -69,13 +69,17 @@ class readwrf_loc:
 
     if(domain==2): 
       self.w         = wrfin.variables["WUPD_TEMF"][:,:,glat,glon] # updraft velocity 
-      #self.thlu      = wrfin.variables["THUP_TEMF"][:,:,glat,glon] # Pot. temp updraft 
-      #self.qtu       = wrfin.variables["QTUP_TEMF"][:,:,glat,glon] # Updraft mix rat
-      #self.qlu       = wrfin.variables["QLUP_TEMF"][:,:,glat,glon] # Updraft liquid mix rat
       self.zi        = wrfin.variables["HD_TEMF"][:,glat,glon]     # dry thermal top TEMF
       self.ct        = wrfin.variables["HCT_TEMF"][:,glat,glon]    # cloud top TEMF
-      #self.cc        = wrfin.variables["CFM_TEMF"][:,glat,glon]    # Column cloud frac TEMF
-      #self.lcl       = wrfin.variables["LCL_TEMF"][:,glat,glon]    # LCL from TEMF
+
+      # TEST: average updraft velocity from TEMF over ABL depth 
+      self.wav = np.zeros(nt)
+      for t in range(nt):
+        if(self.zi[t] > 500):  
+          k300    = (np.abs(self.zf[t,:]-300)).argmin()
+          kzi     = (np.abs(self.zf[t,:]-self.zi[t])).argmin()
+          self.wav[t]  = np.average(self.w[t,k300:kzi])
+
     elif(domain==1):
       self.zi        = wrfin.variables["PBLH"][:,glat,glon]
 
