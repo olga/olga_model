@@ -25,13 +25,14 @@ if not os.path.exists('figures/'+date):
 
 # 4. Settings:
 # --------------------------------------------------------
-t0 = 12                                         # first time map
-t1 = 14                                        # last time map
+t0 = 0                                         # first time map
+t1 = 24                                        # last time map
 if(dom==1):
   variables = (['pfd','wstar','zidry','clouds','rr']) 
+  #variables = (['zidry']) 
 elif(dom==2):
-  #variables = (['pfd','wstar','zidry','cudepth']) 
-  variables = (['wstar']) 
+  variables = (['pfd','wstar','zidry','cudepth']) 
+  #variables = (['zidry']) 
 
 # 5. Setup basemap only once:
 # --------------------------------------------------------
@@ -49,7 +50,7 @@ elif(dom==2):
 
 # --------------------------------------------------------
 # 6. Create maps
-#create_maps(wrfout,dom,date,t0,t1,variables,m,filter=True)
+create_maps(wrfout,dom,date,t0,t1,variables,m,filter=True)
 
 
 #locations  = ['de Bilt','Essen','Beauvecchain','Bergen','Idar Oberstein']
@@ -104,7 +105,6 @@ elif(dom==2):
 #legend()
 #xlim(0,24)
 #modplot(ax)
-
 
 
 

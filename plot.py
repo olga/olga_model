@@ -32,7 +32,10 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
   makepfd = True
 
   # Get basemap coords cities
-  db     = np.genfromtxt('cities_eur.txt',dtype='str',delimiter=',',skip_header=0)
+  if(domain==1):
+    db     = np.genfromtxt('cities_eur_d1.txt',dtype='str',delimiter=',',skip_header=0)
+  elif(domain==2):
+    db     = np.genfromtxt('cities_eur_d2.txt',dtype='str',delimiter=',',skip_header=0)
   city   = db[:,0]
   citys  = db[:,1]  
   citlon = array(db[:,2],dtype=np.float32)  
@@ -128,8 +131,8 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
       if(var == 'zidry'):
         title = 'Updraft height [m]'
         levs  = np.arange(0,2500.01,150)
-        data  = gausf(d.zi[t,:,:],fsigma,mode='reflect') \
-                if filter else d.zi[t,:,:]
+        data  = gausf(d.zi[t,:,:]+d.hgt[:,:],fsigma,mode='reflect') \
+                if filter else d.zi[t,:,:]+d.hgt[:,:]
         cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
         doplot = True 
   
@@ -149,7 +152,7 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
         pfd   = getpfd(wrfout)
         title = 'Potential flight distance [km]'
         levs  = np.arange(0,1000.1,100)
-        data  = gausf(pfd.pfd,fsigma,mode='reflect') \
+        data  = gausf(pfd.pfd[-1,:,:],fsigma,mode='reflect') \
                 if filter else pfd.pfd[-1,:,:]
         cf    =  m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
         makepfd = False
