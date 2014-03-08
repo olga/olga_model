@@ -13,6 +13,7 @@ from readwrf import *
 from colormaps import *
 from readsounding import *
 from soundingv2 import *
+from readopenair import *
 
 # MOVE TO MATPLOTLIBRC
 from matplotlib import rc
@@ -170,6 +171,9 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
             m.scatter(citlon[i],citlat[i],s=4,alpha=1.0)
             text(citlon[i],citlat[i],' '+citys[i],size=8,ha='left',va='center',color='0.1')
 
+        if(True):
+          plotairspace(m)
+
         if(cf != False):
           pos = ax.get_position()
           l,b,w,h = pos.bounds
@@ -195,7 +199,6 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
         subtitle = str(d.datetime[t]) + ' UTC'
         ax.set_title(title,loc='left')
         ax.set_title(subtitle,loc='right')
-
  
         name = 'figures/'+ date + '/d' + str(domain) + '_' + var + '_' + str(t).zfill(3) + '.png'
         savefig(name)

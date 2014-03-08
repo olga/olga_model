@@ -25,14 +25,14 @@ if not os.path.exists('figures/'+date):
 
 # 4. Settings:
 # --------------------------------------------------------
-t0 = 0                                         # first time map
-t1 = 24                                        # last time map
+t0 = 12                                         # first time map
+t1 = 13                                        # last time map
 if(dom==1):
-  variables = (['pfd','wstar','zidry','clouds','rr']) 
-  #variables = (['zidry']) 
+  #variables = (['pfd','wstar','zidry','clouds','rr']) 
+  variables = (['zidry']) 
 elif(dom==2):
-  variables = (['pfd','wstar','zidry','cudepth']) 
-  #variables = (['zidry']) 
+  #variables = (['pfd','wstar','zidry','cudepth']) 
+  variables = (['pfd','wstar']) 
 
 # 5. Setup basemap only once:
 # --------------------------------------------------------
