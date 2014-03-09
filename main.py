@@ -11,6 +11,8 @@ else:
   dom    = int(sys.argv[4])
   smooth = False
 
+  dt=3
+
 # 2. Check if wrfout available
 # --------------------------------------------------------
 date   = str(year)+str(month).zfill(2)+str(day).zfill(2)
@@ -25,14 +27,14 @@ if not os.path.exists('figures/'+date):
 
 # 4. Settings:
 # --------------------------------------------------------
-t0 = 12                                         # first time map
-t1 = 13                                        # last time map
+t0 = 0                                        # first time map
+t1 = 24                                        # last time map
 if(dom==1):
   #variables = (['pfd','wstar','zidry','clouds','rr']) 
   variables = (['zidry']) 
 elif(dom==2):
-  #variables = (['pfd','wstar','zidry','cudepth']) 
-  variables = (['pfd','wstar']) 
+  variables = (['pfd','wstar','zidry','cudepth']) 
+  #variables = (['pfd','wstar']) 
 
 # 5. Setup basemap only once:
 # --------------------------------------------------------
@@ -50,61 +52,7 @@ elif(dom==2):
 
 # --------------------------------------------------------
 # 6. Create maps
-create_maps(wrfout,dom,date,t0,t1,variables,m,filter=True)
-
-
-#locations  = ['de Bilt','Essen','Beauvecchain','Bergen','Idar Oberstein']
-#longitudes = [ 5.18    ,  6.96 ,  4.77        ,  9.93  ,  7.33          ]
-#latitudes  = [52.10    , 51.40 , 50.75        , 52.81  ,  49.70         ]
-#
-#close('all')
-#
-#def modplot(ax):
-#  from matplotlib.ticker import AutoMinorLocator
-#  #minorLocator   = AutoMinorLocator()
-#  #ax.yaxis.set_minor_locator(minorLocator)
-#  minorLocator   = AutoMinorLocator()
-#  ax.xaxis.set_minor_locator(minorLocator)
-#
-#  ax.spines['right'].set_visible(False)
-#  ax.get_yaxis().tick_left()
-#  ax.spines['top'].set_visible(False)
-#  ax.get_xaxis().tick_bottom()
-#
-#from colormaps import *
-#
-#d = readwrf_loc(wrfout,dom,6.96,51.40)
-#figure()
-#
-#ax=subplot(511)
-#contourf(d.time/3600.,d.zf[0,:],transpose(d.cc),cmap=wup)
-##colorbar()
-#xlim(0,24)
-#modplot(ax)
-#
-#ax=subplot(512)
-#plot(d.time/3600.,d.T2[:]-273.)
-#xlim(0,24)
-#modplot(ax)
-#
-#ax=subplot(513)
-#bar(d.time/3600.,d.zi,width=0.2,label='zi TEMF')
-#xlim(0,24)
-#modplot(ax)
-#
-#ax=subplot(514)
-#bar(d.time/3600.-0.1,d.wstar,color='b',width=0.2,label='wstar')
-#bar(d.time/3600.+0.1,d.wav,color='g',width=0.2,label='w TEMF')
-#legend()
-#xlim(0,24)
-#modplot(ax)
-#
-#ax=subplot(515)
-#plot(d.time/3600.,d.hfx,label='sens. hf')
-#plot(d.time/3600.,d.lh,label='lat. hf')
-#legend()
-#xlim(0,24)
-#modplot(ax)
+create_maps(wrfout,dom,date,t0,t1,1,variables,m,filter=True)
 
 
 

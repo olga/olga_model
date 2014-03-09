@@ -23,7 +23,9 @@ rc('legend', fontsize=12)
 # -------------------------------------------------
 #   Function to create maps
 # -------------------------------------------------
-def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
+def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
+
+  print "creating maps"
 
   fsigma = 0.5  # std dev of gaussian filter size..
 
@@ -43,7 +45,7 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
   citlat = array(db[:,3],dtype=np.float32)  
   citlon,citlat = basemap(citlon,citlat)
 
-  for t in range(t0,t1+1,1):
+  for t in range(t0,t1+1,dt):
     for var in variables:
       print 'time = %s, var = %s'%(d.datetime[t],var)
    
@@ -171,7 +173,7 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
             m.scatter(citlon[i],citlat[i],s=4,alpha=1.0)
             text(citlon[i],citlat[i],' '+citys[i],size=8,ha='left',va='center',color='0.1')
 
-        if(True):
+        if(False):
           plotairspace(m)
 
         if(cf != False):
@@ -194,8 +196,8 @@ def create_maps(wrfout,domain,date,t0,t1,variables,basemap,filter=False):
         elif(domain==2):
           figtext(0.065,0.025,'6 x 6 km GFS-initiated WRF-ARW forecast [www.dummy.org]',size=7,ha='left')
           m.drawrivers(linewidth=0.5,color='#0066FF')
-          m.drawmeridians(arange(0, 360, 5))
-          m.drawparallels(arange(30, 60, 5))
+          #m.drawmeridians(arange(0, 360, 5))
+          #m.drawparallels(arange(30, 60, 5))
         subtitle = str(d.datetime[t]) + ' UTC'
         ax.set_title(title,loc='left')
         ax.set_title(subtitle,loc='right')

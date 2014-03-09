@@ -152,7 +152,8 @@ class readwrf_all:
     self.datetime    = []
 
     # Get datetime in format "YYYY-MM-DD HH:MM:SS"
-    for t in range(nt):
+    for t in range(nt-2):
+      print "BvS hacked time!!"
       self.datetime.append("".join(datetime[t,:10])+' '+"".join(datetime[t,11:19])) 
 
     # specific for domain 1 (large):
