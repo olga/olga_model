@@ -108,6 +108,7 @@ class readwrf_loc:
 
 #d = readwrf_loc('../dataWRF/20080512/wrfout_d02_2008-05-12_00:00:00',2,6.93146,52.2913)
 
+
 # ---------------------------------------------
 # Read in data: all locations -> all time
 #----------------------------------------------
@@ -116,8 +117,8 @@ class readwrf_all:
     print 'reading file %s'%file
 
     wrfin            = Dataset(file,'r')
-    nt               = len(wrfin.variables["XTIME"][:])
-   
+    nt               = len(wrfin.variables["HFX"][:,0,0])  
+ 
     # In our case, {lat/lon/hgt} doesn't change in time since we don't have moving domains... 
     self.lat         = wrfin.variables["XLAT"][0,:,:]  ; self.nlat = np.size(self.lat[0,:])
     self.lon         = wrfin.variables["XLONG"][0,:,:] ; self.nlon = np.size(self.lon[0,:])
@@ -126,8 +127,6 @@ class readwrf_all:
     # Base state variables
     self.T00         = wrfin.variables["T00"][:]
     self.P00         = wrfin.variables["P00"][:]
-    #self.z           = (wrfin.variables["PH"][t,:,:,:] + wrfin.variables["PHB"][t,:,:,:]) / 9.81
-    #self.p           = (wrfin.variables["PH"][t,:,:,:] + wrfin.variables["PHB"][t,:,:,:]) + self.P00[0]
     self.ps          = wrfin.variables["PSFC"][:,:,:] 
     self.T2          = wrfin.variables["T2"][:,:,:]             # 2m temperature [K]
 
@@ -174,6 +173,73 @@ class readwrf_all:
     wthvs[np.where(wthvs<0)] = 0.                             # remove negative flux for w* calc 
     self.wstar = (g * self.zi[:,:] * wthvs/tref)**(1./3.)
     self.wstar[np.where(self.wstar<-supd)] = 0.               # convective velocity scale w* - sink glider
+
+d = readwrf_all('../dataWRF/20140308/wrfout_d01_2014-03-08_00:00:00_2d.nc',domain=1)
+
+
+# ---------------------------------------------
+# Read in data: all locations -> all time
+#----------------------------------------------
+#class readwrf_all:
+#  def __init__(self,file,domain):
+#    print 'reading file %s'%file
+#
+#    wrfin            = Dataset(file,'r')
+#    nt               = len(wrfin.variables["XTIME"][:])
+#   
+#    # In our case, {lat/lon/hgt} doesn't change in time since we don't have moving domains... 
+#    self.lat         = wrfin.variables["XLAT"][0,:,:]  ; self.nlat = np.size(self.lat[0,:])
+#    self.lon         = wrfin.variables["XLONG"][0,:,:] ; self.nlon = np.size(self.lon[0,:])
+#    self.hgt         = wrfin.variables["HGT"][0,:,:]          # terrain height 
+#
+#    # Base state variables
+#    self.T00         = wrfin.variables["T00"][:]
+#    self.P00         = wrfin.variables["P00"][:]
+#    self.ps          = wrfin.variables["PSFC"][:,:,:] 
+#    self.T2          = wrfin.variables["T2"][:,:,:]             # 2m temperature [K]
+#
+#    # read in for all domains:
+#    self.hfx         = wrfin.variables["HFX"][:,:,:]          # sensible heat flux [W/m2]
+#    self.lh          = wrfin.variables["LH"][:,:,:]           # latent heat flux [W/m2]
+#    self.rr_mp       = wrfin.variables["RAINNC"][:,:,:]       # total microphysical rain [mm]
+#    self.rr_con      = wrfin.variables["RAINC"][:,:,:]        # total convective rain [mm]
+#
+#    # REALLLLY ugly (and incorrect), but seems to work quit okay...:
+#    #   in theory: if one grid level cloud cover = 100%, total column should be 100%
+#    #   in WRF: this creates a 0% or 100% cloud cover switch. Averaging seems to do better.....
+#    #   to-do: weighted average? 
+#    self.cclow       = np.sum(wrfin.variables["CLDFRA"][:,:35,:,:],axis=1)   / 35. 
+#    self.ccmid       = np.sum(wrfin.variables["CLDFRA"][:,35:52,:,:],axis=1) / 17. 
+#    self.cchig       = np.sum(wrfin.variables["CLDFRA"][:,52:,:,:],axis=1)   / 11.
+#    self.ccsum       = self.cclow + self.ccmid + self.cchig
+#    self.ccsum[np.where(self.ccsum>1.)] = 1.
+#
+#    # Get date-time and merge chars to string
+#    datetime         = wrfin.variables["Times"][:,:]          # timedate array
+#    self.datetime    = []
+#
+#    # Get datetime in format "YYYY-MM-DD HH:MM:SS"
+#    for t in range(nt-2):
+#      print "BvS hacked time!!"
+#      self.datetime.append("".join(datetime[t,:10])+' '+"".join(datetime[t,11:19])) 
+#
+#    # specific for domain 1 (large):
+#    if(domain==1):
+#      self.zi        = wrfin.variables["PBLH"][:,:,:]         # boundary layer height [m]
+#      self.U10       = wrfin.variables["U10"][:,:,:]          # 10m u-wind [m/s]
+#      self.V10       = wrfin.variables["V10"][:,:,:]          # 10m v-wind [m/s]
+#      self.slps      = wrfin.variables["PSFC"][:,:,:] / (1.-2.25577e-5 * self.hgt[:,:])**5.25588
+#
+#    # specific for domain 2 (small):
+#    elif(domain==2):
+#      self.zi        = wrfin.variables["HD_TEMF"][:,:,:]      # dry thermal top TEMF
+#      self.zct       = wrfin.variables["HCT_TEMF"][:,:,:]     # cloud top TEMF
+#
+#    # Derived variables:
+#    rhos  = self.ps / (Rd * self.T2)
+#    wthvs = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv))
+#    wthvs[np.where(wthvs<0)] = 0.                             # remove negative flux for w* calc 
+#    self.wstar = (g * self.zi[:,:] * wthvs/tref)**(1./3.)
+#    self.wstar[np.where(self.wstar<-supd)] = 0.               # convective velocity scale w* - sink glider
  
-#d = readwrf_all('../dataWRF/20130602/wrfout_d01_2013-06-02_00:00:00',domain=1)
 

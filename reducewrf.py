@@ -36,6 +36,10 @@ else:
   DateStrLen        = wrfout.createDimension('DateStrLen',dstrl)
 
   # Define variables
+  XLAT              = wrfout.createVariable('XLAT','f4',('south_north','west_east'))
+  XLONG             = wrfout.createVariable('XLONG','f4',('south_north','west_east'))
+  HGT               = wrfout.createVariable('HGT','f4',('south_north','west_east'))
+
   T00               = wrfout.createVariable('T00','f4',('Time',))
   P00               = wrfout.createVariable('P00','f4',('Time',))
   T2                = wrfout.createVariable('T2','f4',('Time','south_north','west_east'))
@@ -67,6 +71,9 @@ else:
     PBLH            = wrfout.createVariable('PBLH','f4',('Time','south_north','west_east'))
 
   # Copy variables
+  XLAT[:,:]         = wrfin.variables["XLAT"][0,:,:]
+  XLONG[:,:]        = wrfin.variables["XLONG"][0,:,:]
+  HGT[:,:]          = wrfin.variables["HGT"][0,:,:]
   T00[:]            = wrfin.variables["T00"][:] 
   P00[:]            = wrfin.variables["P00"][:]
   T2[:,:,:]         = wrfin.variables["T2"][:,:,:]
