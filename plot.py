@@ -36,9 +36,9 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
 
   # Get basemap coords cities
   if(domain==1):
-    db     = np.genfromtxt('cities_eur_d1.txt',dtype='str',delimiter=',',skip_header=0)
+    db     = np.genfromtxt('data/cities_eur_d1.txt',dtype='str',delimiter=',',skip_header=0)
   elif(domain==2):
-    db     = np.genfromtxt('cities_eur_d2.txt',dtype='str',delimiter=',',skip_header=0)
+    db     = np.genfromtxt('data/cities_eur_d2.txt',dtype='str',delimiter=',',skip_header=0)
   city   = db[:,0]
   citys  = db[:,1]  
   citlon = array(db[:,2],dtype=np.float32)  
@@ -60,6 +60,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
       #   GENERAL  METEOROLOGY
       # -------------------------------------------------
 
+      # -------------------------------------------------
       # sea level pressure and 10m wind
       # -------------------------------------------------
       if(var == 'slpwind'):
@@ -69,7 +70,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
         intv   = 4    # interval of wind barbs
         levs1  = np.arange(800,1200,2.5)     # SLP levels
         levs2  = np.arange(0,umax,umax/50.)  # Wind levels
-        pfilt  = gaussian_filter(d.slps[t,:,:]/100.,3.0,mode='reflect')
+        pfilt  = gausf(d.slps[t,:,:]/100.,3.0,mode='reflect')
         cf     = False #m.contourf(lon,lat,utot,levs2,extend='both',cmap=wnd)
         barbs  = m.barbs(lon[0::intv,0::intv],lat[0::intv,0::intv],\
                          d.U10[t,0::intv,0::intv],d.V10[t,0::intv,0::intv],\
@@ -80,6 +81,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
  
       # -------------------------------------------------
       # rain
+      # -------------------------------------------------
       if(var == 'rr'):
         title = 'Precipitation over last hour [mm] (o=convective)'
         if(t==0):
@@ -98,7 +100,8 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
         doplot = True
 
       # -------------------------------------------------
-      # Clouds
+      # Cloud cover
+      # -------------------------------------------------
       if(var == 'clouds'):
         title = 'Cloud cover (o=low  -=mid  |=high)'
         levs  = np.arange(0.00,1.001,0.05)
@@ -119,6 +122,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
       #   GLIDING SPECIFIC
       # -------------------------------------------------
  
+      # -------------------------------------------------
       # Updraft velocity wstar
       # -------------------------------------------------
       if(var == 'wstar'):
@@ -129,10 +133,11 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
         cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
         doplot = True 
  
+      # -------------------------------------------------
       # Top of updraft (dry convection)
       # -------------------------------------------------
       if(var == 'zidry'):
-        title = 'Updraft height [m]'
+        title = 'Updraft height [m agl]'
         levs  = np.arange(0,2500.01,150)
         data  = gausf(d.zi[t,:,:]+d.hgt[:,:],fsigma,mode='reflect') \
                 if filter else d.zi[t,:,:]+d.hgt[:,:]
@@ -141,6 +146,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
   
       # -------------------------------------------------
       # Cumulus depth
+      # -------------------------------------------------
       if(var == 'cudepth'):
         title = 'Cumulus depth [m]'
         levs  = np.arange(0,2000,100)
@@ -151,6 +157,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
 
       # -------------------------------------------------
       # Potential flight distance
+      # -------------------------------------------------
       if(var == 'pfd' and makepfd):
         pfd   = getpfd(wrfout)
         title = 'Potential flight distance [km]'
@@ -163,19 +170,25 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
 
       # -------------------------------------------------
       # Finish plot!
+      # -------------------------------------------------
       if(doplot):
+
+        # Plot terrain height contours
         if(False):
           levs = arange(50,4000.01,50.)
           contour(lon,lat,d.hgt,levs,cmap=cm.PuBu,alpha=0.5)
 
+        # Plot cities
         if(True):
           for i in range(len(citys)):
             m.scatter(citlon[i],citlat[i],s=4,alpha=1.0)
             text(citlon[i],citlat[i],' '+citys[i],size=8,ha='left',va='center',color='0.1')
 
+        # Plot airspace
         if(False):
           plotairspace(m)
 
+        # If filled contour, add colorbar
         if(cf != False):
           pos = ax.get_position()
           l,b,w,h = pos.bounds
@@ -191,8 +204,9 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
         
         if(domain==1):
           figtext(0.065,0.025,'18 x 18 km GFS-initiated WRF-ARW forecast [www.dummy.org]',size=7,ha='left')
-          m.drawmeridians(arange(0, 360, 5))
-          m.drawparallels(arange(30, 60, 5))
+          #m.drawrivers(linewidth=0.5,color='#0066FF')
+          #m.drawmeridians(arange(0, 360, 5))
+          #m.drawparallels(arange(30, 60, 5))
         elif(domain==2):
           figtext(0.065,0.025,'6 x 6 km GFS-initiated WRF-ARW forecast [www.dummy.org]',size=7,ha='left')
           m.drawrivers(linewidth=0.5,color='#0066FF')

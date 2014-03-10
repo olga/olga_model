@@ -1,5 +1,6 @@
 from plot import *
 
+# --------------------------------------------------------
 # 1. get command line arguments (Y,M,D,dom)
 # --------------------------------------------------------
 if(len(sys.argv) != 5):
@@ -9,34 +10,37 @@ else:
   month  = int(sys.argv[2])
   day    = int(sys.argv[3])
   dom    = int(sys.argv[4])
+  dt     = 3
   smooth = False
 
-  dt=3
-
+# --------------------------------------------------------
 # 2. Check if wrfout available
 # --------------------------------------------------------
 date   = str(year)+str(month).zfill(2)+str(day).zfill(2)
-wrfout = '../dataWRF/'+date+'/wrfout_d0'+str(dom)+'_'+str(year)+'-'+str(month).zfill(2)+'-'+str(day).zfill(2)+'_00:00:00' 
+wrfout = '../dataWRF/'+date+'/wrfout_d0'+str(dom)+'_'+str(year)+'-'+str(month).zfill(2)+'-'+str(day).zfill(2)+'_00:00:00_2d.nc' 
 if(not os.path.isfile(wrfout)):
   sys.exit('file %s not available'%wrfout) 
 
 # --------------------------------------------------------
-# 3. Create image directory if not available:
+# 3. Create image directory if not available
+# --------------------------------------------------------
 if not os.path.exists('figures/'+date):
   os.makedirs('figures/'+date)
 
-# 4. Settings:
 # --------------------------------------------------------
-t0 = 0                                        # first time map
-t1 = 24                                        # last time map
+# 4. Settings
+# --------------------------------------------------------
+t0 = 0     # first time map
+t1 = 24    # last time map
 if(dom==1):
-  #variables = (['pfd','wstar','zidry','clouds','rr']) 
-  variables = (['zidry']) 
+  variables = (['pfd','wstar','zidry','clouds','rr','slpwind']) 
+  #variables = (['zidry']) 
 elif(dom==2):
   variables = (['pfd','wstar','zidry','cudepth']) 
   #variables = (['pfd','wstar']) 
 
-# 5. Setup basemap only once:
+# --------------------------------------------------------
+# 5. Setup basemap only once
 # --------------------------------------------------------
 if(dom==1):
   m = Basemap(width=1800000,height=1800000,
@@ -52,7 +56,7 @@ elif(dom==2):
 
 # --------------------------------------------------------
 # 6. Create maps
-create_maps(wrfout,dom,date,t0,t1,1,variables,m,filter=True)
-
+# --------------------------------------------------------
+create_maps(wrfout,dom,date,t0,t1,dt,variables,m,filter=True)
 
 

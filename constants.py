@@ -8,6 +8,6 @@ Lv   = 2.45e6      # Latent heat of vaporization
 a    = 1.05e-4     # a-coef Ventus2 18, 40kg/m3
 b    = 1.64e-2     # b-coef Ventus2 18, 40kg/m3
 c    = 1.15        # c-coef Ventus2 18, 40kg/m3 
-supd = 0.6         # Glider sink in updraft (..)
+supd = 0.9         # Glider sink in updraft (..)
 peff = 0.7         # efficiency pilot (..)
 
