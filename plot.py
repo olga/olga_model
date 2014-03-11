@@ -1,3 +1,8 @@
+# Prevents figs from showing on screen. 
+# Call before pylab, etc.
+import matplotlib
+matplotlib.use('Agg')    
+
 import numpy as np
 from pylab import *
 from mpl_toolkits.basemap import Basemap
@@ -7,6 +12,8 @@ import sys
 import urllib2
 from copy import deepcopy
 from scipy.ndimage.filters import gaussian_filter as gausf
+import matplotlib.gridspec as gridspec
+import matplotlib.image as image
 
 # Custom modules
 from readwrf import *
@@ -14,20 +21,136 @@ from colormaps import *
 from readsounding import *
 from soundingv2 import *
 from readopenair import *
+from tools import *
+from constants import *
 
 # MOVE TO MATPLOTLIBRC
 from matplotlib import rc
 rc('font', size=9)
-rc('legend', fontsize=12)
+rc('legend', fontsize=8)
 
 # -------------------------------------------------
-#   Function to create maps
+# Function to create (sort-of) meteograms
+# -------------------------------------------------
+def create_tser(wrfout,domain,date,names,lons,lats):
+
+  levs = [0,1,2,3,4]
+  wupd = cmap_discrete(wup,np.linspace(0,1,4))
+
+  # Loop over requested locations
+  for name,lon,lat in zip(names,lons,lats):
+    # Read WRF data
+    d = readwrf_loc(wrfout,domain,lon,lat)
+    t = np.arange(0,24.001,1)
+
+    fig = plt.figure(figsize=(6.5,6.0))
+    #                   L    B    R    T    ws  hs
+    fig.subplots_adjust(0.10,0.11,0.96,0.88,0.36,0.36)
+    figtext(0.5,0.95,'%s [%.2fN, %.2fE]'%(name,lon,lat),size=9,ha='center')
+    figtext(0.5,0.93,'%s'%(d.datetime[0]),size=8,ha='center')
+    figtext(0.065,0.01,'6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=6,ha='left')
+    gs = gridspec.GridSpec(3,1,height_ratios=[4,1,1.5])
+
+    ax=subplot(gs[0])
+    ax.set_title('Updraft velocity and height',loc='left')
+    zs = d.z[0,0]             # terrain height (lowest half level)
+    wm = 3.5                  # scaling for colormap
+    for i in range(t.size):
+      bar(t[i]-0.35,d.zi[i],width=0.7,bottom=zs,color=wup((floor(d.wstar[i])+0.5)/wm),edgecolor='none')    
+      bar(t[i]-0.4,d.ct[i]-d.zi[i],width=0.8,bottom=d.zi[i]+zs,color='k',alpha=0.3,edgecolor='none')    
+    # Add sort-of colorbar
+    wups = ([0.5,1.5,2.5,3.5])
+    names = (['0-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
+    for wu,nam in zip(wups,names):
+      scatter([-10],[300],color=wup(wu/wm),label=nam)
+    legend(frameon=False,loc=2)  
+    # finish things 
+    xlim(0,24)
+    ylim(0,3000)
+    modplot(ax) 
+    ylabel('z [m AMSL]')
+    xticks(np.arange(0,24.001,2))
+
+    ax=subplot(gs[1])
+    ax.set_title('Cloud cover',loc='left')
+    #ax.spines['left'].set_visible(False)
+    #ax.get_yaxis().set_visible(False)
+    pcolormesh(d.ccl,cmap=cm.bone_r,vmin=0,vmax=1)
+    text(-0.4,0.5,'low',size=7,ha='right',va='center')
+    text(-0.4,1.5,'middle',size=7,ha='right',va='center')
+    text(-0.4,2.5,'high',size=7,ha='right',va='center')
+    xlim(0,24)
+    ylabel('z [m]')
+    modplot(ax)
+    ax.set_yticks([])
+    xticks(np.arange(0,24.001,2))
+
+    ax=subplot(gs[2])
+    ax.set_title('Wind',loc='left')
+    k500 = key_nearest(d.zf[0,:],500)
+    k1000 = key_nearest(d.zf[0,:],1000)
+    k2000 = key_nearest(d.zf[0,:],2000)
+    m2k = 1.95 
+    barbs(t,0.5,d.u10*m2k,d.v10*m2k,length=5,linewidth=0.5,pivot='middle')  
+    barbs(t,1.5,d.u[:,k500]*m2k,d.v[:,k500]*m2k,length=5,linewidth=0.5,pivot='middle')  
+    barbs(t,2.5,d.u[:,k1000]*m2k,d.v[:,k1000]*m2k,length=5,linewidth=0.5,pivot='middle')  
+    barbs(t,3.5,d.u[:,k2000]*m2k,d.v[:,k2000]*m2k,length=5,linewidth=0.5,pivot='middle')  
+    text(-0.4,0.5,'10m',size=7,ha='right',va='center')
+    text(-0.4,1.5,'500m',size=7,ha='right',va='center')
+    text(-0.4,2.5,'1000m',size=7,ha='right',va='center')
+    text(-0.4,3.5,'2000m',size=7,ha='right',va='center')
+    xlim(0,24)
+    modplot(ax)
+    ax.set_yticks([])
+    xticks(np.arange(0,24.001,2))
+    xlabel('time UTC [h]')
+
+    # Add logo :)
+    img = image.imread('../olga_lr.png')
+    figimage(img,5,5 )
+
+ 
+    # Attempt at using TEMF updraft velocity -> fail
+    #zs = d.z[0,0]             # terrain height (lowest half level)
+    #zf = d.zf[0,:]-d.z[0,0]   # full level height - terrain
+    #dz = 250
+    #wm = 3.5
+    #bins = np.arange(0,3000.01,dz)
+
+    ## plot surface (terrain) height
+    #plot([0,24],[zs,zs],'k:')
+    #plot(t,d.zi)
+    #for i in range(t.size):
+    #  for k in range(1,bins.size):
+    #    k0 = key_nearest(zf,bins[k-1])
+    #    k1 = key_nearest(zf,bins[k])
+    #    wu = np.average(d.w[i,k0:k1+1])
+    #    if(wu>0.25):
+    #      bar(t[i]-0.4,dz,width=0.8,bottom=bins[k-1]+zs,color=wup((floor(wu)+0.5)/wm),edgecolor='none')    
+
+    #wups = ([0.5,1.5,2.5,3.5])
+    #names = (['0-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
+    #for wu,name in zip(wups,names):
+    #  scatter([-10],[-10],color=wup(wu/wm),label=name)
+    #legend()   
+    #xlim(0,24)
+    #ylim(0,d.zi.max()+250)
+    #modplot(ax) 
+
+ 
+    name = 'figures/'+ date + '/d' + str(domain) + '_tser_' + name + '.png'
+    savefig(name)
+    savefig('test.png')
+
+
+# -------------------------------------------------
+# Function to create maps
 # -------------------------------------------------
 def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
 
   print "creating maps"
 
-  fsigma = 0.5  # std dev of gaussian filter size..
+  fsigma = 1.0  # std dev of gaussian filter size..
 
   # Read WRF output
   d  = readwrf_all(wrfout,domain=domain)
@@ -132,12 +255,23 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
                 if filter else d.wstar[t,:,:]
         cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
         doplot = True 
+
+      # -------------------------------------------------
+      # TEST: z/L
+      # -------------------------------------------------
+      if(var == 'zol'):
+        title = 'z/L [-]'
+        levs  = np.arange(-100.,0.01,5.)
+        data  = gausf((d.zi[t,:,:]/d.L[t,:,:]),fsigma,mode='reflect') \
+                if filter else d.zi[t,:,:]/d.L[t,:,:]
+        cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=cent)
+        doplot = True 
  
       # -------------------------------------------------
       # Top of updraft (dry convection)
       # -------------------------------------------------
       if(var == 'zidry'):
-        title = 'Updraft height [m agl]'
+        title = 'Updraft height [m amsl]'
         levs  = np.arange(0,2500.01,150)
         data  = gausf(d.zi[t,:,:]+d.hgt[:,:],fsigma,mode='reflect') \
                 if filter else d.zi[t,:,:]+d.hgt[:,:]

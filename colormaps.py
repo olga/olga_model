@@ -105,6 +105,7 @@ cld   = make_colormap({0.:'#ffffff',0.2:'#4682b4',0.5:'#0bbd17',0.8:'#fdfe00',1.
 wnd   = make_colormap({0.:'#ffffff',0.4:'#4682b4',0.6:'#0bbd17',0.8:'#fdfe00',1.:'#bf5f2d'})
 rain  = make_colormap({0.:'#ffffff',0.1:'#4682b4',0.2:'#0bbd17',0.4:'#fdfe00',1.:'#bf5f2d'})
 wup   = make_colormap({0.:'#ffffff',0.25:'#4682b4',0.5:'#0bbd17',0.75:'#fdfe00',1.:'#cc2900'})
+cent  = make_colormap({0.:'#ffffff',0.25:'#fdfe00',0.5:'#0bbd17',0.75:'#fdfe00',1.:'#ffffff'})
 wupnl = make_colormap({0.:'#ffffff',0.1:'#4682b4',0.2:'#0bbd17',0.6:'#fdfe00',1.:'#cc2900'})
 rain2 = cmap_ncl('precip2_17lev') 
 rain3 = nonlin_cmap(rain2,2.) 

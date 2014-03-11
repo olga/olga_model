@@ -23,7 +23,6 @@ Transform coordinate from deg:min:sec to deg.deg
 """
 def ctrans(cin):
   temp = cin.split('=')[-1].split(':')    # in case of X=..
-  print temp
   return float(temp[0])+float(temp[1])/60.+float(temp[2])/3600.
 
 """
@@ -84,7 +83,7 @@ def plotairspace(m):
   plotairspace = ['CTR','A','B','C','D']
 
   #databases = ['EHEDv13_5.txt','EDv13_4.txt']
-  databases = ['EHEDv13_5.txt','BELLUX_WEEK_130404.txt']
+  databases = ['data/EHEDv13_5.txt','data/BELLUX_WEEK_130404.txt']
   #databases = ['BELLUX_WEEK_130404.txt']
 
   """
@@ -122,7 +121,7 @@ def plotairspace(m):
             # 3. plot
             if(atype == 'CTR'):
               fill(poly_lons,poly_lats,color='k',alpha=0.1)
-              m.plot(poly_lons,poly_lats,'k',linewidth=1.)
+              m.plot(poly_lons,poly_lats,'k',linewidth=0.5)
             elif(atype in ['A','B','C','D']):
               m.plot(poly_lons,poly_lats,color='k',linewidth=0.5,alpha=0.5)
 
