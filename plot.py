@@ -106,7 +106,7 @@ def create_tser(wrfout,domain,date,names,lons,lats):
     xlabel('time UTC [h]')
 
     # Add logo :)
-    img = image.imread('../olga_lr.png')
+    img = image.imread('data/olga_lr.png')
     figimage(img,5,5 )
 
  

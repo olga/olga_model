@@ -51,10 +51,10 @@ if(type=="maps"):
     variables = (['pfd','clouds','rr','slpwind']) 
     #variables = (['zidry']) 
   elif(dom==2):
-    #variables = (['pfd','wstar','zidry','cudepth']) 
+    variables = (['pfd','wstar','zidry','cudepth','zol']) 
     #variables = (['pfd','wstar']) 
     #variables = (['clouds']) 
-    variables = (['zol']) 
+    #variables = (['zol']) 
 
   create_maps(wrfout,dom,date,t0,t1,dt,variables,m,filter=True)
 
@@ -66,15 +66,15 @@ if(type=="tser"):
   lats = []
   lons = []
 
-  #names.append("Sterksel")
-  #lats.append(51.35) 
-  #lons.append(05.61)
+  names.append("Sterksel")
+  lats.append(51.35) 
+  lons.append(05.61)
 
   names.append("Aachen")
   lats.append(50.78) 
   lons.append(06.09)
 
-  if(False):
+  if(True):
     names.append("Deelen")
     lats.append(52.06) 
     lons.append(05.88)
