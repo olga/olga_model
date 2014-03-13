@@ -11,7 +11,7 @@ else:
   day    = int(sys.argv[3])
   dom    = int(sys.argv[4])
   type   = sys.argv[5]
-  dt     = 3
+  dt     = 1
   smooth = False
 
 # --------------------------------------------------------
@@ -48,13 +48,14 @@ if(type=="maps"):
   t0 = 0     # first time map
   t1 = 24    # last time map
   if(dom==1):
-    variables = (['pfd','clouds','rr','slpwind']) 
+    #variables = (['clouds2']) 
+    variables = (['clouds','rr','slpwind']) 
     #variables = (['zidry']) 
   elif(dom==2):
-    variables = (['pfd','wstar','zidry','cudepth','zol']) 
+    variables = (['pfd','wstar','zidry','cudepth']) 
     #variables = (['pfd','wstar']) 
     #variables = (['clouds']) 
-    #variables = (['zol']) 
+    #variables = (['zidry']) 
 
   create_maps(wrfout,dom,date,t0,t1,dt,variables,m,filter=True)
 
@@ -62,55 +63,29 @@ if(type=="maps"):
 # 5. Create meteograms
 # --------------------------------------------------------
 if(type=="tser"):
-  names = []
-  lats = []
-  lons = []
-
-  names.append("Sterksel")
-  lats.append(51.35) 
-  lons.append(05.61)
-
-  names.append("Aachen")
-  lats.append(50.78) 
-  lons.append(06.09)
-
-  if(True):
-    names.append("Deelen")
-    lats.append(52.06) 
-    lons.append(05.88)
-
-    names.append("Antwerp")
-    lats.append(51.22) 
-    lons.append(4.41)
-
-    names.append("Groningen")
-    lats.append(53.22) 
-    lons.append(6.55)
-
-    names.append("Bremen")
-    lats.append(53.08) 
-    lons.append(8.82)
-
-    names.append("Kassel")
-    lats.append(51.32) 
-    lons.append(9.465)
-
-    names.append("Frankfurt")
-    lats.append(50.12) 
-    lons.append(8.69)
-
-    names.append("Florennes")
-    lats.append(50.25) 
-    lons.append(4.61)
-
-    names.append("Trier")
-    lats.append(49.75) 
-    lons.append(6.62)
-
-    names.append("Meschede")
-    lats.append(51.35) 
-    lons.append(8.277)
+  # Get list of locations
+  l = np.genfromtxt('analysis_locs.txt', delimiter=',', dtype=("|S10",float,float))
+  names = l["f0"]
+  lons =  l["f1"]
+  lats =  l["f2"]
 
   create_tser(wrfout,dom,date,names,lons,lats)
 
+# --------------------------------------------------------
+# 6. Create soundings
+# --------------------------------------------------------
+if(type=="sounding"):
+  # Get list of locations
+  l = np.genfromtxt('sounding_locs.txt', delimiter=',', dtype=("|S15",float,float))
+  names = l["f0"]
+  lons =  l["f1"]
+  lats =  l["f2"]
+  times = np.arange(0,25,1)
+ 
+  #names = ["Sterksel"]
+  #lons = [5.61]
+  #lats = [51.35]
+  #times = [12]
+
+  create_sounding(wrfout,dom,date,names,lons,lats,times)
 

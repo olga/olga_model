@@ -109,6 +109,7 @@ cent  = make_colormap({0.:'#ffffff',0.25:'#fdfe00',0.5:'#0bbd17',0.75:'#fdfe00',
 wupnl = make_colormap({0.:'#ffffff',0.1:'#4682b4',0.2:'#0bbd17',0.6:'#fdfe00',1.:'#cc2900'})
 rain2 = cmap_ncl('precip2_17lev') 
 rain3 = nonlin_cmap(rain2,2.) 
+cloud = nonlin_cmap(cm.Greys_r,2.)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # show colormaps

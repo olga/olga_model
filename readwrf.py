@@ -100,6 +100,22 @@ class readwrf_all:
     self.ccsum       = self.cclow + self.ccmid + self.cchig
     self.ccsum[np.where(self.ccsum>1.)] = 1.
 
+    # Synthethic albedo
+    # Get very crude estimate of density profile for LWP integration
+    self.thvref      = (wrfin.variables["T"][0,:,0,0] + self.T00[0]) * (1.-(1.-Rv/Rd) * wrfin.variables["QVAPOR"][0,:,0,0])
+    self.pref        = wrfin.variables["P"][0,:,0,0] + wrfin.variables["PB"][0,:,0,0]
+    self.dnref       = self.pref / (Rd * self.thvref)
+    self.z           = (wrfin.variables["PH"][0,:,0,0] + wrfin.variables["PHB"][0,:,0,0]) / g
+    self.zf          = (self.z[1:]+self.z[:-1])/2. 
+    self.dz          = self.z[1:] - self.z[:-1]
+
+    self.LWP         = np.sum(wrfin.variables["QCLOUD"][:,:,:,:] * self.dnref[None,:,None,None] * self.dz[None,:,None,None],axis=1)
+    self.IWP         = np.sum(wrfin.variables["QICE"][:,:,:,:] * self.dnref[None,:,None,None] * self.dz[None,:,None,None],axis=1)
+    self.CWP         = self.LWP + self.IWP
+    cnm = 400.
+    tau = 0.19 * self.CWP**(5./6.)*cnm**(1./3.) 
+    self.calb        = tau / (6.8 + tau) 
+
     # Get date-time and merge chars to string
     datetime         = wrfin.variables["Times"][:,:]          # timedate array
     self.datetime    = []
@@ -163,7 +179,8 @@ class readwrf_loc:
     datetime         = wrfin.variables["Times"][:,:]          # timedate array
     self.datetime    = []
     # Get datetime in format "YYYY-MM-DD HH:MM:SS"
-    self.datetime.append("".join(datetime[0,:10])+' '+"".join(datetime[0,11:19])) 
+    for t in range(nt):
+      self.datetime.append("".join(datetime[t,:10])+' '+"".join(datetime[t,11:19])) 
 
     # For the next variables, average over area
     self.ps          = np.apply_over_axes(np.mean,wrfin.variables["PSFC"]  [:,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
@@ -178,6 +195,8 @@ class readwrf_loc:
     self.v           = np.apply_over_axes(np.mean,wrfin.variables["V"]     [:,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0]
     self.u10         = np.apply_over_axes(np.mean,wrfin.variables["U10"]   [:,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
     self.v10         = np.apply_over_axes(np.mean,wrfin.variables["V10"]   [:,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+    self.T2          = np.apply_over_axes(np.mean,wrfin.variables["T2"]    [:,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+    self.q2          = np.apply_over_axes(np.mean,wrfin.variables["Q2"]    [:,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
 
     self.ccl         = np.zeros((3,nt))
     self.ccl[0,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][:,:35,  jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
@@ -206,22 +225,15 @@ class readwrf_loc:
     self.wstar = (g * self.zi * wthvs/tref)**(1./3.)
     self.wstar[np.where(self.wstar<supd)] = 0.               # convective velocity scale w* - sink glider
 
-    #self.qt          = self.qv + self.ql
-    #self.t           = np.zeros_like(self.th)
-    #self.pf          = np.zeros_like(self.th)
-    #self.T           = np.zeros_like(self.th)
-    #self.Td          = np.zeros_like(self.th)
-    #self.Thu         = np.zeros_like(self.th)
-    #self.Tup         = np.zeros_like(self.th)
+    self.qt          = self.qv + self.ql
+    self.t           = np.zeros_like(self.th)
+    self.pf          = np.zeros_like(self.th)
+    self.T           = np.zeros_like(self.th)
+    self.Td          = np.zeros_like(self.th)
 
     # CHECK CALCULATIONS!!!!!!!!!
-    #for t in range(nt):
-    #  self.th[t,:]   = self.th[t,:] + 300.
-    #  self.T[t,:]    = self.th[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.)
-    #  self.Td[t,:]   = (5.42e3 / np.log((0.622 * 2.53e11) / (self.qt[t,:] * self.p[t,:])))
-    #  if(temf):
-    #    self.Thu[t,:]  = self.thlTEMF[t,:] + (2.45e6/1004.)*self.ql[t,:]
-    #    self.Tup[t,:]  = self.Thu[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.)
-#
-#d = readwrf_loc('../dataWRF/20080512/wrfout_d02_2008-05-12_00:00:00',2,6.93146,52.2913)
+    for t in range(nt):
+      self.th[t,:]   = self.th[t,:] + 300.
+      self.T[t,:]    = self.th[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.)
+      self.Td[t,:]   = (5.42e3 / np.log((0.622 * 2.53e11) / (self.qt[t,:] * self.p[t,:])))
 

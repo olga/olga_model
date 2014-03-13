@@ -1,6 +1,10 @@
 import numpy 
 from pylab import *
 
+from matplotlib import rc
+rc('font', size=9)
+rc('legend', fontsize=8)
+
 close('all')
 
 # Diagram settings
@@ -10,8 +14,8 @@ c2           = '#000000'   # Black
 c4           = '#808080'   # Gray
 c5           = '#93256d'   # Parcel 
 a1           = 0.5         # Opacities
-s1           = 9           # Font size 1
-s2           = 10          # Font size 2
+s1           = 8           # Font size 1
+s2           = 9          # Font size 2
 antia        = True        # Antialiasing?
 
 # To-do: fix settings below, not working :(
@@ -123,9 +127,10 @@ def closest(target,collection):
 
 # Main routine to plot diagram
 # ------------------------------
-def skewtp(Tin,Tdin,pin,Tsin=[0],Tdsin=[0],psin=[0]):
+def skewtp(Tin=array([0]),Tdin=array([0]),pin=array([0]),Tsin=[0],Tdsin=[0],psin=[0],name="",datetime=""):
 
-  fig = figure(figsize=(8,9))
+  #fig = figure(figsize=(8,9))
+  fig = figure(figsize=(6.5,6))
   #                   L    B    R    T    ws  hs
   fig.subplots_adjust(0.08,0.05,.99,0.95,0.2,0.08)
   subplot(111)
@@ -212,33 +217,36 @@ def skewtp(Tin,Tdin,pin,Tsin=[0],Tdsin=[0],psin=[0]):
 
   # Plot sounding measurement
   # ------------------------------
-  T_skew  = numpy.zeros_like(Tin)
-  Td_skew = numpy.zeros_like(Tin)
-  p_skew  = numpy.zeros_like(pin)
+  #T_skew  = numpy.zeros_like(Tin)
+  #Td_skew = numpy.zeros_like(Tin)
+  #p_skew  = numpy.zeros_like(pin)
 
-  if(Tsin.size>1):
-    Ts_skew = numpy.zeros_like(Tsin)
-    Tds_skew = numpy.zeros_like(Tsin)
-    ps_skew = numpy.zeros_like(Tsin)
+  #if(array(Tsin).size>1):
+  #  Ts_skew = numpy.zeros_like(Tsin)
+  #  Tds_skew = numpy.zeros_like(Tsin)
+  #  ps_skew = numpy.zeros_like(Tsin)
 
-    for i in range(Ts_skew.size):
-      ps_skew[i]  = skewty(psin[i])
-      Ts_skew[i]  = skewtx(Tsin[i],ps_skew[i])
-      Tds_skew[i] = skewtx(Tdsin[i],ps_skew[i])
+  #  for i in range(Ts_skew.size):
+  #    ps_skew[i]  = skewty(psin[i])
+  #    Ts_skew[i]  = skewtx(Tsin[i],ps_skew[i])
+  #    Tds_skew[i] = skewtx(Tdsin[i],ps_skew[i])
 
-  for i in range(p_skew.size):
-    p_skew[i]  = skewty(pin[i]/100.)
-    T_skew[i]  = skewtx(Tin[i]-T0,p_skew[i])
-    Td_skew[i] = skewtx(Tdin[i]-T0,p_skew[i])
+  #for i in range(p_skew.size):
+  #  p_skew[i]  = skewty(pin[i]/100.)
+  #  T_skew[i]  = skewtx(Tin[i]-T0,p_skew[i])
+  #  Td_skew[i] = skewtx(Tdin[i]-T0,p_skew[i])
+
+  #plot(T_skew,p_skew,'r-',linewidth=2)
+  #plot(Td_skew,p_skew,'b-',linewidth=2)
+
+  #if(array(Tsin).size>1):
+  #  plot(Ts_skew,ps_skew,'r--',linewidth=1.5,dashes=[5,2])
+  #  plot(Tds_skew,ps_skew,'b--',linewidth=1.5,dashes=[5,2])
+
+  # Plot wind barbs and height 
+  # ------------------------------
 
 
-
-  plot(T_skew,p_skew,'r-',linewidth=2)
-  plot(Td_skew,p_skew,'b-',linewidth=2)
-
-  if(Tsin.size>1):
-    plot(Ts_skew,ps_skew,'r--',linewidth=1.5,dashes=[5,2])
-    plot(Tds_skew,ps_skew,'b--',linewidth=1.5,dashes=[5,2])
 
 
   # _________________________________________________________
@@ -297,15 +305,15 @@ def skewtp(Tin,Tdin,pin,Tsin=[0],Tdsin=[0],psin=[0]):
 
   figtext(0.5,0.018,'Temperature (C)',size=s2,ha='center')
   figtext(0.025,0.52,'Pressure (hPa)',rotation=90,size=s2)
-  label = 'Skew-T log-P, LOCATION, XXXXUTC' 
-  figtext(0.5,0.97,label,size=11,ha='center')
-  label = '18 x 18 km GFS-initiated WRF-ARW'
-  figtext(0.5,0.95,label,size=8,ha='center')
+  label = 'Skew-T log-P, %s, %s'%(name,datetime) 
+  figtext(0.5,0.97,label,size=9,ha='center')
+  label = 'OLGA: Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]'
+  figtext(0.5,0.95,label,size=7,ha='center')
 
   #savefig('skewtp.png')
 
 
 
-#skewtp()
+skewtp()
 
 

@@ -19,7 +19,7 @@ import matplotlib.image as image
 from readwrf import *
 from colormaps import *
 from readsounding import *
-from soundingv2 import *
+from sounding_v3 import *
 from readopenair import *
 from tools import *
 from constants import *
@@ -28,6 +28,39 @@ from constants import *
 from matplotlib import rc
 rc('font', size=9)
 rc('legend', fontsize=8)
+
+# -------------------------------------------------
+# Function to create soundings
+# -------------------------------------------------
+def create_sounding(wrfout,domain,date,names,lons,lats,times):
+
+  for name,lon,lat in zip(names,lons,lats):
+    # Read WRF data
+    d = readwrf_loc(wrfout,domain,lon,lat)
+    sset = skewt_input()
+    for t in times:
+      for stype in range(2):
+        print "sounding %s, type=%i, time=%i"%(name,stype,t)
+        sset.stype  = stype
+        sset.T      = d.T[t,:] 
+        sset.Td     = d.Td[t,:]
+        sset.p      = d.p[t,:] 
+        sset.z      = d.zf[t,:]
+        sset.u      = d.u[t,:]
+        sset.v      = d.v[t,:]
+        sset.name   = name
+        sset.time   = d.datetime[t]
+        sset.parcel = True
+        sset.ps     = d.ps[t]
+        sset.Ts     = d.T2[t]
+        sset.rs     = d.q2[t]
+
+        skewtlogp(sset)
+      
+        nameo = 'figures/'+ date + '/d' + str(domain) + '_sound' + str(stype) +'_' + name + '_' + str(t).zfill(2) + '.png'
+        savefig(nameo)
+
+        close('all')
 
 # -------------------------------------------------
 # Function to create (sort-of) meteograms
@@ -48,7 +81,6 @@ def create_tser(wrfout,domain,date,names,lons,lats):
     fig.subplots_adjust(0.10,0.11,0.96,0.88,0.36,0.36)
     figtext(0.5,0.95,'%s [%.2fN, %.2fE]'%(name,lon,lat),size=9,ha='center')
     figtext(0.5,0.93,'%s'%(d.datetime[0]),size=8,ha='center')
-    figtext(0.065,0.01,'6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=6,ha='left')
     gs = gridspec.GridSpec(3,1,height_ratios=[4,1,1.5])
 
     ax=subplot(gs[0])
@@ -90,7 +122,6 @@ def create_tser(wrfout,domain,date,names,lons,lats):
     k500 = key_nearest(d.zf[0,:],500)
     k1000 = key_nearest(d.zf[0,:],1000)
     k2000 = key_nearest(d.zf[0,:],2000)
-    m2k = 1.95 
     barbs(t,0.5,d.u10*m2k,d.v10*m2k,length=5,linewidth=0.5,pivot='middle')  
     barbs(t,1.5,d.u[:,k500]*m2k,d.v[:,k500]*m2k,length=5,linewidth=0.5,pivot='middle')  
     barbs(t,2.5,d.u[:,k1000]*m2k,d.v[:,k1000]*m2k,length=5,linewidth=0.5,pivot='middle')  
@@ -107,37 +138,11 @@ def create_tser(wrfout,domain,date,names,lons,lats):
 
     # Add logo :)
     img = image.imread('data/olga_lr.png')
-    figimage(img,5,5 )
+    w=650;h=600
+    figimage(img,10,6)
+    figtext(0.08,0.013,'Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='left')
 
- 
-    # Attempt at using TEMF updraft velocity -> fail
-    #zs = d.z[0,0]             # terrain height (lowest half level)
-    #zf = d.zf[0,:]-d.z[0,0]   # full level height - terrain
-    #dz = 250
-    #wm = 3.5
-    #bins = np.arange(0,3000.01,dz)
 
-    ## plot surface (terrain) height
-    #plot([0,24],[zs,zs],'k:')
-    #plot(t,d.zi)
-    #for i in range(t.size):
-    #  for k in range(1,bins.size):
-    #    k0 = key_nearest(zf,bins[k-1])
-    #    k1 = key_nearest(zf,bins[k])
-    #    wu = np.average(d.w[i,k0:k1+1])
-    #    if(wu>0.25):
-    #      bar(t[i]-0.4,dz,width=0.8,bottom=bins[k-1]+zs,color=wup((floor(wu)+0.5)/wm),edgecolor='none')    
-
-    #wups = ([0.5,1.5,2.5,3.5])
-    #names = (['0-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
-    #for wu,name in zip(wups,names):
-    #  scatter([-10],[-10],color=wup(wu/wm),label=name)
-    #legend()   
-    #xlim(0,24)
-    #ylim(0,d.zi.max()+250)
-    #modplot(ax) 
-
- 
     name = 'figures/'+ date + '/d' + str(domain) + '_tser_' + name + '.png'
     savefig(name)
     savefig('test.png')
@@ -240,6 +245,15 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
             if(d.cchig[t,i,j] > lim):
               text(lon[i,j],lat[i,j],'|',size=8,ha='center',va='center',color='0.1')
         doplot = True
+
+      if(var == 'clouds2'):
+        title = 'Cloud cover -> NEEDS OPTIMIZATION'
+        levs  = np.arange(0.00,1.,0.05)
+        #intv  = 3
+        cf    = m.contourf(lon,lat,d.calb[t,:,:]*6.,levs,alpha=1.,cmap=cloud)
+        #lim   = 0.1
+        doplot = True
+
  
       # -------------------------------------------------
       #   GLIDING SPECIFIC
@@ -272,7 +286,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
       # -------------------------------------------------
       if(var == 'zidry'):
         title = 'Updraft height [m amsl]'
-        levs  = np.arange(0,2500.01,150)
+        levs  = np.arange(0,2500.01,200.)
         data  = gausf(d.zi[t,:,:]+d.hgt[:,:],fsigma,mode='reflect') \
                 if filter else d.zi[t,:,:]+d.hgt[:,:]
         cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
@@ -331,24 +345,33 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
           cb.ax.tick_params(labelsize=8) 
           cb.outline.set_color('white')
         axes(ax)
-        
-        m.drawcoastlines(linewidth=1.5,color='0.2')
-        m.drawcountries(linewidth=1,color='0.2')
+       
+        mc = '0.6' if var=="clouds2" else '0.2'
+        cl = 1. if domain==1 else 1.5
+        m.drawcoastlines(linewidth=cl,color=mc)
+        m.drawcountries(linewidth=1,color=mc)
         m.drawmapboundary()
         
         if(domain==1):
-          figtext(0.065,0.025,'18 x 18 km GFS-initiated WRF-ARW forecast [www.dummy.org]',size=7,ha='left')
+          figtext(0.065,0.025,'OLGA: Open Limited-area Gliding Analysis. 18 x 18 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='left')
           #m.drawrivers(linewidth=0.5,color='#0066FF')
           #m.drawmeridians(arange(0, 360, 5))
           #m.drawparallels(arange(30, 60, 5))
         elif(domain==2):
-          figtext(0.065,0.025,'6 x 6 km GFS-initiated WRF-ARW forecast [www.dummy.org]',size=7,ha='left')
+          figtext(0.065,0.025,'OLGA: Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='left')
           m.drawrivers(linewidth=0.5,color='#0066FF')
           #m.drawmeridians(arange(0, 360, 5))
           #m.drawparallels(arange(30, 60, 5))
         subtitle = str(d.datetime[t]) + ' UTC'
         ax.set_title(title,loc='left')
         ax.set_title(subtitle,loc='right')
+
+        # Add logo :)
+        img = image.imread('data/olga_lr.png')
+        w=650;h=600
+        #figimage(img,w-50,h-45)
+        figimage(img,w-45,6)
+        #figimage(img,7,5)
  
         name = 'figures/'+ date + '/d' + str(domain) + '_' + var + '_' + str(t).zfill(3) + '.png'
         savefig(name)

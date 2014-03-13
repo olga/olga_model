@@ -28,4 +28,3 @@ def modplot(ax,minorticks=True,removeax=True,movespine=True,spacing=2):
 def cmap_discrete(cmap_in,ints):
   return plt.get_cmap(cmap_in)(ints)
 
-
