@@ -1,5 +1,5 @@
 import numpy as np
-from pylab import *
+import pylab as pl
 
 def key_nearest(array,value):
     return (np.abs(array-value)).argmin()
@@ -25,6 +25,4 @@ def modplot(ax,minorticks=True,removeax=True,movespine=True,spacing=2):
     ax.spines['top'].set_visible(False)
     ax.get_xaxis().tick_bottom()
 
-def cmap_discrete(cmap_in,ints):
-  return plt.get_cmap(cmap_in)(ints)
 

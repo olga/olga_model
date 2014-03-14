@@ -1,13 +1,32 @@
-from constants import *
+#
+# Copyright (c) 2013-2014 Bart van Stratum (bart@vanstratum.com)
+# 
+# This file is part of OLGA.
+# 
+# OLGA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# OLGA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with OLGA.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 import numpy as np
 from netCDF4 import Dataset 
 from copy import deepcopy
 import sys
-from pylab import *
 
-# ---------------------------------------------
-# Calculate PFD from MacCready theory
-#----------------------------------------------
+from constants import *
+
+"""
+Calculate PFD from MacCready theory
+"""
 class getpfd:
   def __init__(self,file):
 
@@ -60,9 +79,9 @@ class getpfd:
     for t in range(1,nt):
       self.pfd[t,:,:] = self.pfd[t-1,:,:] + (self.pV[t-1,:,:] * dth)
 
-# ---------------------------------------------
-# Read in data: all locations -> all time (mainly 2d fields)
-#----------------------------------------------
+"""
+Read in data: all locations -> all time (mainly 2d fields)
+"""
 class readwrf_all:
   def __init__(self,file,domain):
     print 'reading file %s'%file
@@ -142,10 +161,9 @@ class readwrf_all:
     self.wstar = (g * self.zi * wthvs/tref)**(1./3.)
     self.wstar[np.where(self.wstar<supd)] = 0.                # convective velocity scale w* - sink glider
 
-
-# ---------------------------------------------
-# Read in data from single location -> all time
-#----------------------------------------------
+"""
+Read in data from single location -> all time
+"""
 class readwrf_loc:
   def __init__(self,file,domain,glon,glat):
     import sys

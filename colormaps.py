@@ -1,9 +1,30 @@
+#
+# Copyright (c) 2013-2014 Bart van Stratum (bart@vanstratum.com)
+# 
+# This file is part of OLGA.
+# 
+# OLGA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# OLGA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with OLGA.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 import numpy as np
-from pylab import *
+import pylab as pl
 import glob
 import sys
 from matplotlib.colors import LinearSegmentedColormap, ColorConverter
-from numpy import sort
+
+def cmap_discrete(cmap_in,ints):
+  return pl.get_cmap(cmap_in)(ints)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create colormap from NCL's .rgb files
@@ -41,7 +62,7 @@ def cmap_ncl(name):
 # Create colormap from list of colors
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def make_colormap(colors):
-  z = sort(colors.keys())
+  z = np.sort(colors.keys())
   n = len(z)
   z1 = min(z)
   zn = max(z)
@@ -74,7 +95,7 @@ def make_colormap(colors):
 def nonlin_cmap(cmap_in,fac):
   ncol = 256
 
-  orig = plt.get_cmap(cmap_in)(np.linspace(0,1,ncol))
+  orig = pl.get_cmap(cmap_in)(np.linspace(0,1,ncol))
   x0   = np.linspace(0,1,ncol)**fac
 
   R    = orig[:,0]
@@ -87,7 +108,6 @@ def nonlin_cmap(cmap_in,fac):
   cmap_dict['blue'] = [(x0[i],B[i],B[i]) for i in range(len(B))]
   mymap = LinearSegmentedColormap('mymap',cmap_dict)
   return mymap
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Pre-define some color maps
@@ -109,30 +129,5 @@ cent  = make_colormap({0.:'#ffffff',0.25:'#fdfe00',0.5:'#0bbd17',0.75:'#fdfe00',
 wupnl = make_colormap({0.:'#ffffff',0.1:'#4682b4',0.2:'#0bbd17',0.6:'#fdfe00',1.:'#cc2900'})
 rain2 = cmap_ncl('precip2_17lev') 
 rain3 = nonlin_cmap(rain2,2.) 
-cloud = nonlin_cmap(cm.Greys_r,2.)
+cloud = nonlin_cmap(pl.cm.Greys_r,2.)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# show colormaps
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def show_cmap(cmap_in,nlevs=256):
-
-  n = 30
-  c = np.zeros((n,n))
-  x = np.linspace(0,6,n)
-  y = np.linspace(0,6,n)
-  for i in range(n):
-    for j in range(n):
-      c[i,j] = (np.cos(x[i]) + np.sin(y[j]))/4.+0.5
-  
-  figure()
-  levs = np.linspace(c.min(),c.max(),nlevs)
-  contourf(x,y,c,levs,cmap=cmap_in)
-  colorbar()
-
-
-
-if __name__ == "__main__":
-  close('all')
-  a=cmap_ncl('WhiteBlueGreenYellowRed')
-  show_cmap(a)
-  show_cmap(wupnl)

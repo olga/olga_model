@@ -1,8 +1,21 @@
-"""
-Read and plot openair airspace format
-Bart van Stratum (bart@vanstratum.com)
-Jan 2014
-"""
+#
+# Copyright (c) 2013-2014 Bart van Stratum (bart@vanstratum.com)
+# 
+# This file is part of OLGA.
+# 
+# OLGA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# OLGA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with OLGA.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 import numpy as np
 from pylab import *
