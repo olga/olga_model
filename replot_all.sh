@@ -1,34 +1,38 @@
-# Very high cloudbase
-#python main.py 2008 05 12 1 maps &
-#python main.py 2008 05 12 2 tser & 
-python main.py 2008 05 12 2 sounding &
-#python main.py 2008 05 12 2 maps 
+## Very high cloudbase
+##python main.py 2008 05 12 1 maps &
+##python main.py 2008 05 12 2 tser & 
+#python main.py 2008 05 12 2 sounding &
+##python main.py 2008 05 12 2 maps 
+#
+## ...
+##python main.py 2013 05 03 1 maps &
+##python main.py 2013 05 03 2 tser & 
+#python main.py 2013 05 03 2 sounding &
+##python main.py 2013 05 03 2 maps
+#
+## Thunderstorm day
+##python main.py 2013 06 20 1 maps &
+##python main.py 2013 06 20 2 tser & 
+#python main.py 2013 06 20 2 sounding & 
+##python main.py 2013 06 20 2 maps
+#
+##python main.py 2014 03 11 1 maps &
+##python main.py 2014 03 11 2 tser & 
+#python main.py 2014 03 11 2 sounding 
+##python main.py 2014 03 11 2 maps 
 
-# ...
-#python main.py 2013 05 03 1 maps &
-#python main.py 2013 05 03 2 tser & 
-python main.py 2013 05 03 2 sounding &
-#python main.py 2013 05 03 2 maps
 
-# Thunderstorm day
-#python main.py 2013 06 20 1 maps &
-#python main.py 2013 06 20 2 tser & 
-python main.py 2013 06 20 2 sounding & 
-#python main.py 2013 06 20 2 maps
-
-#python main.py 2014 03 11 1 maps &
-#python main.py 2014 03 11 2 tser & 
-python main.py 2014 03 11 2 sounding 
-#python main.py 2014 03 11 2 maps 
-
-
+python main.py 2014 03 10 1 maps &
+python main.py 2014 03 10 2 tser & 
+python main.py 2014 03 10 2 sounding &
+python main.py 2014 03 10 2 maps 
 
 
 
 
 #python main.py 2014 03 10 1 maps & 
 #python main.py 2014 03 10 2 tser & 
-python main.py 2013 03 10 2 sounding &
+#python main.py 2013 03 10 2 sounding &
 #python main.py 2014 03 10 2 maps 
 
 #

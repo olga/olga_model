@@ -26,8 +26,8 @@ import os
 import numpy as np
 import pylab as pl
 
-#from maps import *         # plot maps
-#from timeseries import *   # plot time series
+from maps import *         # plot maps
+from timeseries import *   # plot time series
 from sounding import *     # plot soundings
 
 ## System settings
