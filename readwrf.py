@@ -3,6 +3,7 @@ import numpy as np
 from netCDF4 import Dataset 
 from copy import deepcopy
 import sys
+from pylab import *
 
 # ---------------------------------------------
 # Calculate PFD from MacCready theory
@@ -172,6 +173,7 @@ class readwrf_loc:
     self.T00         = wrfin.variables["T00"][:]
     self.P00         = wrfin.variables["P00"][:]
     self.p           = wrfin.variables["P"][:,:,jj,ii] + wrfin.variables["PB"][:,:,jj,ii]
+    self.phyd        = wrfin.variables["P_HYD"][:,:,jj,ii]
     self.z           = (wrfin.variables["PH"][:,:,jj,ii] + wrfin.variables["PHB"][:,:,jj,ii]) / g
     self.zf          = (self.z[:,1:]+self.z[:,:-1])/2. 
 
@@ -231,9 +233,9 @@ class readwrf_loc:
     self.T           = np.zeros_like(self.th)
     self.Td          = np.zeros_like(self.th)
 
-    # CHECK CALCULATIONS!!!!!!!!!
     for t in range(nt):
-      self.th[t,:]   = self.th[t,:] + 300.
-      self.T[t,:]    = self.th[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.)
-      self.Td[t,:]   = (5.42e3 / np.log((0.622 * 2.53e11) / (self.qt[t,:] * self.p[t,:])))
+      self.th[t,:]   = self.th[t,:] + 300. # Total potential temp = base state (300) + perturbation (T)
+      self.T[t,:]    = self.th[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.) # 1.e5 = reference pressure
+      e              = ((self.p[t,:]) * self.qt[t,:]) / ((Rd/Rv) + self.qt[t,:])
+      self.Td[t,:]   = ((1./273.) - (Rv/Lv) * np.log(e/611.))**-1.
 

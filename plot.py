@@ -40,6 +40,7 @@ def create_sounding(wrfout,domain,date,names,lons,lats,times):
     sset = skewt_input()
     for t in times:
       for stype in range(2):
+        #stype=1
         print "sounding %s, type=%i, time=%i"%(name,stype,t)
         sset.stype  = stype
         sset.T      = d.T[t,:] 
@@ -286,7 +287,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,basemap,filter=False):
       # -------------------------------------------------
       if(var == 'zidry'):
         title = 'Updraft height [m amsl]'
-        levs  = np.arange(0,2500.01,200.)
+        levs  = np.arange(0,2500.01,300.)
         data  = gausf(d.zi[t,:,:]+d.hgt[:,:],fsigma,mode='reflect') \
                 if filter else d.zi[t,:,:]+d.hgt[:,:]
         cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)

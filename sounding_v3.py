@@ -90,7 +90,7 @@ Calculate dew point temperature
 """
 def Td(rin,pin):
     e = r2es(rin,pin)
-    return ((1./T0)-(Rv/Lv)*np.log(e/e0))**-1.  
+    return ((1./T0)-(Rv/Lv)*np.log(e/(e0*1000.)))**-1.  
 
 """
 Moist adiabatic lapse rate
@@ -320,7 +320,7 @@ def skewtlogp(si):
 
     for mix0 in mixrat:
         for k in range(p.size):
-            mix = Td(mix0/1000.,p[k]/1000.)-T0 
+            mix = Td(mix0/1000.,p[k])-T0 
             y[k] = skewty(p[k])
             xtmp = skewtx(mix,y[k])
             if(xtmp >= x00 and xtmp <= x11):
@@ -372,8 +372,10 @@ def skewtlogp(si):
     """
     if(si.parcel == True):
 
-        # HACK BvS
+        # HACK BvS -> why such difference between lowest level p and ps?
         si.ps = si.p[0]
+        # HACK BvS don't use surface mixing ratio -> very high...
+        si.rs = rs(si.Td[0],si.ps)
 
         # Iteratively find Lifting Condensation Level (LCL)
         zlcl  = 1000. 
@@ -391,7 +393,7 @@ def skewtlogp(si):
         # Surface values        
         psurfs = skewty(si.ps)
         Tsurfs = skewtx(si.Ts-T0,psurfs)
-        Tdsurfs = skewtx(Td(si.rs,si.ps/1000.)-T0,psurfs)
+        Tdsurfs = skewtx(Td(si.rs,si.ps)-T0,psurfs)
         pl.scatter(Tsurfs,psurfs,facecolor='none')
         pl.scatter(Tdsurfs,psurfs,facecolor='none')
 
@@ -400,9 +402,10 @@ def skewtlogp(si):
         Tlcls  = skewtx(Tlcl-T0,plcls)
         pl.scatter(Tlcls,plcls,facecolor='none')
         pl.plot([Tsurfs,Tlcls],[psurfs,plcls],'k-') 
-        pl.plot([Tdsurfs,Tlcls],[psurfs,plcls],'k-') 
-        pl.plot([Tlcls-5*hs,Tlcls+5*hs],[plcls,plcls],'k',dashes=[2,1])
-        pl.text(Tlcls+6*hs,plcls,'LCL',ha='left',va='center',size=8)
+        pl.plot([Tdsurfs,Tlcls],[psurfs,plcls],'k-')
+        if(si.stype == 1):
+            pl.plot([Tlcls-5*hs,Tlcls+5*hs],[plcls,plcls],'k',dashes=[2,1])
+            pl.text(Tlcls+6*hs,plcls,'LCL %i m'%zlcl,ha='left',va='center',size=8)
 
         # Moist adiabat from LCL upwards
         Ths    = si.Ts / exner(si.ps) 

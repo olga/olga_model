@@ -48,8 +48,7 @@ if(type=="maps"):
   t0 = 0     # first time map
   t1 = 24    # last time map
   if(dom==1):
-    #variables = (['clouds2']) 
-    variables = (['clouds','rr','slpwind']) 
+    variables = (['clouds','rr','slpwind','clouds2']) 
     #variables = (['zidry']) 
   elif(dom==2):
     variables = (['pfd','wstar','zidry','cudepth']) 
