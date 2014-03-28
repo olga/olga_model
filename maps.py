@@ -41,8 +41,8 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,filter=False):
                         resolution='i',area_thresh=10.,projection='lcc',\
                         lat_1=51.3,lat_2=51.3,lat_0=51.3,lon_0=6.7)
 
-    fsigma = 1.0  # std dev of gaussian filter size..
-    makepfd = True  # PFD is only plotted once..
+    fsigma = 1.0     # std dev of gaussian filter size..
+    iPFD   = 0       # index of pfd
 
     # Read WRF output
     d  = readwrf_all(wrfout,domain=domain)  
@@ -62,7 +62,7 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,filter=False):
     for t in range(t0,t1+1,dt):
         for var in variables:
             print 'time = %s, var = %s'%(d.datetime[t],var)
-     
+  
             fig     = pl.figure(figsize=(6.5,6.0))
             m       = deepcopy(basem)
             axloc   = [0.03,0.05,0.85,0.87]  # left,bottom,width,height
@@ -184,15 +184,25 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,filter=False):
             # -------------------------------------------------
             # Potential flight distance
             # -------------------------------------------------
-            if(var == 'pfd' and makepfd):
-                pfd   = getpfd(wrfout)
+            #if(var == 'pfd' and t*dt%24==0 and t!=t1):
+            #    pfd   = getpfd(wrfout,t,t+(24/dt))
+            #    title = 'Potential flight distance [km]'
+            #    levs  = np.arange(0,900.1,100)
+            #    data  = gausf(pfd.pfd[:,:],fsigma,mode='reflect') \
+            #            if filter else pfd.pfd[:,:]
+            #    cf    =  m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
+            #    makepfd = False
+            #    doplot = True 
+
+            if((var == 'pfd') and (t in d.tPFD)):
                 title = 'Potential flight distance [km]'
-                levs  = np.arange(0,1000.1,100)
-                data  = gausf(pfd.pfd[-1,:,:],fsigma,mode='reflect') \
-                        if filter else pfd.pfd[-1,:,:]
+                levs  = np.arange(0,900.1,100)
+                data  = gausf(d.PFD[iPFD,:,:],fsigma,mode='reflect') \
+                        if filter else d.PFD[iPFD,:,:]
                 cf    =  m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
-                makepfd = False
+                iPFD  += 1
                 doplot = True 
+
 
             # -------------------------------------------------
             # Finish plot!
@@ -244,7 +254,8 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,filter=False):
                 w=650 ; h=600
                 pl.figimage(img,w-45,6)
  
-                name = 'figures/'+ date + '/d' + str(domain) + '_' + var + '_' + str(t).zfill(3) + '.png'
+                tmp = '%02i_%02i'%(np.floor(t0+t*d.dt),(t0+t*d.dt-np.floor(t0+t*d.dt))*30.)
+                name = 'figures/'+ date + '/' + tmp + '_d' + str(domain) + '_' + var + '_' + '.png'
                 pl.savefig(name)
         
             # Cleanup!

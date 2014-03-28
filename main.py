@@ -47,6 +47,9 @@ else:
     day    = int(sys.argv[3])
     dom    = int(sys.argv[4])
     type   = sys.argv[5]
+
+    t0     = 0
+    t1     = 48
     dt     = 1
 
 ## Check if wrfout available
@@ -63,10 +66,10 @@ if not os.path.exists(imagedir+'/'+date):
 if(type == "maps"):
     # Variables to plot per domain:
     if(dom==1):
-        variables = (['clouds','rr','slpwind','clouds2']) 
+        variables = (['clouds','rr','slpwind']) 
     elif(dom==2):
         variables = (['pfd','wstar','zidry','cudepth']) 
-    create_maps(wrfout,dom,date,0,24,dt,variables,filter=True)
+    create_maps(wrfout,dom,date,t0,t1,dt,variables,filter=True)
 
 ## Create meteograms
 elif(type=="tser"):
@@ -75,7 +78,7 @@ elif(type=="tser"):
     names = l["f0"]
     lons =  l["f1"]
     lats =  l["f2"]
-    create_tser(wrfout,dom,date,names,lons,lats)
+    create_tser(wrfout,dom,date,names,lons,lats,tmax=t1)
 
 ## Create soundings
 elif(type=="sounding"):
@@ -84,8 +87,7 @@ elif(type=="sounding"):
     names = l["f0"]
     lons =  l["f1"]
     lats =  l["f2"]
-    times = np.arange(0,25,1)
-    create_sounding(wrfout,dom,date,names,lons,lats,times)
+    create_sounding(wrfout,dom,date,t0,t1,dt,names,lons,lats)
 
 ## Exception
 else:

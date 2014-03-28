@@ -7,7 +7,7 @@ def key_nearest(array,value):
 def value_nearest(array,value):
     return (np.abs(array-value)).argmin()
 
-def modplot(ax,minorticks=True,removeax=True,movespine=True,spacing=2):
+def modplot(ax,minorticks=True,removeax=True,removeaxis=['right','top'],movespine=True,spacing=2):
   if(minorticks):
     from matplotlib.ticker import AutoMinorLocator
     minorLocator   = AutoMinorLocator()
@@ -20,9 +20,11 @@ def modplot(ax,minorticks=True,removeax=True,movespine=True,spacing=2):
       spine.set_position(('outward',spacing)) # outward by 10 points
 
   if(removeax):
-    ax.spines['right'].set_visible(False)
-    ax.get_yaxis().tick_left()
-    ax.spines['top'].set_visible(False)
-    ax.get_xaxis().tick_bottom()
+    if('right' in removeaxis):
+      ax.spines['right'].set_visible(False)
+      ax.get_yaxis().tick_left()
+    if('top' in removeaxis):
+      ax.spines['top'].set_visible(False)
+      ax.get_xaxis().tick_bottom()
 
 

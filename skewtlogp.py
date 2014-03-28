@@ -453,7 +453,7 @@ def skewtlogp(si):
 
     pl.figtext(0.5,0.05,'Temperature (C)',ha='center')
     pl.figtext(0.015,0.52,'Pressure (hPa)',rotation=90)
-    label = 'Skew-T log-P, %s, %s'%(si.name,si.time) 
+    label = 'Skew-T log-P, %s, %s UTC'%(si.name,si.time) 
     pl.figtext(0.5,0.97,label,ha='center')
 
     img = image.imread('data/olga_lr.png')

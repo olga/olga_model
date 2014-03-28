@@ -27,14 +27,14 @@ from tools import *
 from skewtlogp import *
 
 ## Function to create maps
-def create_sounding(wrfout,domain,date,names,lons,lats,times):
+def create_sounding(wrfout,domain,date,t0,t1,dt,names,lons,lats):
 
   for name,lon,lat in zip(names,lons,lats):
       # Read WRF data
       d = readwrf_loc(wrfout,domain,lon,lat)
       sset = skewt_input()
-      for t in times:
-          for stype in range(2):
+      for t in range(t0,t1+1,dt):
+          for stype in range(1,2):
               print "sounding %s, type=%i, time=%i"%(name,stype,t)
               sset.stype  = stype
               sset.T      = d.T[t,:] 
@@ -51,8 +51,9 @@ def create_sounding(wrfout,domain,date,names,lons,lats,times):
               sset.rs     = d.q2[t]
 
               fig=skewtlogp(sset)
-          
-              nameo = 'figures/'+ date + '/d' + str(domain) + '_sound' + str(stype) +'_' + name + '_' + str(t).zfill(2) + '.png'
+
+              tmp = '%02i_%02i'%(np.floor(t0+t*d.dt),(t0+t*d.dt-np.floor(t0+t*d.dt))*30.)
+              nameo = 'figures/'+ date + '/' + tmp + '_d' + str(domain) + '_sound_' + name + '.png'
               pl.savefig(nameo)
 
               # Cleanup!
