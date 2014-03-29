@@ -23,6 +23,7 @@ from copy import deepcopy
 import sys
 
 from constants import *
+from tools import *
 
 def timestring2time(ts_in):
     return float("".join(ts_in[11:13])) + float("".join(ts_in[14:16]))/60.
@@ -80,6 +81,8 @@ class readwrf_all:
     self.rr_con      = wrfin.variables["RAINC"][:,:,:] # total convective rain [mm]
     self.U10         = wrfin.variables["U10"][:,:,:] # 10m u-wind [m/s]
     self.V10         = wrfin.variables["V10"][:,:,:] # 10m v-wind [m/s]
+    self.U1000       = (wrfin.variables["U"][:,25,:,1:] + wrfin.variables["U"][:,25,:,:-1])/2.
+    self.V1000       = (wrfin.variables["V"][:,25,1:,:] + wrfin.variables["V"][:,25,:-1,:])/2.
     self.ustar       = wrfin.variables["UST"][:,:,:] # surface friction velocity [m/s]
     self.slps        = wrfin.variables["PSFC"][:,:,:] \
                        / (1.-2.25577e-5 * self.hgt[:,:])**5.25588 # sea level pressure

@@ -89,6 +89,28 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,filter=False):
                 c      = m.contour(lon,lat,pfilt,levs1,linewidths=1.5,colors='k')
                 cl     = pl.clabel(c,levs1,fmt='%.1f')   
                 doplot = True 
+
+            if(var[:4] == 'wind'):
+                if(var=='wind10m'):
+                    title  = '10m wind [kts]'
+                    ufilt  = gausf(d.U10[t,:,:],fsigma,mode='reflect')
+                    vfilt  = gausf(d.V10[t,:,:],fsigma,mode='reflect')
+                    scalefac = 25.
+                elif(var=='wind1000m'):
+                    title  = '1000m wind [kts]'
+                    ufilt  = gausf(d.U1000[t,:,:],fsigma,mode='reflect')
+                    vfilt  = gausf(d.V1000[t,:,:],fsigma,mode='reflect')
+                    scalefac = 35.
+
+                utot   = ((ufilt[:,:]*m2k)**2.+(vfilt[:,:]*m2k)**2.)**0.5
+                umax   = 40. #np.ceil((((d.U10[:,:,:]*m2k)**2.+(d.V10[:,:,:]*m2k)**2.)**0.5).max()*10.)/10.
+                levs2  = np.arange(0,umax+0.01,umax/40.)  # Wind levels
+                cf     = False
+                cf     = m.contourf(lon,lat,utot,levs2,extend='both',cmap=wnd)
+                stream = m.streamplot(lon[0,:],lat[:,0],\
+                                 ufilt[:,:],vfilt[:,:],density=3,linewidth=utot/scalefac,color='k')
+                doplot = True 
+
  
             # -------------------------------------------------
             # rain
@@ -127,12 +149,6 @@ def create_maps(wrfout,domain,date,t0,t1,dt,variables,filter=False):
                             pl.text(lon[i,j],lat[i,j],'-',size=9,ha='center',va='center',color='0.2')
                         if(d.cchig[t,i,j] > lim):
                             pl.text(lon[i,j],lat[i,j],'|',size=8,ha='center',va='center',color='0.1')
-                doplot = True
-
-            if(var == 'clouds2'):
-                title = 'Cloud cover -> NEEDS OPTIMIZATION'
-                levs  = np.arange(0.00,1.,0.05)
-                cf    = m.contourf(lon,lat,d.calb[t,:,:]*6.,levs,alpha=1.,cmap=cloud)
                 doplot = True
 
  
