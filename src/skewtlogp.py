@@ -22,6 +22,8 @@ import pylab as pl
 import sys
 import matplotlib.image as image
 
+from settings import *
+
 from matplotlib import rc
 rc('font', size=9)
 rc('legend', fontsize=8)
@@ -35,6 +37,8 @@ c5 = '#377eb8'        # Blue
 
 c2 = '#000000'        # Black
 c4 = '#808080'        # Gray
+
+c6 = '#7a0177'        # purple
 
 cT = '#e41a1c'        # red - T 
 cTd = '#386cb0'       # blue - Td  
@@ -170,19 +174,26 @@ Input class for sounding
 """
 class skewt_input:
     def __init__(self):
-        self.stype = 0          # 0=high top, 1=low top
-        self.T  = np.array([])  # Sounding temperature
-        self.Td = np.array([])  # Sounding dewpoint temperature
-        self.u  = np.array([])  # Sounding u-wind
-        self.v  = np.array([])  # Sounding v-wind
-        self.p  = np.array([])  # Sounding pressure levels
-        self.z  = np.array([])  # Sounding height levels
-        self.name = ""          # Location
-        self.time = ""          # Time
-        self.parcel = False     # Lauch parcel?
-        self.ps = -1            # Surface pressure
-        self.Ts = -9999         # Surface temperature of parcel
-        self.rs = -9999         # Surface moisture mixing ratio of parcel
+        self.stype = 0            # 0=high top, 1=low top
+        self.hgt  = -1            # Surface height ASML
+        self.T    = np.array([])  # Sounding temperature
+        self.Td   = np.array([])  # Sounding dewpoint temperature
+        self.u    = np.array([])  # Sounding u-wind
+        self.v    = np.array([])  # Sounding v-wind
+        self.p    = np.array([])  # Sounding pressure levels
+        self.z    = np.array([])  # Sounding height levels
+        self.name = ""            # Location
+        self.time = ""            # Time
+        self.parcel = False       # Lauch parcel?
+        self.ps   = -1            # Surface pressure
+        self.Ts   = -9999         # Surface temperature of parcel
+        self.rs   = -9999         # Surface moisture mixing ratio of parcel
+
+        self.Tu   = np.array([])  # updraft temperature
+        self.Tdu  = np.array([])  # updraft dewpoint temperature
+        self.cfru = np.array([])  # cloud fraction updraft
+        self.qlu  = np.array([])  # liquid water updraft
+        self.lclu = -1            # LCL updraft
 
 """
 Main routine which makes the diagram
@@ -365,7 +376,7 @@ def skewtlogp(si):
         p_last = 1e9 
         for k in range(si.z.size):
             if(y[k] <= y11 and np.abs(si.p[k]-p_last) > dp_label):
-                pl.text(x11+hs,y[k],str(int(si.z[k]))+'m',color=c2,ha='right',va='center',size=7,backgroundcolor='w')
+                pl.text(x11+hs,y[k],str(int(si.z[k]+si.hgt))+'m',color=c2,ha='right',va='center',size=7,backgroundcolor='w')
                 p_last = si.p[k]
 
     # 6.2 Wind barbs
@@ -419,7 +430,7 @@ def skewtlogp(si):
         pl.plot([Tdsurfs,Tlcls],[psurfs,plcls],'k-')
         if(si.stype == 1):
             pl.plot([Tlcls-5*hs,Tlcls+5*hs],[plcls,plcls],'k',dashes=[2,1])
-            pl.text(Tlcls+6*hs,plcls,'LCL %i m'%zlcl,ha='left',va='center',size=8)
+            pl.text(Tlcls+6*hs,plcls,'LCL %i m'%(zlcl+si.hgt),ha='left',va='center',size=8)
 
         # Moist adiabat from LCL upwards
         Ths    = si.Ts / exner(si.ps) 
@@ -436,6 +447,27 @@ def skewtlogp(si):
             x[k] = skewtx(thw,y[k])
 
         pl.plot(x,y,'k-')
+
+    """
+    Add info from TEMF boundary layer scheme
+    """
+    if(si.Tu.size > 0):
+        dw = (x11-x00)    # width of diagram
+        y = skewty(si.p)
+        #pl.plot(x,y,':',color='0.4')
+        x = x00 + si.cfru * 0.2 * (x11-x00)
+        pl.plot(x,y,'-',linewidth=1.5,color=c6) # cloud cover
+
+
+        cfr_pos = np.where(si.cfru > 0.001)[0]
+        if(np.size(cfr_pos)>1):
+            pl.text(x00,y[cfr_pos[0]-1],'- %im'%(si.z[cfr_pos[0]-1]+si.hgt),ha='left',va='center',size=8,color=c6)
+            pl.text(x00,y[cfr_pos[-1]],'- %im'%(si.z[cfr_pos[-1]]+si.hgt),ha='left',va='center',size=8,color=c6)
+            kmax=np.where(si.cfru == si.cfru.max())[0][0]
+            #print kmax,si.cfru[kmax]*100.
+            pl.text(x.max(),y[kmax],'- %i%%'%(si.cfru[kmax]*100.),ha='left',va='center',size=8,color=c6)
+ 
+            
 
 
     """
@@ -456,7 +488,7 @@ def skewtlogp(si):
     label = 'Skew-T log-P, %s, %s UTC'%(si.name,si.time) 
     pl.figtext(0.5,0.97,label,ha='center')
 
-    img = image.imread('data/olga_lr.png')
+    img = image.imread(olgaRoot+'data/olga_lr.png')
     w=650;h=600
     pl.figimage(img,10,6)
     pl.figtext(0.08,0.013,'Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='left')

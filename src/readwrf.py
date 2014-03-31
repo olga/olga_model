@@ -102,9 +102,11 @@ class readwrf_all:
     self.time        = wrfin.variables["XTIME"][:] * 60. # time since start of simulation [s]
     self.dt          = timestring2time(self.times[1])-timestring2time(self.times[0])
     self.datetime    = [] # date-time as merged string
+    self.date        = [] # date-time as merged string
     self.hour        = [] # hour of day
     for t in range(nt):
         self.datetime.append("".join(self.times[t,:10])+' '+"".join(self.times[t,11:19])) 
+        self.date.append("".join(self.times[t,:10])) 
         self.hour.append(float(self.times[t,11] + self.times[t,12]))
 
     if(domain==1):   # specific for domain 1 (large):
@@ -123,18 +125,18 @@ class readwrf_all:
     self.wstar[np.where(self.wstar<supd)] = 0. # convective velocity scale w* - sink glider [m s-1]
 
     # Check how many days we have in the output for the number of PFD's to calculate
-    self.tPFD = [0]
-    for t in range(1,nt):
-        if(self.hour[t] < self.hour[t-1]):
-            self.tPFD.append(t)
+    #self.tPFD = [0]
+    #for t in range(1,nt):
+    #    if(self.hour[t] < self.hour[t-1]):
+    #        self.tPFD.append(t)
 
     # Calculate the PFD per day 
-    self.PFD = np.zeros((np.size(self.tPFD)-1,self.nlon,self.nlat))
-    for t in range(np.size(self.tPFD)-1):
-        pV  = VgemCrossCountry(self.zi[self.tPFD[t]:self.tPFD[t+1]],self.wstar[self.tPFD[t]:self.tPFD[t+1]])
-        for t2 in range(1,pV[:,0,0].size):
-            self.PFD[t,:,:] += pV[t2-1,:,:] * self.dt # integrate to obtain cumulative flyable distance
-    del self.tPFD[-1]
+    self.PFD = np.zeros((self.nlon,self.nlat))
+    #for t in range(np.size(self.tPFD)-1):
+    pV  = VgemCrossCountry(self.zi[:],self.wstar[:])
+    for t2 in range(1,pV[:,0,0].size):
+        self.PFD[:,:] += pV[t2-1,:,:] * self.dt # integrate to obtain cumulative flyable distance
+    #del self.tPFD[-1]
 
 """
 Read in data from single location -> all time
@@ -164,14 +166,18 @@ class readwrf_loc:
     self.phyd        = wrfin.variables["P_HYD"][:,:,jj,ii] # hydrostatic pressure [pa] (difference with pressure??)
     self.z           = (wrfin.variables["PH"][:,:,jj,ii] + wrfin.variables["PHB"][:,:,jj,ii]) / g # height [m]
     self.zf          = (self.z[:,1:]+self.z[:,:-1])/2. # height at full (mid gridpoint) levels [m]
+    self.hgt         = wrfin.variables["HGT"][:,jj,ii] # terrain height 
+
 
     # Get datetime in format "YYYY-MM-DD HH:MM:SS"
     datetime         = wrfin.variables["Times"][:,:] # timedate array
     self.dt          = timestring2time(datetime[1])-timestring2time(datetime[0])
     self.datetime    = []
+    self.date        = []
     self.hour        = [] # hour of day
     for t in range(nt):
         self.datetime.append("".join(datetime[t,:10])+' '+"".join(datetime[t,11:19])) 
+        self.date.append("".join(datetime[t,:10])) 
         self.hour.append(float(datetime[t,11] + (datetime[t,12])))
 
     # Get datetime in matplotlib format for plotting
@@ -201,6 +207,13 @@ class readwrf_loc:
         self.w       = np.apply_over_axes(np.mean,wrfin.variables["WUPD_TEMF"][:,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # updraft velocity TEMF 
         self.zi      = np.apply_over_axes(np.mean,wrfin.variables["HD_TEMF"]  [:,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # dry thermal top TEMF
         self.ct      = np.apply_over_axes(np.mean,wrfin.variables["HCT_TEMF"] [:,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # cloud top TEMF
+        self.lcl     = np.apply_over_axes(np.mean,wrfin.variables["LCL_TEMF"] [:,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # lifting condens. level TEMF
+
+        self.thtemf  = np.apply_over_axes(np.mean,wrfin.variables["THUP_TEMF"][:,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # potential temperature updrafts [K]
+        self.qttemf  = np.apply_over_axes(np.mean,wrfin.variables["QTUP_TEMF"][:,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # total water mixing rat. updrafts [kg kg-1]
+        self.qltemf  = np.apply_over_axes(np.mean,wrfin.variables["QLUP_TEMF"][:,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # liq. water mixing rat. updrafts [K]
+        self.c3dtemf = np.apply_over_axes(np.mean,wrfin.variables["CF3D_TEMF"][:,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # cloud fraction updrafts [K]
+
     elif(domain==1):
         self.zi      = np.apply_over_axes(np.mean,wrfin.variables["PBLH"][:,jj-n:jj+n1,ii-n:ii+n1][1,2])[:,0,0]
 
@@ -219,12 +232,20 @@ class readwrf_loc:
             self.cPFD[t] = 0.
 
     # Calculate temperature and dewpoint from potential temperature and total water mixing ratio
-    self.qt          = self.qv + self.ql  # total water mixing ratio [kg kg-1]
-    self.T           = np.zeros_like(self.th) # absolute temperature [K]
-    self.Td          = np.zeros_like(self.th) # dew point temperature [K]
+    self.qt  = self.qv + self.ql  # total water mixing ratio [kg kg-1]
+    self.T   = np.zeros_like(self.th) # absolute temperature [K]
+    self.Td  = np.zeros_like(self.th) # dew point temperature [K]
+    self.Tu  = np.zeros_like(self.th) # absolute temperature updrafts [K]
+    self.Tdu = np.zeros_like(self.th) # dew point temperature updrafts [K]
+
     for t in range(nt):
-        self.th[t,:] = self.th[t,:] + 300. # potential temp = base state (300) + perturbation (T)
-        self.T[t,:]  = self.th[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.) # 1.e5 = reference pressure
-        e            = ((self.p[t,:]) * self.qt[t,:]) / ((Rd/Rv) + self.qt[t,:]) # vapor pressure
-        self.Td[t,:] = ((1./273.) - (Rv/Lv) * np.log(e/611.))**-1.
+        self.th[t,:]  = self.th[t,:] + 300. # potential temp = base state (300) + perturbation (T)
+        self.T[t,:]   = self.th[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.) # 1.e5 = reference pressure
+        e             = ((self.p[t,:]) * self.qt[t,:]) / ((Rd/Rv) + self.qt[t,:]) # vapor pressure
+        self.Td[t,:]  = ((1./273.) - (Rv/Lv) * np.log(e/611.))**-1.
+
+        #TEMF
+        self.Tu[t,:]  = self.thtemf[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.) # 1.e5 = reference pressure
+        e             = ((self.p[t,:]) * self.qttemf[t,:]) / ((Rd/Rv) + self.qttemf[t,:]) # vapor pressure
+        self.Tdu[t,:] = ((1./273.) - (Rv/Lv) * np.log(e/611.))**-1.
 

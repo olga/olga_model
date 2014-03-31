@@ -1,21 +1,35 @@
+#
+# Copyright (c) 2013-2014 Bart van Stratum (bart@vanstratum.com)
+# 
+# This file is part of OLGA.
+# 
+# OLGA is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# OLGA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with OLGA.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 import numpy as np
 import os
+import sys
+import glob
 import urllib
 import time
 import datetime
 import subprocess
 import threading
 from multiprocessing import Process
-from netCDF4 import Dataset
 
-# -------------------
-# User settings
-# -------------------
-olgaRoot    = '/home/bart/meteo/WRFnl/olga/' # Full path to OLGA scripts
-olgaLogs    = olgaRoot+'/logs/' # Location to save logs
-gfsDataRoot = '/home/bart/meteo/WRFnl/GFSdata/' # Path to root of GFS data
-wpsRoot     = '/home/bart/meteo/WRFnl/WPSv531/' # Path to root of WPS
-wrfRoot     = '/home/bart/meteo/WRFnl/WRFv351/run/' # Path to root of WRF
+from src.plotdriver import makeplots
+from src.settings import *
 
 debug = True
 
@@ -67,8 +81,11 @@ def getGFS(year,month,day,cycle,t0,t1):
                     urllib.urlretrieve(url,gfsrundir+fil)
                     # Dont check success, this way the file size check is done again just to be sure
                 else:
+                    print 'file not found on server, sleep 5min'
                     # File not (yet) available, sleep a while and re-do the checks 
                     time.sleep(300)
+
+    print 'finished GFS at',datetime.datetime.now().time()
 
 def replace(filein,searchstring,value):
     arg =  'sed -i -e "s/\(' +searchstring+ r'\).*/\1 = ' +value+ '/g" ' + filein
@@ -154,6 +171,10 @@ def runWRF(start,clean=False):
                 str(start.month).zfill(2) +\
                 str(start.day).zfill(2)   +\
                 str(start.hour).zfill(2)
+
+    # Make directory for the logs, if it doesn't exist
+    if not os.path.exists(olgaLogs):
+        os.mkdir(olgaLogs)
  
     # Link the met_em input files 
     subprocess.call('rm met_em*',shell=True)
@@ -161,7 +182,7 @@ def runWRF(start,clean=False):
     # Run real
     if(debug): print('... WRF -> real.exe')
     subprocess.call('./real.exe >& %sreal.%s'%(olgaLogs,logappend),shell=True)
-    # Run WRF as backgroudn process to allow postprocessing to run at the same time..
+    # Run WRF as background process to allow postprocessing to run at the same time..
     if(debug): print('... WRF -> wrf.exe')
     subprocess.call('./wrf.exe >& %swrf.%s &'%(olgaLogs,logappend),shell=True)
 
@@ -180,93 +201,95 @@ def waitforWRF(start,end):
         if(not os.path.isfile(wrfrst)):
             time.sleep(5)
         else: 
+            print 'finished WRF at',datetime.datetime.now().time()
             break
 
+"""
+asdfasdf
+"""
+def moveWRFout(start,basestr,nrun):
+    wrfouts = glob.glob(wrfRoot+'wrfout_d0*')
+
+    if(len(wrfouts)>0):
+        for wrfout in wrfouts:
+            domain = int(wrfout.split('_')[1][-1])
+            outname = '%s_d%i_%i.nc'%(basestr,domain,nrun)
+            subprocess.call('mv %s %s%s'%(wrfout,wrfDataRoot,outname),shell=True)
+
+"""
+asdfasdf
+"""
+def triggerPlots(start,cycle,nrun):
+    date = str(start.year).zfill(4) + str(start.month).zfill(2) + str(start.day).zfill(2)
+
+    subprocess.call('python2 %s/src/plotdriver.py %s %i %i %i %i 2 time >& /dev/null &'%\
+                   (olgaRoot,start.year,start.month,start.day,nrun,cycle),shell=True)
+    subprocess.call('python2 %s/src/plotdriver.py %s %i %i %i %i 2 sounding >& /dev/null &'%\
+                   (olgaRoot,start.year,start.month,start.day,nrun,cycle),shell=True)
+    subprocess.call('python2 %s/src/plotdriver.py %s %i %i %i %i 1 maps >& /dev/null  &'%\
+                   (olgaRoot,start.year,start.month,start.day,nrun,cycle),shell=True)
+    subprocess.call('python2 %s/src/plotdriver.py %s %i %i %i %i 2 maps >& /dev/null '%\
+                   (olgaRoot,start.year,start.month,start.day,nrun,cycle),shell=True)
+
+    print 'finished plots at',datetime.datetime.now().time()
+
+
 if __name__ == "__main__":
+    
+    # Get command line arguments
+    modes = ['all','post']
+    if(len(sys.argv) != 2):
+        sys.exit('provide mode: {all,post}')
+    else:
+        mode = sys.argv[1]
+        if(mode not in modes):
+            sys.exit('mode %s invalid'%mode)
+
     # Get current date   
-    year     = 2014 #time.strftime('%Y')
-    month    = 03   #time.strftime('%m')
-    day      = 15   #time.strftime('%d')
+    year     = '2014' #time.strftime('%Y')
+    month    = '04' #time.strftime('%m')
+    day      = '01' #time.strftime('%d')
     tstart   = 00   #  
 
     cycle    = 0    # which GFS cycle? {0,6,12,18}
     dtinput  = 3    # input dt of GFS (==3)
     ttotal   = 48   # total number of hours to simulate
     tfirst   = 24   # initial hours to simulate
+    ndom     = 2    # number of domains
 
-    startstruct  = datetime.datetime.strptime('%i %i %i %i'%(day,month,year,tstart),"%d %m %Y %H")
+    basestr  = "%s%s%s_t%02iz"%(year,month,day,cycle)
+
+    startstruct  = datetime.datetime.strptime('%s %s %s %s'%(day,month,year,tstart),"%d %m %Y %H")
     endstruct1   = startstruct + datetime.timedelta(hours=tfirst)
     endstruct2   = startstruct + datetime.timedelta(hours=ttotal)
 
-    # Start first 'tfirst' hours of sequence
-    getGFS(year,month,day,cycle=cycle,t0=tstart,t1=tfirst)
-    updateNamelists(startstruct,endstruct1,tfirst*60,False)
-    runWPS(startstruct,clean=True)
-    runWRF(startstruct,clean=True)
+    if(mode=='all'):
+        # Start first 'tfirst' hours of sequence
+        getGFS(year,month,day,cycle=cycle,t0=tstart,t1=tfirst)
+        updateNamelists(startstruct,endstruct1,tfirst*60,False)
+        runWPS(startstruct,clean=True)
+        runWRF(startstruct,clean=True)
 
-    # While WRF is running, download rest of GFS
-    getGFS(year,month,day,cycle=cycle,t0=tfirst,t1=ttotal)
+        # While WRF is running, download rest of GFS
+        getGFS(year,month,day,cycle=cycle,t0=tfirst,t1=ttotal)
 
-    # Wait untill the restart file is available
-    waitforWRF(startstruct,endstruct1)
+        # Wait untill the restart file is available
+        waitforWRF(startstruct,endstruct1)
 
-    # Run remaining part of simulation
-    updateNamelists(endstruct1,endstruct2,9999,True)
-    runWPS(startstruct,clean=False)
-    runWRF(startstruct,clean=False)
+    if(mode=='all' or mode =='post'):
+        moveWRFout(startstruct,basestr,nrun=1)
+        triggerPlots(startstruct,cycle,nrun=1)
 
+    if(mode=='all'):
+        # Run remaining part of simulation
+        updateNamelists(endstruct1,endstruct2,9999,True)
+        runWPS(startstruct,clean=False)
+        runWRF(startstruct,clean=False)
+        waitforWRF(startstruct,endstruct2)
 
-    """
-    Goal was to run certain processes (downloading, WRF) parallel.. Doesnt work?
-    """
-    #t1a = Process(target=getGFS(year,month,day,cycle=cycle,t0=tstart,t1=tfirst))
-    #t1a.start() # Start downloading first day of GFS 
-    #t2a = Process(target=updateNamelists(startstruct,endstruct1,tfirst*60,False))
-    #t2a.start() # Update namelists
-
-    #t1a.join() # Wait for download to finish
-    #t2a.join() # Wait for updating namelists to finish
-
-    #t3a = Process(target=runWPS(startstruct,clean=True))
-    #t3a.start() # Start WPS for first day
-    #t1b = Process(target=getGFS(year,month,day,cycle=cycle,t0=tfirst,t1=ttotal))
-    #t1b.start() # Continue downloading GFS
-
-    #t3a.join() # Wait for WPS to finish
-    #t4a = Process(target=runWRF(startstruct,clean=True))
-    #t4a.start() # Start WRF for first day
-    #t5a = Process(target=waitforWRF(startstruct,endstruct1))
-    #t5a.start() # Start waiting for WRF to finish
-
-    #t4a.join() # WRF return directly....
-    #t5a.join() # End of first part of simulation
-
-    #### POSTPROC
-
-    #t2b = Process(target=updateNamelists(endstruct1,endstruct2,9999,True))
-    #t2b.start() # Update namelists
-    #t1b.join() # GFS needs to be finished
-    #t2b.join() # Namelists finished
-    #
-    #t3b = Process(target=runWPS(startstruct,clean=False))
-    #t3b.start()
-    #t3b.join()
- 
-    #t4b = Process(target=runWRF(startstruct,clean=False))
-    #t4b.start()
-    #t5b = Process(target=waitforWRF(startstruct,endstruct2))
-    #t5b.start()
-    #t4b.join()
-    #t5b.join()
-
-    ### POSTPROC
-
-    
-     
-    
-
-
-
+    if(mode=='all' or mode =='post'):
+        moveWRFout(startstruct,basestr,nrun=2)
+        triggerPlots(startstruct,cycle,nrun=2)
 
 
 
