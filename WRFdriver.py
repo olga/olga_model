@@ -28,7 +28,7 @@ import subprocess
 import threading
 from multiprocessing import Process
 
-from src.plotdriver import makeplots
+#from src.plotdriver import makeplots
 from src.settings import *
 
 debug = True
