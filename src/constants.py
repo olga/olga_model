@@ -21,3 +21,5 @@ peff = 0.8        # efficiency pilot (..)
 m2k = 1.95         # convert m/s to kts 
 
 eps = 1.e-12       # small number 
+
+filval = -9999     # Fill value for missing data
