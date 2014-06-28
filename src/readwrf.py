@@ -69,40 +69,6 @@ def VgemCrossCountry(z_upd,w_upd):
 
     return Vgem
 
-
-"""
-Read in data: all locations -> all time (mainly 2d fields)
-"""
-class readwrf_all:
-    def __init__(self,file,domain):
-        # Check if the netcdf4-python module is available:
-        try:
-            from netCDF4 import Dataset
-            netcdf4py = True 
-        except:
-            netcdf4py = False 
-
-        # Fallback option: NetCDF from Scientific.IO
-        try:
-            from Scientific.IO import NetCDF
-            netcdfsci = True
-        except:
-            netcdfsci = False
-
-        if(netcdf4py):
-            print 'blaalt'
-            postprocess_nc(self)
-        elif(netcdfsci):
-            read_nc_scientificIO(self,file,domain)
-            postprocess_nc(self)
-        else:
-            sys.exit('No NETCDF module available')
-
-def read_nc_scientificIO(obj,file,domain):
-    print 'reading file %s'%file
-    wrfin            = NetCDF.NetCDFFile(file,'r')
-    nt               = len(wrfin.variables["HFX"][:,0,0])  
-
 """
 Read in data: all locations -> all time (mainly 2d fields)
 """
