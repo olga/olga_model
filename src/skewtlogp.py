@@ -22,7 +22,7 @@ import pylab as pl
 import sys
 import matplotlib.image as image
 
-from settings import *
+#from settings import *
 
 from matplotlib import rc
 rc('font', size=9)
@@ -199,7 +199,7 @@ class skewt_input:
 Main routine which makes the diagram
 input: si = skewt_input object
 """
-def skewtlogp(si):
+def skewtlogp(olga,si):
     """
     Settings for high and low sounding top
     """
@@ -467,9 +467,6 @@ def skewtlogp(si):
             #print kmax,si.cfru[kmax]*100.
             pl.text(x.max(),y[kmax],'- %i%%'%(si.cfru[kmax]*100.),ha='left',va='center',size=8,color=c6)
  
-            
-
-
     """
     6. Finish diagram
     """ 
@@ -488,7 +485,7 @@ def skewtlogp(si):
     label = 'Skew-T log-P, %s, %s UTC'%(si.name,si.time) 
     pl.figtext(0.5,0.97,label,ha='center')
 
-    img = image.imread(olgaRoot+'data/olga_lr.png')
+    img = image.imread(olga.olgaRoot+'data/olga_lr.png')
     w=650;h=600
     pl.figimage(img,10,6)
     pl.figtext(0.08,0.013,'Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='left')

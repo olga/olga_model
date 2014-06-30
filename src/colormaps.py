@@ -23,8 +23,6 @@ import glob
 import sys
 from matplotlib.colors import LinearSegmentedColormap, ColorConverter
 
-from settings import *
-
 def cmap_discrete(cmap_in,ints):
   return pl.get_cmap(cmap_in)(ints)
 
@@ -32,12 +30,12 @@ def cmap_discrete(cmap_in,ints):
 # Create colormap from NCL's .rgb files
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def cmap_ncl(name):
-  files = glob.glob(olgaRoot+'include/colormaps/'+name+'.rgb')
+  files = glob.glob('include/colormaps/'+name+'.rgb')
   if(len(files) < 1):
     sys.exit('cant find file %s.*'%name) 
 
   cols = []
-  f = open(olgaRoot+'include/colormaps/'+name+'.rgb','r')
+  f = open('include/colormaps/'+name+'.rgb','r')
   l = 0
   for line in f:
     if(l==0):

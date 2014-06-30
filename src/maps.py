@@ -25,54 +25,51 @@ from scipy.ndimage.filters import gaussian_filter as gausf
 
 from readwrf import *
 from colormaps import *
-from settings import *
 
 ## Function to create maps
-def create_maps(wrfout,domain,date,times,variables,nrun,filter=False):
+def create_maps(olga,wrfout,dom,times):
 
     # Setup basemap only once and (deep)copy later for performance
-    if(domain==1):
-        basem = Basemap(width=1800000,height=1800000,
-                        rsphere=(6378137.00,6356752.3142),\
-                        resolution='l',area_thresh=10.,projection='lcc',\
-                        lat_1=51.4,lat_2=51.4,lat_0=51.4,lon_0=5.5)
-    elif(domain==2):
-        basem = Basemap(width=590000,height=590000,
-                        rsphere=(6378137.00,6356752.3142),\
-                        resolution='i',area_thresh=10.,projection='lcc',\
-                        lat_1=51.3,lat_2=51.3,lat_0=51.3,lon_0=6.7)
+    basem = Basemap(width=olga.map_width[dom],height=olga.map_height[dom],
+                    rsphere=(6378137.00,6356752.3142),\
+                    resolution=olga.map_res[dom],area_thresh=10.,projection='lcc',\
+                    lat_1=olga.map_lat[dom],lat_0=olga.map_lat[dom],lon_0=olga.map_lon[dom])
 
-    fsigma = 1.0     # std dev of gaussian filter size..
-    iPFD   = 0       # index of pfd
-    makepfd = True
+    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'data/olga_lr.png')
+
+    filter = True
+    fsigma = 0.5     # std dev of gaussian filter size..
 
     # Read WRF output
-    d  = readwrf_all(wrfout,domain=domain)  
+    d  = readwrf_all(olga,wrfout,times[0],times[-1]) 
 
     # Get basemap coords cities
-    if(domain==1):
-        db = np.genfromtxt(olgaRoot+'include/cities_eur_d1.txt',dtype='str',delimiter=',',skip_header=0)
-    elif(domain==2):
-        db = np.genfromtxt(olgaRoot+'include/cities_eur_d2.txt',dtype='str',delimiter=',',skip_header=0)
-    city   = db[:,0]
-    citys  = db[:,1]  
-    citlon = np.array(db[:,2],dtype=np.float32)  
-    citlat = np.array(db[:,3],dtype=np.float32)  
-    citlon,citlat = basem(citlon,citlat)
+    #if(domain==1):
+    #    db = np.genfromtxt(olgaRoot+'include/cities_eur_d1.txt',dtype='str',delimiter=',',skip_header=0)
+    #elif(domain==2):
+    #    db = np.genfromtxt(olgaRoot+'include/cities_eur_d2.txt',dtype='str',delimiter=',',skip_header=0)
+    #city   = db[:,0]
+    #citys  = db[:,1]  
+    #citlon = np.array(db[:,2],dtype=np.float32)  
+    #citlat = np.array(db[:,3],dtype=np.float32)  
+    #citlon,citlat = basem(citlon,citlat)
 
     # Loop over differnt time steps 
     for t in times:
-        for var in variables:
-            print 'time = %s, var = %s'%(d.datetime[t],var)
+        for var in olga.map_vars[dom]:
+            #print 'time = %s, var = %s'%(d.datetime[t],var)
   
-            fig     = pl.figure(figsize=(6.5,6.0))
-            m       = deepcopy(basem)
-            axloc   = [0.03,0.05,0.85,0.87]  # left,bottom,width,height
-            ax      = fig.add_axes(axloc)
-            lon,lat = m(d.lon,d.lat)
-            doplot  = False
+            fig        = pl.figure(figsize=(6.5,6.0))
+            m          = deepcopy(basem)
+            axloc      = [0.03,0.05,0.85,0.87]  # left,bottom,width,height
+            ax         = fig.add_axes(axloc)
+            lon,lat    = m(d.lon,d.lat)
+            doplot     = False
 
+            # -------------------------------------------------
             # GENERAL  METEOROLOGY
+            # -------------------------------------------------
+
             # -------------------------------------------------
             # sea level pressure and 10m wind
             # -------------------------------------------------
@@ -92,13 +89,16 @@ def create_maps(wrfout,domain,date,times,variables,nrun,filter=False):
                 cl     = pl.clabel(c,levs1,fmt='%.1f')   
                 doplot = True 
 
+            # -------------------------------------------------
+            # stream lines of wind
+            # -------------------------------------------------
             if(var[:4] == 'wind'):
                 if(var=='wind10m'):
                     title  = '10m wind (kts)'
                     ufilt  = gausf(d.U10[t,:,:],fsigma,mode='reflect')
                     vfilt  = gausf(d.V10[t,:,:],fsigma,mode='reflect')
                     scalefac = 25.
-                elif(var=='wind1000m (kts)'):
+                elif(var=='wind1000m'):
                     title  = '1000m wind'
                     ufilt  = gausf(d.U1000[t,:,:],fsigma,mode='reflect')
                     vfilt  = gausf(d.V1000[t,:,:],fsigma,mode='reflect')
@@ -112,7 +112,6 @@ def create_maps(wrfout,domain,date,times,variables,nrun,filter=False):
                 stream = m.streamplot(lon[0,:],lat[:,0],\
                                  ufilt[:,:],vfilt[:,:],density=3,linewidth=utot/scalefac,color='k')
                 doplot = True 
-
  
             # -------------------------------------------------
             # rain
@@ -155,8 +154,23 @@ def create_maps(wrfout,domain,date,times,variables,nrun,filter=False):
                             pl.text(lon[i,j],lat[i,j],'|',size=8,ha='center',va='center',color='0.1')
                 doplot = True
 
+            # -------------------------------------------------
+            # Shortwave downwelling radiation
+            # TO-DO: make it potential (i.e. max potential swd / actual swd)
+            # -------------------------------------------------
+            if(var == 'swd'):
+                title = 'Shortwave incoming radiation (W/m2)'
+                levs  = np.arange(0,1000.01,50)
+                data  = gausf(d.swd[t,:,:],fsigma,mode='reflect') \
+                        if filter else d.swd[t,:,:]
+                cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
+                units = 'W/m2'
+                doplot = True 
  
+            # -------------------------------------------------
             # GLIDING SPECIFIC
+            # -------------------------------------------------
+
             # -------------------------------------------------
             # Updraft velocity wstar
             # -------------------------------------------------
@@ -170,7 +184,7 @@ def create_maps(wrfout,domain,date,times,variables,nrun,filter=False):
                 doplot = True 
 
             # -------------------------------------------------
-            # TEST: z/L
+            # TEST: z/L as indicator for cloud streets / roll convection
             # -------------------------------------------------
             if(var == 'zol'):
                 title = 'z/L [-]'
@@ -205,29 +219,16 @@ def create_maps(wrfout,domain,date,times,variables,nrun,filter=False):
                 doplot = True 
 
             # -------------------------------------------------
-            # Potential flight distance
+            # Potential flight distance per day
             # -------------------------------------------------
-            #if(var == 'pfd' and t*dt%24==0 and t!=t1):
-            #    pfd   = getpfd(wrfout,t,t+(24/dt))
-            #    title = 'Potential flight distance [km]'
-            #    levs  = np.arange(0,900.1,100)
-            #    data  = gausf(pfd.pfd[:,:],fsigma,mode='reflect') \
-            #            if filter else pfd.pfd[:,:]
-            #    cf    =  m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
-            #    makepfd = False
-            #    doplot = True 
-
-            #if((var == 'pfd') and (t in d.tPFD)):
-            if((var == 'pfd') and makepfd):
+            if((var == 'pfd') and t < np.size(d.date_PFD)):
                 title = 'Potential flight distance [km]'
                 levs  = np.arange(0,900.1,100)
-                data  = gausf(d.PFD[:,:],fsigma,mode='reflect') \
-                        if filter else d.PFD[:,:]
+                data  = gausf(d.PFD[t,:,:],fsigma,mode='reflect') \
+                        if filter else d.PFD[t,:,:]
                 cf    =  m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
                 units = 'km'
-                iPFD  += 1
                 doplot = True 
-                makepfd=False
 
             # -------------------------------------------------
             # Finish plot!
@@ -240,14 +241,14 @@ def create_maps(wrfout,domain,date,times,variables,nrun,filter=False):
                     contour(lon,lat,d.hgt,levs,cmap=cm.PuBu,alpha=0.5)
 
                 # Plot cities
-                if(True):
-                    for i in range(len(citys)):
-                        m.scatter(citlon[i],citlat[i],s=4,alpha=1.0)
-                        pl.text(citlon[i],citlat[i],' '+citys[i],size=8,ha='left',va='center',color='0.1')
+                #if(True):
+                #    for i in range(len(citys)):
+                #        m.scatter(citlon[i],citlat[i],s=4,alpha=1.0)
+                #        pl.text(citlon[i],citlat[i],' '+citys[i],size=8,ha='left',va='center',color='0.1')
 
                 # Plot airspace
-                if(False):
-                    plotairspace(m)
+                #if(False):
+                #    plotairspace(m)
 
                 # If filled contour, add colorbar
                 if(cf != False):
@@ -259,40 +260,35 @@ def create_maps(wrfout,domain,date,times,variables,nrun,filter=False):
                     cb.outline.set_color('white')
                     cb.set_label(units)
                 pl.axes(ax)
-             
-                mc = '0.6' if var=="clouds2" else '0.2'
-                cl = 1. if domain==1 else 1.5
-                m.drawcoastlines(linewidth=cl,color=mc)
-                m.drawcountries(linewidth=1,color=mc)
+           
+                m.drawcoastlines(linewidth=1,color='0.5')
+                m.drawcountries(linewidth=1,color='0.5')
+                #m.drawrivers(linewidth=0.5,color='#0066FF')
                 m.drawmapboundary()
-                
-                if(domain==1):
-                    pl.figtext(0.065,0.025,'OLGA: Open Limited-area Gliding Analysis. 18 x 18 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=6,ha='left')
-                elif(domain==2):
-                    pl.figtext(0.065,0.025,'OLGA: Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=6,ha='left')
-                    m.drawrivers(linewidth=0.5,color='#0066FF')
-
+               
+                # Add description variables, units, OLGA label, logo, etc. 
+                pl.figtext(0.065,0.025,'OLGA: %s GFS-initiated WRF-ARW forecast [olga.vanstratum.com]'\
+                           %olga.map_desc[dom],size=6,ha='left')
                 if(var=='pfd'):
-                    subtitle = 'cumulative distance over: %s'%str(d.date[t]) 
+                    subtitle = 'cumulative distance over: %s'%str(d.date_PFD[t]) 
                 else:
                     subtitle = 'valid: %s UTC'%str(d.datetime[t])
+
+                # Add OLGA logo
                 ax.set_title(title,loc='left')
                 ax.set_title(subtitle,loc='right')
-
-                # Add logo :)
-                img = pl.matplotlib.image.imread(olgaRoot+'data/olga_lr.png')
                 w=650 ; h=600
-                pl.figimage(img,w-45,6)
+                pl.figimage(olga_logo,w-45,6)
  
-                #tmp = '%02i_%02i'%(np.floor(t0+t*d.dt),(t0+t*d.dt-np.floor(t0+t*d.dt))*30.)
                 if(var=='pfd'):
-                    tmp    = str((nrun-1)*24).zfill(5)
+                    tmp    = '%04i'%(t*24.) 
                 else:
                     xtime  = d.time[t] / 3600.
                     hour   = int(np.floor(xtime))
                     minute = int((xtime - hour) * 60.)
                     tmp    = str(hour).zfill(3) + str(minute).zfill(2)
-                name = figRoot + date + '/' + tmp + '_d' + str(domain) + '_' + var + '.png'
+
+                name = '%s%04i%02i%02i_t%02iz/%s_d%i_%s.png'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle,tmp,dom+1,var)
                 pl.savefig(name)
         
             # Cleanup!

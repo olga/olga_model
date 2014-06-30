@@ -26,107 +26,39 @@ import os
 import glob
 import numpy as np
 import pylab as pl
-from netCDF4 import Dataset 
 
-from settings import *     # OLGA settings
+pl.matplotlib.rc('font', size=9)
+pl.matplotlib.rc('legend', fontsize=8)
+
 from maps import *         # plot maps
 from timeseries import *   # plot time series
 from sounding import *     # plot soundings
 
-
-"""
-Check if requested WRF file is available
-"""
-def checkWRFoutput(year,month,day,nrun,cycle,dom,date):
-    wrfout = wrfDataRoot+date+'_t'+str(cycle).zfill(2)+'z_d'+str(dom)+'_'+str(nrun)+'.nc'
-
+def plot_driver(olga,dom,ptype):
+    # Check if wrfout file is available
+    wrfout = '%s%04i%02i%02i_t%02iz_d%i.nc'%(olga.wrfDataRoot,olga.year,olga.month,olga.day,olga.cycle,dom+1)
     if(not os.path.exists(wrfout)):
-        sys.exit('cant find %s'%wrfout)
-    else:
-        nt = np.size(Dataset(wrfout,'r').variables["XTIME"][:])
-        return (nt,wrfout)
-
-"""
-Create maps
-"""
-def maps(wrfout,dom,date,times,nrun):
-    # Variables to plot per domain:
-    if(dom==1):
-        variables = (['clouds','rr','wind10m','wind1000m']) 
-    elif(dom==2):
-        variables = (['pfd','wstar','zidry','cudepth']) 
-    create_maps(wrfout,dom,date,times,variables,nrun,filter=True)
-
-"""
-Create meteograms
-"""
-def timeseries(wrfout,dom,date,times,nruns):
-    # Get list of locations
-    l = np.genfromtxt(olgaRoot+'include/analysis_locs.txt', delimiter=',', dtype=("|S10",float,float))
-    names = l["f0"]
-    lons =  l["f1"]
-    lats =  l["f2"]
-    create_tser(wrfout,dom,date,names,lons,lats,nruns)
-
-"""
-Create soundings
-"""
-def soundings(wrfout,dom,date,times):
-    # Get list of locations
-    l = np.genfromtxt(olgaRoot+'include/sounding_locs.txt', delimiter=',', dtype=("|S15",float,float))
-    names = l["f0"]
-    lons =  l["f1"]
-    lats =  l["f2"]
-    create_sounding(wrfout,dom,date,times,names,lons,lats)
-
-def makeplots(year,month,day,nrun,cycle,dom,type):
-
-    date = str(year)+str(month).zfill(2)+str(day).zfill(2)
-
-    # Check if wrfout available, and get file path and number of output time steps
-    nt,wrfout = checkWRFoutput(year,month,day,nrun,cycle,dom,date)
+        sys.exit('Cant find %s'%wrfout)
 
     # Create image directory if not available
-    if not os.path.exists(figRoot+'/'+date):
+    figpath = '%s%04i%02i%02i_t%02iz'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle)
+    if not os.path.exists(figpath):
         try:
-            os.makedirs(figRoot+'/'+date)
+            os.makedirs(figpath)
         except:
-            print 'BvS have to solve this for parallel execution...'
+            print 'BvS have to solve this for parallel execution...' # Jul2014: should be solved now..
 
-    # Which times to plot?
-    times = np.arange(0,nt,1)
+    # Create array with times to plot:
+    t0=olga.t0/(olga.dt_output[dom]/60.)
+    t1=olga.t1/(olga.dt_output[dom]/60.)
+    times = np.arange(t0,t1+1e-9,dtype=np.int)
 
-    if(type == "maps"):
-        maps(wrfout,dom,date,times,nrun) 
-    elif(type=="time"):
-        timeseries(wrfout,dom,date,times,nrun) 
-    elif(type=="sounding"):
-        soundings(wrfout,dom,date,times) 
+    if(ptype == "maps"):
+        create_maps(olga,wrfout,dom,times) 
+    elif(ptype=="time"):
+        create_timeseries(olga,wrfout,dom,times)
+    elif(ptype=="sounding"):
+        create_sounding(olga,wrfout,dom,times)
     else:
         sys.exit('type=%s not supported'%type)
-
-"""
-plotdriver can either be called directly
-in which case this code is triggered
-or called from e.g. WRFdriver with doplots()
-"""
-if __name__ == "__main__":
-    # BvS move to matplotlibrc
-    pl.matplotlib.rc('font', size=9)
-    pl.matplotlib.rc('legend', fontsize=8)
-
-    # Get command line arguments
-    if(len(sys.argv) != 8):
-        sys.exit('provide input: "YYYY MM DD run cycle dom type}"')
-    else:
-        year   = int(sys.argv[1])
-        month  = int(sys.argv[2])
-        day    = int(sys.argv[3])
-        nrun   = int(sys.argv[4])
-        cycle  = int(sys.argv[5])
-        dom    = int(sys.argv[6])
-        type   = sys.argv[7]
-
-    makeplots(year,month,day,nrun,cycle,dom,type)
-
 
