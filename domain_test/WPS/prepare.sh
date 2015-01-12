@@ -3,7 +3,7 @@
 
 # -------------------------
 # Change WPSPath to relative or absolute path to WPS installation directory
-WPSPath="../../WPS_v3.6.1"
+WPSPath="../../../WPS_v3.6.1"
 # -------------------------
 
 # Link the required files to current directory

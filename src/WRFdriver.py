@@ -36,33 +36,41 @@ debug = True
 # wrapped in an object to simplify passing the settings around
 class olga_Settings:
     def __init__(self):
-        # Local file system settings. APPEND EVERY PATH with '/'! 
-        self.wpsRoot      = '/home/bart/WRFnl/WPSV3/' # Path to root of WPS
-        self.wrfRoot      = '/home/bart/WRFnl/WRFV3/run_eu/' # Path to root of WRF
-        self.olgaRoot     = '/home/bart/WRFnl/olga/' # Full path to OLGA scripts
-        self.olgaLogs     = '/home/bart/WRFnl/olga/logs/' # Location to save logs
-        self.figRoot      = '/home/scratch1/WRFnl/olga_results/' # Path to save OLGA figures
-        self.gfsDataRoot  = '/home/scratch1/WRFnl/GFSdata/' # Path to store the GFS data
-        self.wrfDataRoot  = '/home/scratch1/WRFnl/dataWRF/' # Path to store the WRF output
+        # ----------------------------------
+        # Local file system settings.
+        # Full path to directory of this script. Append with '/' !!
+        self.domainRoot   = '/scratch/mpi/mpiaes/m300241/WRFnl/NL_d1/' 
 
+        self.wpsRoot      = self.domainRoot + 'WPS/'        # Path to root of WPS run directory
+        self.wrfRoot      = self.domainRoot + 'WRF/'        # Path to root of WRF run directory
+        self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
+        self.figRoot      = self.domainRoot + 'outputOLGA/' # Path to save OLGA output
+        self.wrfDataRoot  = self.domainRoot + 'outputWRF/'  # Path to store the WRF output
+        self.gfsDataRoot  = '/scratch/mpi/mpiaes/m300241/WRFnl/inputGFS/' # Path to store the GFS data
+
+        # ----------------------------------
         # Computational settings. 
         self.mpi_tasks    = 2 # Number of MPI tasks
-        self.omp_thr      = 2 # Number of OpenMP threads
+        self.omp_thr      = 1 # Number of OpenMP threads
 
+        # ----------------------------------
         # Number of domains. This can be less than the size of the arrays below
         # in which case only the first ndom are used (e.g. for quick testing of outer domain)
         self.ndom         = 1  
 
+        # ----------------------------------
         # Time settings
         self.ttotal       = 48 # Total time to simulate [h]
         self.tslice       = 24 # Split 'ttotal' in 'tslice' chunks [h]
         self.dt_output    = ([60,30]) # 'history_interval' from namelist, per domain, in minutes
 
+        # ----------------------------------
         # Manually specify times (UTC) over which to make PFD's and time series. Only if both times are within
         # one 'tslice', maps are made. BvS: add better description :)
         # Same 'tanalysis' is used for all domains!
         self.tanalysis    = ([4,20])
 
+        # ----------------------------------
         # Main map settings per domain
         self.maps         = ([True,True]) # Make soundings or not
         self.map_lat      = ([49.5, 51.3]) # Central latitude of map [deg]
@@ -72,11 +80,13 @@ class olga_Settings:
         self.map_res      = (['l','i']) # Details of map (c=crude, l=low, i=interm, h=high)
         self.map_desc     = (['18x18km','6x6km']) 
 
+        # ----------------------------------
         # Plot variables maps
         vars1 = (['pfd','swd','wstar','zidry','clouds','rr','wind10m','wind1000m'])         
         vars2 = (['pfd','wstar','zidry','cudepth'])         
         self.map_vars     = ([vars1,vars2]) # variables to plot per domain
 
+        # ----------------------------------
         # Settings soundings (Detailed settings are in src/skewtlogp.py)
         self.sounding     = ([True,True]) # Make soundings or not
         sound_lat1        = ([self.map_lat[0]]) # Tmp arrays to populate locations, default=map center 
@@ -280,7 +290,7 @@ def run_WPS(olga):
     subprocess.call('./metgrid.exe >& %smetgrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
 
     print('finished WPS at %s'%datetime.datetime.now().time())
-    os.chdir(olga.olgaRoot)
+    os.chdir(olga.domainRoot)
 
 ## Run the WRF steps
 # @param olga Pointer to object with OLGA settings
@@ -323,7 +333,7 @@ def run_WRF(olga):
     else:
         subprocess.call('./wrf.exe >& %swrf.%s &'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
 
-    os.chdir(olga.olgaRoot)
+    os.chdir(olga.domainRoot)
 
 ## Wait until the required restart file is available (i.e. WRF finished)
 # @param olga Pointer to object with OLGA settings
@@ -405,8 +415,8 @@ if __name__ == "__main__":
 
     # Get current date   
     year   = 2014 #time.strftime('%Y')
-    month  = 06   #time.strftime('%m')
-    day    = 26   #time.strftime('%d')
+    month  = 03   #time.strftime('%m')
+    day    = 28   #time.strftime('%d')
     tstart = 00   # start time of simulation 
     cycle  = 0    # which GFS cycle? {0,6,12,18}
 
