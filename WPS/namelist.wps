@@ -1,0 +1,49 @@
+&share
+ wrf_core = 'ARW',
+ max_dom = 1
+
+ start_year = 2014, 2014, 
+ start_month = 3, 3,
+ start_day = 28, 28,
+ start_hour = 0, 0,
+ start_minute = 0, 0,
+ start_second = 0, 0,
+ end_year = 2014, 2014,
+ end_month = 3, 3,
+ end_day = 29, 29,
+ end_hour = 0, 0,
+ end_minute = 0, 0,
+ end_second = 0, 0,
+
+ interval_seconds = 10800
+ io_form_geogrid = 2,
+/
+
+&geogrid
+ parent_id         =   1,   1,   2,
+ parent_grid_ratio =   1,   3,   2,
+ i_parent_start    =   1,  34,  29,
+ j_parent_start    =   1,  28,  35,
+ e_we              =  32,  133, 129,
+ e_sn              =  32,  121, 129,
+ geog_data_res     = '5m','2m', '2m',
+ dx = 30000,
+ dy = 30000,
+ map_proj = 'lambert',
+ ref_lat   =  52.0,
+ ref_lon   =  5.5,
+ truelat1  =  52.0,
+ truelat2  =  52.0,
+ stand_lon =  5.5,
+ geog_data_path = '/scratch/mpi/mpiaes/m300241/WRFnl/geo_data'
+/
+
+&ungrib
+ out_format = 'WPS',
+ prefix = 'FILE',
+/
+
+&metgrid
+ fg_name = 'FILE'
+ io_form_metgrid = 2, 
+/
