@@ -6,12 +6,12 @@ from src.main import *
 # Import file with domain settings
 from domain_test.domainSettings import olgaSettings as settings_d1
 
-mode = 'post'
+mode = 'all'
 
 olga = settings_d1()
-olga.year    = 2014 #time.strftime('%Y')
-olga.month   = 03   #time.strftime('%m')
-olga.day     = 28   #time.strftime('%d')
+olga.year    = int(time.strftime('%Y'))
+olga.month   = int(time.strftime('%m'))
+olga.day     = int(time.strftime('%d'))
 olga.tstart  = 00   # start time of simulation
 olga.cycle   = 0    # which GFS cycle? {0,6,12,18}
 
@@ -32,7 +32,7 @@ for islice in range(nslice):
     olga.set_time(islice) # update time settings for the current time slice
 
     if(mode == 'all'):
-        #downloadGFS(olga,islice) # download GFS data
+        downloadGFS(olga,islice) # download GFS data
         updateNamelists(olga) # update WRf & WPS namelists
         execWPS(olga) # run the WPS routines
         execWRF(olga) # run the WRF routines
