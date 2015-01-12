@@ -1,64 +1,88 @@
 import numpy as np
 from netCDF4 import Dataset
 from pylab import *
+from math import radians, cos, sin, asin, sqrt
 from mpl_toolkits.basemap import Basemap
 
-close('all')
+# ====== SETTINGS =======
+ndomains = 2
+WPSPath = '../WPSdir' 
+# =======================
+
+def haversine(lon1, lat1, lon2, lat2):
+    lon1,lat1,lon2,lat2 = map(radians,[lon1,lat1,lon2,lat2])
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    return 6371 * c
 
 class readgeom:
-  def __init__(self,path):
-    nc               = Dataset(path,'r')
-    self.xlat        = nc.variables["XLAT_M"][0,:,:]
-    self.xlon        = nc.variables["XLONG_M"][0,:,:]
-    self.hgt_m       = nc.variables["HGT_M"][0,:,:]
+    def __init__(self,path):
+        print('reading %s'%path)
+        nc               = Dataset(path,'r')
+        self.xlat        = nc.variables["XLAT_M"][0,:,:]
+        self.xlon        = nc.variables["XLONG_M"][0,:,:]
+        self.hgt_m       = nc.variables["HGT_M"][0,:,:]
 
 def plotdomain(mapin,lats,lons):
-  lat1 = lats[0,0]
-  lat2 = lats[-1,0]
-  lon1 = lons[0,0]
-  lon2 = lons[0,-1]
-  lon3 = lons[-1,0]
-  lon4 = lons[-1,-1]
+    lat1 = lats[0,0]
+    lat2 = lats[-1,0]
+    lon1 = lons[0,0]
+    lon2 = lons[0,-1]
+    lon3 = lons[-1,0]
+    lon4 = lons[-1,-1]
 
-  x1,y1=mapin(lon1,lat1)
-  x2,y2=mapin(lon2,lat1)
-  x3,y3=mapin(lon3,lat2)
-  x4,y4=mapin(lon4,lat2)
+    x1,y1=mapin(lon1,lat1)
+    x2,y2=mapin(lon2,lat1)
+    x3,y3=mapin(lon3,lat2)
+    x4,y4=mapin(lon4,lat2)
 
-  mapin.plot([x1,x2],[y1,y1],'w-',linewidth=2)
-  mapin.plot([x2,x4],[y1,y3],'w-',linewidth=2)
-  mapin.plot([x4,x3],[y3,y3],'w-',linewidth=2)
-  mapin.plot([x3,x1],[y3,y1],'w-',linewidth=2)
+    mapin.plot([x1,x2],[y1,y1],'r-',linewidth=2)
+    mapin.plot([x2,x4],[y1,y3],'r-',linewidth=2)
+    mapin.plot([x4,x3],[y3,y3],'r-',linewidth=2)
+    mapin.plot([x3,x1],[y3,y1],'r-',linewidth=2)
 
-h  = readgeom('back.nc')
-d1 = readgeom('../WPS/geo_em.d01.nc')
-d2 = readgeom('../WPS/geo_em.d02.nc')
+# Read the geo_em domain files
+domains = []
+for n in range(ndomains):
+    domains.append(readgeom('%s/geo_em.d%02i.nc'%(WPSPath,n+1)))
 
-fig = plt.figure(figsize=(9.4,9))
-#                   L    B    R    T    ws  hs
-fig.subplots_adjust(0.08,0.05,.99,0.95,0.2,0.08)
-m = Basemap(width=2500000,height=2500000,
-            rsphere=(6378137.00,6356752.3142),\
-            resolution='l',area_thresh=10.,projection='lcc',\
-            lat_1=52.,lat_2=52.,lat_0=52.,lon_0=5.5)
+# Get some crude info of domain locations
+centlat = np.average(domains[0].xlat)
+centlon = np.average(domains[0].xlon)
+width   = 1.05* haversine(domains[0].xlon.min(),centlat,domains[0].xlon.max(),centlat) * 1000 
+height  = 1.05* haversine(centlon, domains[0].xlat.min(), centlon, domains[0].xlat.max()) * 1000
 
-ax = fig.add_axes([0.00,0.05,0.95,0.85])
-x,y = m(h.xlon[:,:],h.xlat[:,:])
-cf = m.pcolormesh(x,y,h.hgt_m[:,:],cmap=cm.RdBu_r)
+# Plot maps
+if(True):
+    close('all')
 
-plotdomain(m,d1.xlat,d1.xlon)
-plotdomain(m,d2.xlat,d2.xlon)
- 
-pos = ax.get_position()
-l,b,w,h = pos.bounds
-cax = axes([l+w-0.05,b+0.1,0.02,h-0.2])
-colorbar(cf,drawedges=False,cax=cax)
-axes(ax)
+    fig = plt.figure(figsize=(10,0.85*10/width*height))
+    #                   L    B    R    T    ws  hs
+    fig.subplots_adjust(0.08,0.05,.99,0.95,0.2,0.08)
+    ax = subplot(111)
+    m = Basemap(width=width,height=height,
+                rsphere=(6378137.00,6356752.3142),\
+                resolution='c',area_thresh=10.,projection='lcc',\
+                lat_1=centlat,lat_2=centlat,lat_0=centlat,lon_0=centlon)
+   
+    # Plot outline domain(s)
+    for n in range(ndomains):
+        plotdomain(m,domains[n].xlat, domains[n].xlon)
+    
+        # Plot topography of outer domain
+        if(n==0):
+            x,y = m(domains[n].xlon[:,:],domains[n].xlat[:,:])
+            cf = m.pcolormesh(x,y,domains[n].hgt_m[:,:],cmap=cm.RdBu_r)
+            cf = m.pcolormesh(x,y,domains[n].hgt_m[:,:],cmap=cm.RdBu_r)
+            colorbar()
+    
+    m.drawcoastlines(linewidth=1,color='0.')
+    m.drawcountries(linewidth=1,color='0.')
+    m.drawmapboundary()
+    m.drawmeridians(np.arange(0, 360, 5),labels=[True,False,False,True])
+    m.drawparallels(np.arange(30, 60, 5),labels=[True,False,False,True])
 
-m.drawcoastlines(linewidth=1,color='0.')
-m.drawcountries(linewidth=1,color='0.')
-m.drawmapboundary()
-m.drawmeridians(arange(0, 360, 10))
-m.drawparallels(arange(30, 60, 10))
-
-
+    savefig('domains.png')
+    #savefig('domains.pdf')
