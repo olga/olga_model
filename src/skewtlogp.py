@@ -485,7 +485,7 @@ def skewtlogp(olga,si):
     label = 'Skew-T log-P, %s, %s UTC'%(si.name,si.time) 
     pl.figtext(0.5,0.97,label,ha='center')
 
-    img = image.imread(olga.olgaRoot+'data/olga_lr.png')
+    img = image.imread(olga.olgaRoot+'include/olga_lr.png')
     w=650;h=600
     pl.figimage(img,10,6)
     pl.figtext(0.08,0.013,'Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='left')

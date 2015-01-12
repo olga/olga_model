@@ -32,102 +32,9 @@ from src.plotdriver import plot_driver
 
 debug = True  
 
-## Main settings for OLGA
-# wrapped in an object to simplify passing the settings around
-class olga_Settings:
-    def __init__(self):
-        # ----------------------------------
-        # Local file system settings.
-        # Full path to directory of this script. Append with '/' !!
-        self.domainRoot   = '/scratch/mpi/mpiaes/m300241/WRFnl/NL_d1/' 
-
-        self.wpsRoot      = self.domainRoot + 'WPS/'        # Path to root of WPS run directory
-        self.wrfRoot      = self.domainRoot + 'WRF/'        # Path to root of WRF run directory
-        self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
-        self.figRoot      = self.domainRoot + 'outputOLGA/' # Path to save OLGA output
-        self.wrfDataRoot  = self.domainRoot + 'outputWRF/'  # Path to store the WRF output
-        self.gfsDataRoot  = '/scratch/mpi/mpiaes/m300241/WRFnl/inputGFS/' # Path to store the GFS data
-
-        # ----------------------------------
-        # Computational settings. 
-        self.mpi_tasks    = 2 # Number of MPI tasks
-        self.omp_thr      = 1 # Number of OpenMP threads
-
-        # ----------------------------------
-        # Number of domains. This can be less than the size of the arrays below
-        # in which case only the first ndom are used (e.g. for quick testing of outer domain)
-        self.ndom         = 1  
-
-        # ----------------------------------
-        # Time settings
-        self.ttotal       = 48 # Total time to simulate [h]
-        self.tslice       = 24 # Split 'ttotal' in 'tslice' chunks [h]
-        self.dt_output    = ([60,30]) # 'history_interval' from namelist, per domain, in minutes
-
-        # ----------------------------------
-        # Manually specify times (UTC) over which to make PFD's and time series. Only if both times are within
-        # one 'tslice', maps are made. BvS: add better description :)
-        # Same 'tanalysis' is used for all domains!
-        self.tanalysis    = ([4,20])
-
-        # ----------------------------------
-        # Main map settings per domain
-        self.maps         = ([True,True]) # Make soundings or not
-        self.map_lat      = ([49.5, 51.3]) # Central latitude of map [deg]
-        self.map_lon      = ([6.0,  6.7]) # Central longitude of map [deg]
-        self.map_width    = ([1000000,590000]) # Domain plot width [m]
-        self.map_height   = ([1000000,590000]) # Domain plot height [m]
-        self.map_res      = (['l','i']) # Details of map (c=crude, l=low, i=interm, h=high)
-        self.map_desc     = (['18x18km','6x6km']) 
-
-        # ----------------------------------
-        # Plot variables maps
-        vars1 = (['pfd','swd','wstar','zidry','clouds','rr','wind10m','wind1000m'])         
-        vars2 = (['pfd','wstar','zidry','cudepth'])         
-        self.map_vars     = ([vars1,vars2]) # variables to plot per domain
-
-        # ----------------------------------
-        # Settings soundings (Detailed settings are in src/skewtlogp.py)
-        self.sounding     = ([True,True]) # Make soundings or not
-        sound_lat1        = ([self.map_lat[0]]) # Tmp arrays to populate locations, default=map center 
-        sound_lon1        = ([self.map_lon[0]])  
-        sound_lat2        = ([self.map_lat[1]]) 
-        sound_lon2        = ([self.map_lon[1]]) 
-        sound_name1       = (['center1'])
-        sound_name2       = (['center2'])
-        self.sound_name   = ([sound_name1,sound_name2]) # description of sounding location !! NO SPACES !! 
-        self.sound_lat    = ([sound_lat1,sound_lat2]) # sounding latitudes 
-        self.sound_lon    = ([sound_lon1,sound_lon2]) # sounding longitudes
-
-        # Settings time series (meteograms)
-        self.meteogr      = ([True,True]) # Make meteogram or not
-        meteog_lat1       = ([self.map_lat[0]]) # Tmp arrays to populate locations, default=map center
-        meteog_lon1       = ([self.map_lon[0]])  
-        meteog_lat2       = ([self.map_lat[1]]) 
-        meteog_lon2       = ([self.map_lon[1]])  
-        meteog_name1      = (['center1'])
-        meteog_name2      = (['center2'])
-        self.meteogr_name = ([meteog_name1,meteog_name2]) # description of sounding location !! NO SPACES !! 
-        self.meteogr_lat  = ([sound_lat1,sound_lat2]) # sounding latitudes 
-        self.meteogr_lon  = ([sound_lon1,sound_lon2]) # sounding longitudes
-
-        # -----------------------------------------------------
-        # Don't change below, some checking of input
-        if(self.ttotal%self.tslice != 0):
-            sys.exit('ttotal should be integerer multiple of tslice')
-
-    # Use time structs to do calculations on time  
-    def set_time(self,islice):
-        self.islice      = islice
-        self.abs_start   = datetime.datetime.strptime('%i %i %i %i'%(self.day,self.month,self.year,self.tstart),"%d %m %Y %H")
-        self.t0          = self.tstart + (self.islice+0) * self.tslice
-        self.t1          = self.tstart + (self.islice+1) * self.tslice
-        self.startstruct = self.abs_start + datetime.timedelta(hours=self.t0)
-        self.endstruct   = self.abs_start + datetime.timedelta(hours=self.t1)
-
 ## Downloads the requested GFS data, or waits until available
 # @param olga Pointer to object with OLGA settings
-def download_GFS(olga,islice):
+def downloadGFS(olga,islice):
     print('Obtaining GFS data...')
     gfsbase = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs'
     gfsrundir = '%s%04i%02i%02i/'%(olga.gfsDataRoot,olga.year,olga.month,olga.day) # where to save files
@@ -161,16 +68,20 @@ def download_GFS(olga,islice):
                     if(debug): print('found local .. '),
                     # Check if same size as remote:
                     remote = urllib.urlopen(url)
-                    meta = remote.info()
-                    size_remote = meta.getheaders("Content-Length")[0] 
-                    local = open(gfsrundir+fil,'rb')
-                    size_local = len(local.read())
-                    if(int(size_remote) == int(size_local)):
-                        if(debug): print('size remote/local match, success!')
-                        success = True
+                    # for re-running old cases, the file might have been removed online.
+                    if(remote.code == 200):
+                        meta = remote.info()
+                        size_remote = meta.getheaders("Content-Length")[0] 
+                        local = open(gfsrundir+fil,'rb')
+                        size_local = len(local.read())
+                        if(int(size_remote) == int(size_local)):
+                            if(debug): print('size remote/local match, success!')
+                            success = True
+                        else:
+                            if(debug): print('size remote/local differ, re-download .. '),
                     else:
-                        if(debug): print('size remote/local differ, re-download .. '),
-
+                        if(debug): print('remote not available for comparision: assume all is fine :)')
+                        success = True
                 # If not, check if available at server:
                 if(success == False):
                     check = urllib.urlopen(url)
@@ -210,7 +121,7 @@ def printn(string,n,separator=','):
 
 ## Update WRF and WPS namelists
 # @param olga Pointer to object with OLGA settings
-def update_Namelists(olga):
+def updateNamelists(olga):
     print('updating namelists WPS and WRF...')
 
     # Update WRF namelist
@@ -250,7 +161,7 @@ def update_Namelists(olga):
 
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
-def run_WPS(olga):
+def execWPS(olga):
     print('Running WPS at %s'%datetime.datetime.now().time())
     # Grr, we have to call the routines from the directory itself...
     os.chdir(olga.wpsRoot)
@@ -279,8 +190,6 @@ def run_WPS(olga):
 
     # Check if Vtable present, if not link it
     if(debug): print('... WPS -> ungrib')
-    if(not os.path.isfile('Vtable')):
-        subprocess.call('ln -s ungrib/Variable_Tables/Vtable.GFS Vtable',shell=True,executable='/bin/bash')
 
     # Run ungrib
     subprocess.call('./ungrib.exe >& %sungrib.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
@@ -294,7 +203,7 @@ def run_WPS(olga):
 
 ## Run the WRF steps
 # @param olga Pointer to object with OLGA settings
-def run_WRF(olga):
+def execWRF(olga):
     print('Running WRF at %s'%datetime.datetime.now().time())
     # Grr, we have to call the routines from the directory itself...
     os.chdir(olga.wrfRoot)
@@ -316,20 +225,20 @@ def run_WRF(olga):
     subprocess.call('rm met_em*',shell=True,executable='/bin/bash')
     subprocess.call('ln -s '+olga.wpsRoot+'met_em* .',shell=True,executable='/bin/bash')
 
-    if(olga.omp_thr > 1):
+    if(olga.ompThreads > 1):
         subprocess.call('export OMP_NUM_THREADS=%i'%(olga.omp_thr),shell=True,executable='/bin/bash')
 
     # Run real
     if(debug): print('... WRF -> real.exe')
-    if(olga.mpi_tasks > 1):
-        subprocess.call('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpi_tasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    if(olga.mpiTasks > 1):
+        subprocess.call('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
     else:
         subprocess.call('./real.exe >& %sreal.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
 
     # Run WRF as background process to allow other processes (download GFS, ..) to run at the same time..
     if(debug): print('... WRF -> wrf.exe')
-    if(olga.mpi_tasks > 1):
-        subprocess.call('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpi_tasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    if(olga.mpiTasks > 1):
+        subprocess.call('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
     else:
         subprocess.call('./wrf.exe >& %swrf.%s &'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
 
@@ -337,7 +246,7 @@ def run_WRF(olga):
 
 ## Wait until the required restart file is available (i.e. WRF finished)
 # @param olga Pointer to object with OLGA settings
-def wait_for_WRF(olga):
+def wait4WRF(olga):
     print('Waiting for WRF to finish')
 
     es = olga.endstruct
@@ -353,7 +262,7 @@ def wait_for_WRF(olga):
 
 ## Copy WRF output to wrfDataRoot
 # @param olga Pointer to object with OLGA settings
-def move_WRF_output(olga):
+def moveWRFOutput(olga):
     ss = olga.startstruct
     for dom in range(olga.ndom):
         outname = '%04i%02i%02i_t%02iz_d%i.nc'%(olga.year,olga.month,olga.day,olga.cycle,dom+1)
@@ -372,7 +281,7 @@ def move_WRF_output(olga):
 
 ## Create the plots / maps / soundings
 # @param olga Pointer to object with OLGA settings
-def make_plots(olga):
+def execPlots(olga):
     print('starting plots at %s'%datetime.datetime.now().time())
 
     # Spawn different processes for each mape type, saves quite some time..
@@ -400,63 +309,3 @@ def make_plots(olga):
         psound.join()
 
     print('finished plots at %s'%datetime.datetime.now().time())
-
-## Main OLGA function, called when calling WRFdriver.py
-# @param mode ....
-if __name__ == "__main__":
-    # Get command line arguments
-    modes = ['all','post']
-    if(len(sys.argv) != 2):
-        sys.exit('provide mode: {all,post}')
-    else:
-        mode = sys.argv[1]
-        if(mode not in modes):
-            sys.exit('mode %s invalid'%mode)
-
-    # Get current date   
-    year   = 2014 #time.strftime('%Y')
-    month  = 03   #time.strftime('%m')
-    day    = 28   #time.strftime('%d')
-    tstart = 00   # start time of simulation 
-    cycle  = 0    # which GFS cycle? {0,6,12,18}
-
-    # Create object with OLGA settings, and add time settings
-    olga_settings         = olga_Settings()
-    olga_settings.year    = int(year)
-    olga_settings.month   = int(month)
-    olga_settings.day     = int(day)
-    olga_settings.tstart  = int(tstart)
-    olga_settings.cycle   = int(cycle)
-    olga_settings.basestr = "%s%s%s_t%02iz"%(year,month,day,cycle) # base string for output
-
-    # Loop over the time slices
-    startTime = datetime.datetime.now()
-    nslice = int(olga_settings.ttotal/olga_settings.tslice)
-
-    print('--------------------------------')
-    print('Starting OLGA: %s'%(datetime.datetime.now()))
-    print('--------------------------------')
-
-    # Loop over the different time slices
-    for islice in range(nslice):
-        print('--------------------------------')
-        print('Processing time slice %i of %i'%(islice+1,nslice))
-        print('--------------------------------')
-
-        olga_settings.set_time(islice) # update time settings for the current time slice
-
-        if(mode == 'all'):
-            download_GFS(olga_settings,islice) # download GFS data
-            update_Namelists(olga_settings) # update WRf & WPS namelists
-            run_WPS(olga_settings) # run the WPS routines
-            run_WRF(olga_settings) # run the WRF routines
-            wait_for_WRF(olga_settings) # Wait until the restart file is available
-        if(mode == 'all' or mode == 'post'):
-            move_WRF_output(olga_settings)
-            make_plots(olga_settings)
-
-    print('--------------------------------')
-    print('Execution time OLGA: %s'%(datetime.datetime.now()-startTime))
-    print('--------------------------------')
-
-

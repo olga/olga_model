@@ -11,8 +11,8 @@
  start_second = 0,
  end_year = 2014,
  end_month = 3,
- end_day = 28,
- end_hour = 3,
+ end_day = 29,
+ end_hour = 0,
  end_minute = 0,
  end_second = 0,
  interval_seconds                    = 10800

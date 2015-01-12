@@ -35,7 +35,7 @@ def create_maps(olga,wrfout,dom,times):
                     resolution=olga.map_res[dom],area_thresh=10.,projection='lcc',\
                     lat_1=olga.map_lat[dom],lat_0=olga.map_lat[dom],lon_0=olga.map_lon[dom])
 
-    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'data/olga_lr.png')
+    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_lr.png')
 
     filter = True
     fsigma = 0.5     # std dev of gaussian filter size..

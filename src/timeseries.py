@@ -31,7 +31,7 @@ def create_timeseries(olga,wrfout,dom,times):
 
     # Create 4-color colormap
     wupd = cmap_discrete(wup,np.linspace(0,1,4))
-    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'data/olga_lr.png')
+    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_lr.png')
 
     # Loop over requested locations
     for name,lon,lat in zip(olga.meteogr_name[dom][:],olga.meteogr_lon[dom][:],olga.meteogr_lat[dom][:]):

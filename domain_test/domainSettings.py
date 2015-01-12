@@ -1,9 +1,12 @@
+import datetime
+
 # Main settings for OLGA
 class olgaSettings:
     def __init__(self):
         # ----------------------------------
         # Local file system settings.
         # Full path to directory of this script. Append with '/' !!
+        self.olgaRoot     = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/' 
         self.domainRoot   = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/domain_test/' 
 
         # The following directories are by default defined relative to the current directory. 
@@ -14,11 +17,11 @@ class olgaSettings:
         self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
         self.figRoot      = self.domainRoot + 'outputOLGA/' # Path to save OLGA output
         self.wrfDataRoot  = self.domainRoot + 'outputWRF/'  # Path to store the WRF output
-        self.gfsDataRoot  = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/inputGFS/' # Path to store the GFS data
+        self.gfsDataRoot  = self.olgaRoot   + 'inputGFS/'   # Path to store the GFS data
 
         # ----------------------------------
         # Computational settings. 
-        self.mpiTasks    = 2 # Number of MPI tasks
+        self.mpiTasks    = 4 # Number of MPI tasks
         self.ompThreads  = 1 # Number of OpenMP threads
 
         # ----------------------------------
@@ -28,7 +31,7 @@ class olgaSettings:
 
         # ----------------------------------
         # Time settings
-        self.ttotal       = 48 # Total time to simulate [h]
+        self.ttotal       = 24 # Total time to simulate [h]
         self.tslice       = 24 # Split 'ttotal' in 'tslice' chunks [h]
         self.dt_output    = ([60,30]) # 'history_interval' from namelist, per domain, in minutes
 
@@ -92,3 +95,5 @@ class olgaSettings:
         self.t1          = self.tstart + (self.islice+1) * self.tslice
         self.startstruct = self.abs_start + datetime.timedelta(hours=self.t0)
         self.endstruct   = self.abs_start + datetime.timedelta(hours=self.t1)
+
+
