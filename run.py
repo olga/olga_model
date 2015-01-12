@@ -38,7 +38,7 @@ for islice in range(nslice):
         execWRF(olga) # run the WRF routines
         wait4WRF(olga) # Wait until the restart file is available
     if(mode == 'all' or mode == 'post'):
-#        moveWRFOutput(olga)
+        moveWRFOutput(olga)
         execPlots(olga)
 
 print('--------------------------------')
