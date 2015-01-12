@@ -1,13 +1,34 @@
 import numpy as np
-from netCDF4 import Dataset
 from pylab import *
 from math import radians, cos, sin, asin, sqrt
 from mpl_toolkits.basemap import Basemap
 
 # ====== SETTINGS =======
-ndomains = 2
-WPSPath = '../WPSdir' 
+ndomains = 1
+WPSPath = '../domain_test/WPS' 
 # =======================
+
+def get_nc_obj(file):
+    # Check if the netcdf4-python module is available:
+    try:
+        from netCDF4 import Dataset
+        wrfin = Dataset(file,'r')
+        netcdf4py = True 
+    except:
+        netcdf4py = False 
+
+    # Fallback option: NetCDF from Scientific.IO
+    try:
+        from Scientific.IO import NetCDF
+        wrfin = NetCDF.NetCDFFile(file,'r')
+        netcdfsci = True
+    except:
+        netcdfsci = False
+
+    if(netcdf4py==False and netcdfsci==False):
+        sys.exit('No NetCDF module available!')
+    else:
+        return wrfin
 
 def haversine(lon1, lat1, lon2, lat2):
     lon1,lat1,lon2,lat2 = map(radians,[lon1,lat1,lon2,lat2])
@@ -20,7 +41,7 @@ def haversine(lon1, lat1, lon2, lat2):
 class readgeom:
     def __init__(self,path):
         print('reading %s'%path)
-        nc               = Dataset(path,'r')
+        nc               = get_nc_obj(path)
         self.xlat        = nc.variables["XLAT_M"][0,:,:]
         self.xlon        = nc.variables["XLONG_M"][0,:,:]
         self.hgt_m       = nc.variables["HGT_M"][0,:,:]
