@@ -44,10 +44,13 @@ class olgaSettings:
         # ----------------------------------
         # Main map settings per domain
         self.maps         = ([True,True]) # Make soundings or not
-        self.map_lat      = ([49.5, 51.3]) # Central latitude of map [deg]
-        self.map_lon      = ([6.0,  6.7]) # Central longitude of map [deg]
-        self.map_width    = ([1000000,590000]) # Domain plot width [m]
-        self.map_height   = ([1000000,590000]) # Domain plot height [m]
+
+        # By setting map_lat, map_lon, map_width and map_height to -1, OLGA automatically
+        # tries to determine the best settings. Useful for setting up domains and first tests
+        self.map_lat      = ([-1, -1]) # Central latitude of map [deg]
+        self.map_lon      = ([-1, -1]) # Central longitude of map [deg]
+        self.map_width    = ([-1, -1]) # Domain plot width [m]
+        self.map_height   = ([-1, -1]) # Domain plot height [m]
         self.map_res      = (['l','i']) # Details of map (c=crude, l=low, i=interm, h=high)
         self.map_desc     = (['18x18km','6x6km']) 
 

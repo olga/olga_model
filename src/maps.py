@@ -25,23 +25,44 @@ from scipy.ndimage.filters import gaussian_filter as gausf
 
 from readwrf import *
 from colormaps import *
+from tools import *
 
 ## Function to create maps
 def create_maps(olga,wrfout,dom,times):
-
-    # Setup basemap only once and (deep)copy later for performance
-    basem = Basemap(width=olga.map_width[dom],height=olga.map_height[dom],
-                    rsphere=(6378137.00,6356752.3142),\
-                    resolution=olga.map_res[dom],area_thresh=10.,projection='lcc',\
-                    lat_1=olga.map_lat[dom],lat_0=olga.map_lat[dom],lon_0=olga.map_lon[dom])
-
-    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_lr.png')
-
     filter = True
     fsigma = 0.5     # std dev of gaussian filter size..
 
     # Read WRF output
     d  = readwrf_all(olga,wrfout,times[0],times[-1]) 
+
+    # If any map parameters are set to -1, try to determine best setting
+    if(olga.map_lat[dom] == -1):
+        map_lat = np.average(d.lat)
+    else:
+        map_lat = olga.map_lat[dom]
+
+    if(olga.map_lon[dom] == -1):
+        map_lon = np.average(d.lon)
+    else:
+        map_lon = olga.map_lat[dom]
+
+    if(olga.map_width[dom] == -1):
+        map_width =  1.05* haversine(d.lon.min(), map_lat, d.lon.max(), map_lat) * 1000
+    else:
+        map_width = olga.map_width[dom]
+
+    if(olga.map_height[dom] == -1):
+        map_height =  1.05* haversine(map_lon, d.lat.min(), map_lon, d.lat.max()) * 1000
+    else:
+        map_height = olga.map_height[dom]
+
+    # Setup basemap only once and (deep)copy later for performance
+    basem = Basemap(width=map_width,height=map_height,
+                    rsphere=(6378137.00,6356752.3142),\
+                    resolution=olga.map_res[dom],area_thresh=10.,projection='lcc',\
+                    lat_1=map_lat,lat_0=map_lat,lon_0=map_lon)
+
+    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_lr.png')
 
     # Get basemap coords cities
     #if(domain==1):

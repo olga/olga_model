@@ -3,7 +3,7 @@ import datetime
 # Import OLGA specific routines
 from src.main import *
 
-# Import file with domain settings
+# Import file with domain settings from directory "domain_test" or other
 from domain_test.domainSettings import olgaSettings as settings_d1
 #from OLGA_NL.domainSettings import olgaSettings as settings_d1
 
