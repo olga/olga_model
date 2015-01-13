@@ -145,7 +145,7 @@ class readwrf_all:
 
         # In our case, {lat/lon/hgt} doesn't change in time since we don't have moving domains... 
         self.lat         = wrfin.variables["XLAT"][0,:,:] # latitude
-        self.nlat        = np.size(self.lat[0,:])
+        self.nlat        = np.size(self.lat[:,0])
         self.lon         = wrfin.variables["XLONG"][0,:,:] # longitude
         self.nlon        = np.size(self.lon[0,:])
         self.hgt         = wrfin.variables["HGT"][0,:,:] # terrain height 
@@ -206,36 +206,10 @@ class readwrf_all:
         self.wglider     = deepcopy(self.wstar - supd) # w* minus sink glider [m s-1]
         self.wstar[np.where(self.wglider<0)] = 0. # set minimum updraft velocity to zero
 
-
-        # Check if there are periods of sunrise-sunset over this time period (t0-t1) for calculation of PFD
-        # use a theoretical shortwave incoming radiation rather than the measured one
-        # to prevent problems on days with clouds.
-        #cent_lat   = int(self.nlat/2) 
-        #cent_lon   = int(self.nlon/2)   
-        #swd_theory = np.zeros(nt)
-
-        ## Calculate the theoretical incoming shortwave radation
-        ## Determine time (index) of sunrise and sunset
-        #for t in range(nt):
-        #    swd_theory[t] = swin(self.doy[t],self.hour[t],self.lat[cent_lat,cent_lon],self.lon[cent_lat,cent_lon])
-        #t_sunrise = [] ; t_sunset  = [] ; sun_up = -1 ; sun_down = -1
-        #for t in range(nt-1):    
-        #    if(swd_theory[t] < 1e-3 and swd_theory[t+1] > 1e-3):
-        #        sun_up = t
-        #    if(swd_theory[t] > 1e-3 and swd_theory[t+1] < 1e-3):
-        #        sun_down = t+1
-        #        if(sun_up > 0):
-        #            t_sunrise.append(sun_up)  ; sun_up = -1 
-        #            t_sunset.append(sun_down) ; sun_down = -1
-
-        ## Just to be sure, and for testing;
-        #if(size(t_sunrise) != size(t_sunset)):
-        #    sys.exit('problem in sunrise-sunset estimation...')
-
         # Calculate the PFD
         if(np.size(self.t0_ana) > 0):
             self.date_PFD = []
-            self.PFD = np.zeros((np.size(self.t0_ana),self.nlon,self.nlat))
+            self.PFD = np.zeros((np.size(self.t0_ana),self.nlat,self.nlon))
             for i in range(np.size(self.t0_ana)):
                 self.date_PFD.append(self.date[self.t0_ana[i]])
                 pV  = VgemCrossCountry(self.zi[self.t0_ana[i]:self.t1_ana[i]+1],self.wstar[self.t0_ana[i]:self.t1_ana[i]+1])
