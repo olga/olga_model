@@ -5,6 +5,7 @@ from src.main import *
 
 # Import file with domain settings
 from domain_test.domainSettings import olgaSettings as settings_d1
+#from OLGA_NL.domainSettings import olgaSettings as settings_d1
 
 mode = 'all'
 
@@ -37,8 +38,8 @@ for islice in range(nslice):
         execWPS(olga) # run the WPS routines
         execWRF(olga) # run the WRF routines
         wait4WRF(olga) # Wait until the restart file is available
-    if(mode == 'all' or mode == 'post'):
         moveWRFOutput(olga)
+    if(mode == 'all' or mode == 'post'):
         execPlots(olga)
 
 print('--------------------------------')
