@@ -304,8 +304,11 @@ def execPlots(olga):
             psound = Process(target=plot_driver, args=(olga,dom,'sounding',))
             psound.start()
 
-        pmap.join()
-        pmgram.join()
-        psound.join()
+        if(olga.maps[dom]==True):
+            pmap.join()
+        if(olga.meteogr[dom]):
+            pmgram.join()
+        if(olga.sounding[dom]==True):
+            psound.join()
 
     print('finished plots at %s'%datetime.datetime.now().time())
