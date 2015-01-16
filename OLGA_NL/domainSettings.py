@@ -6,8 +6,10 @@ class olgaSettings:
         # ----------------------------------
         # Local file system settings.
         # Full path to directory of this script. Append with '/' !!
-        self.olgaRoot     = '/home/bart/WRFnl/olga_model/' 
-        self.domainRoot   = '/home/bart/WRFnl/olga_model/OLGA_NL/' 
+        #self.olgaRoot     = '/home/bart/WRFnl/olga_model/' # Mint 
+        #self.domainRoot   = '/home/bart/WRFnl/olga_model/OLGA_NL/' # Mint 
+        self.olgaRoot     = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/' # Thunder
+        self.domainRoot   = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/OLGA_NL/' # Thunder
 
         # The following directories are by default defined relative to the current directory. 
         # However, also absolute paths, at other disks/partitions/etc. are possible to store

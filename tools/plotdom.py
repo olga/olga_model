@@ -4,8 +4,9 @@ from math import radians, cos, sin, asin, sqrt
 from mpl_toolkits.basemap import Basemap
 
 # ====== SETTINGS =======
-ndomains = 1
-WPSPath = '../domain_test/WPS' 
+ndomains = 2
+#WPSPath = '../domain_test/WPS' 
+WPSPath = '../OLGA_NL/WPS' 
 # =======================
 
 def get_nc_obj(file):

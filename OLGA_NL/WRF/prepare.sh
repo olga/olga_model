@@ -3,7 +3,8 @@
 
 # -------------------------
 # Change WPSPath to relative or absolute path to WPS installation directory
-WRFPath="../../../WRFv361"
+#WRFPath="../../../WRFv361" # Mint
+WRFPath="../../../WRF_v3.6.1" # Thunder
 # -------------------------
 
 # Link the required files to current directory

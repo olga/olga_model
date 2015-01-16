@@ -3,14 +3,14 @@
  max_dom = 1
 
  start_year = 2014,
- start_month = 3,
- start_day = 28,
+ start_month = 12,
+ start_day = 25,
  start_hour = 0,
  start_minute = 0,
  start_second = 0,
  end_year = 2014,
- end_month = 3,
- end_day = 29,
+ end_month = 12,
+ end_day = 26,
  end_hour = 0,
  end_minute = 0,
  end_second = 0,

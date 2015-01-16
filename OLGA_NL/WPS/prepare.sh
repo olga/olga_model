@@ -3,7 +3,8 @@
 
 # -------------------------
 # Change WPSPath to relative or absolute path to WPS installation directory
-WPSPath="../../../WPSv361"
+#WPSPath="../../../WPSv361"  # Mint
+WPSPath="../../../WPS_v3.6.1" # Thunder
 # -------------------------
 
 # Link the required files to current directory

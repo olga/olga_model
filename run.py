@@ -4,15 +4,15 @@ import datetime
 from src.main import *
 
 # Import file with domain settings from directory "domain_test" or other
-from domain_test.domainSettings import olgaSettings as settings_d1
-#from OLGA_NL.domainSettings import olgaSettings as settings_d1
+#from domain_test.domainSettings import olgaSettings as settings_d1
+from OLGA_NL.domainSettings import olgaSettings as settings_d1
 
 mode = 'all'
 
 olga = settings_d1()
-olga.year    = int(time.strftime('%Y'))
-olga.month   = int(time.strftime('%m'))
-olga.day     = int(time.strftime('%d'))
+olga.year    = 2014 #int(time.strftime('%Y'))
+olga.month   = 12 #int(time.strftime('%m'))
+olga.day     = 25 #int(time.strftime('%d'))
 olga.tstart  = 00   # start time of simulation
 olga.cycle   = 0    # which GFS cycle? {0,6,12,18}
 
