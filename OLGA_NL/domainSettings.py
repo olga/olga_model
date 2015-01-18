@@ -6,20 +6,34 @@ class olgaSettings:
         # ----------------------------------
         # Local file system settings.
         # Full path to directory of this script. Append with '/' !!
-        #self.olgaRoot     = '/home/bart/WRFnl/olga_model/' # Mint 
-        #self.domainRoot   = '/home/bart/WRFnl/olga_model/OLGA_NL/' # Mint 
-        self.olgaRoot     = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/' # Thunder
-        self.domainRoot   = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/OLGA_NL/' # Thunder
+        
+        if(True): # Mint ---------------------
+            self.olgaRoot     = '/home/bart/WRFnl/olga_model/' # Mint 
+            self.domainRoot   = '/home/bart/WRFnl/olga_model/OLGA_NL/' # Mint 
 
-        # The following directories are by default defined relative to the current directory. 
-        # However, also absolute paths, at other disks/partitions/etc. are possible to store
-        # e.g. the large input and output files somwhere else.
-        self.wpsRoot      = self.domainRoot + 'WPS/'        # Path to root of WPS run directory
-        self.wrfRoot      = self.domainRoot + 'WRF/'        # Path to root of WRF run directory
-        self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
-        self.figRoot      = self.domainRoot + 'outputOLGA/' # Path to save OLGA output
-        self.wrfDataRoot  = self.domainRoot + 'outputWRF/'  # Path to store the WRF output
-        self.gfsDataRoot  = self.olgaRoot   + 'inputGFS/'   # Path to store the GFS data
+            # The following directories are by default defined relative to the current directory. 
+            # However, also absolute paths, at other disks/partitions/etc. are possible to store
+            # e.g. the large input and output files somwhere else.
+            self.wpsRoot      = self.domainRoot + 'WPS/'        # Path to root of WPS run directory
+            self.wrfRoot      = self.domainRoot + 'WRF/'        # Path to root of WRF run directory
+            self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
+            self.figRoot      = '/home/scratch1/WRFnl/outputOLGA/' # Path to save OLGA output
+            self.wrfDataRoot  = '/home/scratch1/WRFnl/outputWRF/'  # Path to store the WRF output
+            self.gfsDataRoot  = '/home/scratch1/WRFnl/inputGFS/'   # Path to store the GFS data
+
+        if(False): # Thunder -----------------
+            self.olgaRoot     = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/' # Thunder
+            self.domainRoot   = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/OLGA_NL/' # Thunder
+
+            # The following directories are by default defined relative to the current directory. 
+            # However, also absolute paths, at other disks/partitions/etc. are possible to store
+            # e.g. the large input and output files somwhere else.
+            self.wpsRoot      = self.domainRoot + 'WPS/'        # Path to root of WPS run directory
+            self.wrfRoot      = self.domainRoot + 'WRF/'        # Path to root of WRF run directory
+            self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
+            self.figRoot      = self.domainRoot + 'outputOLGA/' # Path to save OLGA output
+            self.wrfDataRoot  = self.domainRoot + 'outputWRF/'  # Path to store the WRF output
+            self.gfsDataRoot  = self.olgaRoot   + 'inputGFS/'   # Path to store the GFS data
 
         # ----------------------------------
         # Computational settings. 
@@ -41,7 +55,7 @@ class olgaSettings:
         # Manually specify times (UTC) over which to make PFD's and time series. Only if both times are within
         # one 'tslice', maps are made. BvS: add better description :)
         # Same 'tanalysis' is used for all domains!
-        self.tanalysis    = ([4,20])
+        self.tanalysis    = ([0,22]) 
 
         # ----------------------------------
         # Main map settings per domain
@@ -49,17 +63,21 @@ class olgaSettings:
 
         # By setting map_lat, map_lon, map_width and map_height to -1, OLGA automatically
         # tries to determine the best settings. Useful for setting up domains and first tests
-        self.map_lat      = ([-1, -1]) # Central latitude of map [deg]
-        self.map_lon      = ([-1, -1]) # Central longitude of map [deg]
-        self.map_width    = ([-1, -1]) # Domain plot width [m]
-        self.map_height   = ([-1, -1]) # Domain plot height [m]
+        self.map_lat      = ([50.0, 51.5]) # Central latitude of map [deg]
+        self.map_lon      = ([8.5, 8.1]) # Central longitude of map [deg]
+        self.map_width    = ([1200000, 700000]) # Domain plot width [m]
+        self.map_height   = ([1200000, 600000]) # Domain plot height [m]
         self.map_res      = (['l','i']) # Details of map (c=crude, l=low, i=interm, h=high)
+        self.drawRivers   = ([False,False]) # Draw rivers
+        self.drawCities   = ([False,False]) # Draw cities
         self.map_desc     = (['18x18km','6x6km']) 
 
         # ----------------------------------
         # Plot variables maps
-        vars1 = (['pfd','swd','wstar','zidry','clouds','rr','wind10m','wind1000m'])         
-        vars2 = (['pfd','wstar','zidry','cudepth'])         
+        #vars1 = (['pfd','wstar','zidry','clouds','rr','wind10m','wind1000m'])         
+        #vars2 = (['pfd','wstar','zidry','clouds','cudepth'])         
+        vars1 = (['pfd'])         
+        vars2 = (['pfd'])         
         self.map_vars     = ([vars1,vars2]) # variables to plot per domain
 
         # ----------------------------------
