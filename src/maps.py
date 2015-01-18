@@ -54,12 +54,12 @@ def getDomain(olga, dom, wrf):
         map_lon = olga.map_lon[dom]
 
     if(olga.map_width[dom] == -1):
-        map_width =  1.05* haversine(wrf.lon.min(), map_lat, wrf.lon.max(), map_lat) * 1000
+        map_width =  1.05 * haversine(wrf.lon.min(), map_lat, wrf.lon.max(), map_lat) * 1000
     else:
         map_width = olga.map_width[dom]
 
     if(olga.map_height[dom] == -1):
-        map_height =  1.05* haversine(map_lon, wrf.lat.min(), map_lon, wrf.lat.max()) * 1000
+        map_height =  1.05 * haversine(map_lon, wrf.lat.min(), map_lon, wrf.lat.max()) * 1000
     else:
         map_height = olga.map_height[dom]
 
@@ -119,25 +119,30 @@ def create_maps(olga, wrfout, dom, times):
     # Read in the OLGA logo
     olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_lr.png')
 
-    # Get basemap coords cities
-    #if(domain==1):
-    #    db = np.genfromtxt(olgaRoot+'include/cities_eur_d1.txt',dtype='str',delimiter=',',skip_header=0)
-    #elif(domain==2):
-    #    db = np.genfromtxt(olgaRoot+'include/cities_eur_d2.txt',dtype='str',delimiter=',',skip_header=0)
-    #city   = db[:,0]
-    #citys  = db[:,1]  
-    #citlon = np.array(db[:,2],dtype=np.float32)  
-    #citlat = np.array(db[:,3],dtype=np.float32)  
-    #citlon,citlat = basem(citlon,citlat)
+    # Coordinates cities # TO-DO BVS: fix
+    if(False):
+        if(domain==1):
+            db = np.genfromtxt(olgaRoot+'include/cities_eur_d1.txt',dtype='str',delimiter=',',skip_header=0)
+        elif(domain==2):
+            db = np.genfromtxt(olgaRoot+'include/cities_eur_d2.txt',dtype='str',delimiter=',',skip_header=0)
+        city   = db[:,0]
+        citys  = db[:,1]  
+        citlon = np.array(db[:,2],dtype=np.float32)  
+        citlat = np.array(db[:,3],dtype=np.float32)  
+        citlon,citlat = basem(citlon,citlat)
 
     # Loop over differnt time steps 
     for t in times:
         for var in olga.map_vars[dom]:
-            fig        = pl.figure(figsize=(fig_width_in,fig_height_in), dpi=fig_dpi)
+            fig        = pl.figure(figsize=(fig_width_in, fig_height_in), dpi=fig_dpi)
             m          = deepcopy(basem)
-            axloc      = [ax_left,ax_bot,ax_width,ax_height]
+            axloc      = [ax_left, ax_bot, ax_width, ax_height]
             ax         = fig.add_axes(axloc)
-            lon,lat    = m(wrf.lon,wrf.lat)
+            lon,lat    = m(wrf.lon, wrf.lat)
+            minlon     = lon.min()
+            maxlon     = lon.max()
+            minlat     = lat.min()
+            maxlat     = lat.max()
             doplot     = False
 
             # -------------------------------------------------
@@ -148,18 +153,18 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             if(var == 'slpwind'):
                 title  = 'Sea level pressure (hPa) + 10m wind (kts)'
-                utot   = ((wrf.U10[t,:,:]*m2k)**2.+(wrf.V10[t,:,:]*m2k)**2.)**0.5
-                umax   = np.ceil((((wrf.U10[:,:,:]*m2k)**2.+(wrf.V10[:,:,:]*m2k)**2.)**0.5).max()*10.)/10.
-                intv   = 4 # interval of wind barbs
-                levs1  = np.arange(800,1200,2.5)     # SLP levels
-                levs2  = np.arange(0,umax,umax/50.)  # Wind levels
-                pfilt  = gausf(wrf.slps[t,:,:]/100.,3.0,mode='reflect')
-                cf     = False #m.contourf(lon,lat,utot,levs2,extend='both',cmap=wnd)
-                barbs  = m.barbs(lon[0::intv,0::intv],lat[0::intv,0::intv],\
-                                 wrf.U10[t,0::intv,0::intv]*m2k,wrf.V10[t,0::intv,0::intv]*m2k,\
-                                 length=5,barbcolor='r',flagcolor='r',linewidth=0.5)
-                c      = m.contour(lon,lat,pfilt,levs1,linewidths=1.5,colors='k')
-                cl     = pl.clabel(c,levs1,fmt='%.1f')   
+                utot   = ((wrf.U10[t,:,:]*m2k)**2. + (wrf.V10[t,:,:]*m2k)**2.)**0.5
+                umax   = np.ceil((((wrf.U10[:,:,:]*m2k)**2. + (wrf.V10[:,:,:]*m2k)**2.)**0.5).max()*10.)/10.
+                intv   = 4 
+                levs1  = np.arange(800, 1200, 2.5)     # SLP levels
+                levs2  = np.arange(0, umax, umax/50.)  # Wind levels
+                pfilt  = gausf(wrf.slps[t,:,:]/100., 3.0, mode='reflect')
+                cf     = False 
+                barbs  = m.barbs(lon[0::intv,0::intv], lat[0::intv,0::intv],\
+                                 wrf.U10[t,0::intv,0::intv]*m2k, wrf.V10[t,0::intv,0::intv]*m2k,\
+                                 length=5, barbcolor='r', flagcolor='r', linewidth=0.5)
+                c      = m.contour(lon, lat, pfilt, levs1, linewidths=1.5, colors='k')
+                cl     = pl.clabel(c, levs1, fmt='%.1f')   
                 doplot = True 
 
             # -------------------------------------------------
@@ -168,22 +173,21 @@ def create_maps(olga, wrfout, dom, times):
             if(var[:4] == 'wind'):
                 if(var=='wind10m'):
                     title  = '10m wind (kts)'
-                    ufilt  = gausf(wrf.U10[t,:,:],fsigma,mode='reflect')
-                    vfilt  = gausf(wrf.V10[t,:,:],fsigma,mode='reflect')
+                    ufilt  = gausf(wrf.U10[t,:,:], fsigma,mode='reflect')
+                    vfilt  = gausf(wrf.V10[t,:,:], fsigma,mode='reflect')
                     scalefac = 25.
                 elif(var=='wind1000m'):
                     title  = '1000m wind'
-                    ufilt  = gausf(wrf.U1000[t,:,:],fsigma,mode='reflect')
-                    vfilt  = gausf(wrf.V1000[t,:,:],fsigma,mode='reflect')
+                    ufilt  = gausf(wrf.U1000[t,:,:], fsigma,mode='reflect')
+                    vfilt  = gausf(wrf.V1000[t,:,:], fsigma,mode='reflect')
                     scalefac = 35.
 
-                utot   = ((ufilt[:,:]*m2k)**2.+(vfilt[:,:]*m2k)**2.)**0.5
-                umax   = 40. #np.ceil((((wrf.U10[:,:,:]*m2k)**2.+(wrf.V10[:,:,:]*m2k)**2.)**0.5).max()*10.)/10.
-                levs2  = np.arange(0,umax+0.01,umax/40.)  # Wind levels
-                cf     = m.contourf(lon,lat,utot,levs2,extend='both',cmap=wnd)
+                utot   = ((ufilt[:,:]*m2k)**2. + (vfilt[:,:]*m2k)**2.)**0.5
+                umax   = 40. 
+                levs2  = np.arange(0, umax+0.01, umax/40.)  # Wind levels
+                cf     = m.contourf(lon, lat, utot, levs2, extend='both', cmap=wnd)
                 units  = 'kts'
-                stream = m.streamplot(lon[0,:],lat[:,0],\
-                                 ufilt[:,:],vfilt[:,:],density=3,linewidth=utot/scalefac,color='k')
+                stream = m.streamplot(lon[0,:], lat[:,0], ufilt[:,:], vfilt[:,:], density=3, linewidth=utot/scalefac, color='k')
                 doplot = True 
  
             # -------------------------------------------------
@@ -192,19 +196,19 @@ def create_maps(olga, wrfout, dom, times):
             if(var == 'rr'):
                 title = 'Precipitation over last hour (mm, o=convective)'
                 if(t==0):
-                    rr  = wrf.rr_mp[t,:,:]+wrf.rr_con[t,:,:]
+                    rr  = wrf.rr_mp[t,:,:] + wrf.rr_con[t,:,:]
                     rrc = wrf.rr_con[t,:,:]
                 else:
-                    rr  = (wrf.rr_mp[t,:,:]+wrf.rr_con[t,:,:])-(wrf.rr_mp[t-1,:,:]+wrf.rr_con[t-1,:,:])  
-                    rrc = wrf.rr_con[t,:,:]-wrf.rr_con[t-1,:,:]  
-                levs  = np.arange(0.1,30.0001,0.5)
-                cf    = m.contourf(lon,lat,rr,levs,alpha=1.,extend='both',cmap=rain3)
+                    rr  = (wrf.rr_mp[t,:,:] + wrf.rr_con[t,:,:]) - (wrf.rr_mp[t-1,:,:] + wrf.rr_con[t-1,:,:])  
+                    rrc = wrf.rr_con[t,:,:] - wrf.rr_con[t-1,:,:]  
+                levs  = np.arange(0.1, 30.0001, 0.5)
+                cf    = m.contourf(lon, lat, rr, levs, alpha=1., extend='both', cmap=rain3)
                 units = 'mm'
                 lim   = 0.1 ; intv  = 3
-                for i in range(0,wrf.nlon,intv):
-                    for j in range(0,wrf.nlat,intv):
-                        if(rrc[j,i] > lim):
-                            pl.text(lon[j,i],lat[j,i],'o',size=6,ha='center',va='center',color='0.1')
+                for i in range(0, wrf.nlat, intv):
+                    for j in range(0, wrf.nlon, intv):
+                        if(rrc[i,j] > lim and lat[i,j] > m.ymin and lat[i,j] < m.ymax and lon[i,j] > m.xmin and lon[i,j] < m.xmax):
+                            pl.text(lon[i,j], lat[i,j], 'o', size=6, ha='center', va='center', color='0.1')
                 doplot = True
 
             # -------------------------------------------------
@@ -212,20 +216,21 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             if(var == 'clouds'):
                 title = 'Cloud cover fraction (o=low  -=mid  |=high)'
-                levs  = np.arange(0.00,1.001,0.05)
+                levs  = np.arange(0.00, 1.001, 0.1)
                 intv  = 3
-                cf    = m.contourf(lon,lat,wrf.ccsum[t,:,:],levs,alpha=1.,cmap=cld)
+                cf    = m.contourf(lon, lat, wrf.ccsum[t,:,:], levs, alpha=1., cmap=cld)
                 units = 'fraction'
                 lim   = 0.1
 
-                for i in range(0,wrf.nlon,intv):
-                    for j in range(0,wrf.nlat,intv):
-                        if(wrf.cclow[t,j,i] > lim):
-                            pl.text(lon[j,i],lat[j,i],'o',size=8,ha='center',va='center',color='0.1')
-                        if(wrf.ccmid[t,j,i] > lim):
-                            pl.text(lon[j,i],lat[j,i],'-',size=9,ha='center',va='center',color='0.2')
-                        if(wrf.cchig[t,j,i] > lim):
-                            pl.text(lon[j,i],lat[j,i],'|',size=8,ha='center',va='center',color='0.1')
+                for i in range(0, wrf.nlat, intv):
+                    for j in range(0, wrf.nlon, intv):
+                        if(lat[i,j] > m.ymin and lat[i,j] < m.ymax and lon[i,j] > m.xmin and lon[i,j] < m.xmax): 
+                            if(wrf.cclow[t,i,j] > lim):
+                                pl.text(lon[i,j], lat[i,j], 'o', size=8, ha='center', va='center', color='0.1')
+                            if(wrf.ccmid[t,i,j] > lim):
+                                pl.text(lon[i,j], lat[i,j], '-', size=9, ha='center', va='center', color='0.2')
+                            if(wrf.cchig[t,i,j] > lim):
+                                pl.text(lon[i,j], lat[i,j], '|', size=8, ha='center', va='center', color='0.1')
                 doplot = True
 
             # -------------------------------------------------
@@ -234,10 +239,9 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             if(var == 'swd'):
                 title = 'Shortwave incoming radiation (W/m2)'
-                levs  = np.arange(0,1000.01,50)
-                data  = gausf(wrf.swd[t,:,:],fsigma,mode='reflect') \
-                        if filter else wrf.swd[t,:,:]
-                cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
+                levs  = np.arange(0, 1000.01, 50)
+                data  = gausf(wrf.swd[t,:,:], fsigma,mode='reflect') if filter else wrf.swd[t,:,:]
+                cf    = m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
                 units = 'W/m2'
                 doplot = True 
  
@@ -249,10 +253,9 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             if(var == 'wstar'):
                 title = 'Updraft velocity (m/s)'
-                levs  = np.arange(0,3.001,0.5)
-                data  = gausf(wrf.wstar[t,:,:],fsigma,mode='reflect') \
-                        if filter else wrf.wstar[t,:,:]
-                cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
+                levs  = np.arange(0, 3.001, 0.5)
+                data  = gausf(wrf.wstar[t,:,:], fsigma,mode='reflect') if filter else wrf.wstar[t,:,:]
+                cf    = m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
                 units = 'm/s'
                 doplot = True 
 
@@ -261,10 +264,9 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             if(var == 'zol'):
                 title = 'z/L [-]'
-                levs  = np.arange(-100.,0.01,5.)
-                data  = gausf((wrf.zi[t,:,:]/wrf.L[t,:,:]),fsigma,mode='reflect') \
-                        if filter else wrf.zi[t,:,:]/wrf.L[t,:,:]
-                cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=cent)
+                levs  = np.arange(-100., 0.01, 5.)
+                data  = gausf((wrf.zi[t,:,:] / wrf.L[t,:,:]),fsigma,mode='reflect') if filter else wrf.zi[t,:,:] / wrf.L[t,:,:]
+                cf    = m.contourf(lon, lat, data, levs, extend='both', cmap=cent)
                 doplot = True 
  
             # -------------------------------------------------
@@ -272,10 +274,9 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             if(var == 'zidry'):
                 title = 'Updraft height [m AMSL]'
-                levs  = np.arange(0,2500.01,300.)
-                data  = gausf(wrf.zi[t,:,:]+wrf.hgt[:,:],fsigma,mode='reflect') \
-                        if filter else wrf.zi[t,:,:]+wrf.hgt[:,:]
-                cf    = m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
+                levs  = np.arange(0, 2500.01, 300.)
+                data  = gausf(wrf.zi[t,:,:] + wrf.hgt[:,:], fsigma,mode='reflect') if filter else wrf.zi[t,:,:] + wrf.hgt[:,:]
+                cf    = m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
                 units = 'm AMSL'
                 doplot = True 
     
@@ -284,10 +285,9 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             if(var == 'cudepth'):
                 title = 'Cumulus depth [m]'
-                levs  = np.arange(0,4000,400)
-                data  = gausf(wrf.zct[t,:,:]-wrf.zi[t,:,:],fsigma,mode='reflect') \
-                        if filter else wrf.zct[t,:,:]-wrf.zi[t,:,:]
-                cf =  m.contourf(lon,lat,data,levs,extend='both',cmap=wupnl)
+                levs  = np.arange(0, 4000, 400)
+                data  = gausf(wrf.zct[t,:,:] - wrf.zi[t,:,:], fsigma,mode='reflect') if filter else wrf.zct[t,:,:] - wrf.zi[t,:,:]
+                cf =  m.contourf(lon, lat, data, levs, extend='both', cmap=wupnl)
                 units = 'm'
                 doplot = True 
 
@@ -296,10 +296,9 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             if((var == 'pfd') and t < np.size(wrf.date_PFD)):
                 title = 'Potential flight distance [km]'
-                levs  = np.arange(0,900.1,100)
-                data  = gausf(wrf.PFD[t,:,:],fsigma,mode='reflect') \
-                        if filter else wrf.PFD[t,:,:]
-                cf    =  m.contourf(lon,lat,data,levs,extend='both',cmap=wup)
+                levs  = np.arange(0, 900.1, 100)
+                data  = gausf(wrf.PFD[t,:,:], fsigma,mode='reflect') if filter else wrf.PFD[t,:,:]
+                cf    =  m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
                 units = 'km'
                 doplot = True 
 
@@ -310,18 +309,18 @@ def create_maps(olga, wrfout, dom, times):
 
                 # Plot terrain height contours
                 if(False):
-                    levs = arange(50,4000.01,50.)
-                    contour(lon,lat,wrf.hgt,levs,cmap=cm.PuBu,alpha=0.5)
+                    levs = arange(50, 4000.01, 50.)
+                    contour(lon, lat, wrf.hgt, levs, cmap=cm.PuBu, alpha=0.5)
 
                 # Plot cities
-                #if(True):
-                #    for i in range(len(citys)):
-                #        m.scatter(citlon[i],citlat[i],s=4,alpha=1.0)
-                #        pl.text(citlon[i],citlat[i],' '+citys[i],size=8,ha='left',va='center',color='0.1')
+                if(False):
+                    for i in range(len(citys)):
+                        m.scatter(citlon[i],citlat[i],s=4,alpha=1.0)
+                        pl.text(citlon[i],citlat[i],' '+citys[i],size=8,ha='left',va='center',color='0.1')
 
                 # Plot airspace
-                #if(False):
-                #    plotairspace(m)
+                if(False):
+                    plotairspace(m)
 
                 # If filled contour, add colorbar
                 if(cf != False):
@@ -334,13 +333,13 @@ def create_maps(olga, wrfout, dom, times):
                 pl.axes(ax)
           
                 # Draw coast and country outlines 
-                m.drawcoastlines(linewidth=1,color='0.3')
-                m.drawcountries(linewidth=1,color='0.3')
+                m.drawcoastlines(linewidth=1, color='0.3')
+                m.drawcountries(linewidth=1, color='0.3')
                 m.drawmapboundary()
             
                 # Draw rivers 
                 if(olga.drawRivers[dom] == True):
-                    m.drawrivers(linewidth=0.5,color='#0066FF')
+                    m.drawrivers(linewidth=0.5, color='#0066FF')
  
                 # Add description variables, units, OLGA label, logo, etc. 
                 pl.figtext(ax_left, ax_bot/2,'OLGA: %s GFS-initiated WRF-ARW forecast [olga.vanstratum.com]'\
@@ -351,22 +350,24 @@ def create_maps(olga, wrfout, dom, times):
                     subtitle = 'valid: %s UTC'%str(wrf.datetime[t])
 
                 # Add figure info (variable, units, time)
-                ax.set_title(title,loc='left',size=8)
-                ax.set_title(subtitle,loc='right',size=8)
+                ax.set_title(title, loc='left', size=8)
+                ax.set_title(subtitle, loc='right', size=8)
 
                 # Add OLGA logo
-                pl.figimage(olga_logo,fig_width_px-45,6)
+                pl.figimage(olga_logo, fig_width_px-45, 6)
 
                 # Get name and save figure 
                 if(var=='pfd'):
-                    tmp    = '%04i'%(t*24.) 
+                    tmp    = '%06i'%(t*24.) 
                 else:
                     xtime  = wrf.time[t] / 3600.
                     hour   = int(np.floor(xtime))
                     minute = int((xtime - hour) * 60.)
-                    tmp    = str(hour).zfill(3) + str(minute).zfill(2)
+                    tmp    = str(hour).zfill(4) + str(minute).zfill(2)
 
-                name = '%s%04i%02i%02i_t%02iz/%s_d%i_%s.png'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle,tmp,dom+1,var)
+                #name = '%s%04i%02i%02i_t%02iz/%s_d%i_%s.png'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle,tmp,dom+1,var)
+                name = '%s%04i%02i%02i_t%02iz/%s_%02i_%s.png'%(olga.figRoot, olga.year, olga.month, olga.day, olga.cycle, var, dom+1, tmp)
+
                 pl.savefig(name, dpi=fig_dpi)
         
             # Cleanup!
