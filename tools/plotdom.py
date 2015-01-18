@@ -86,7 +86,7 @@ if(True):
     ax = subplot(111)
     m = Basemap(width=width,height=height,
                 rsphere=(6378137.00,6356752.3142),\
-                resolution='c',area_thresh=10.,projection='lcc',\
+                resolution='i',area_thresh=10.,projection='lcc',\
                 lat_1=centlat,lat_2=centlat,lat_0=centlat,lon_0=centlon)
    
     # Plot outline domain(s)

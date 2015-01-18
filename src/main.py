@@ -229,21 +229,21 @@ def execWRF(olga):
         subprocess.call('export OMP_NUM_THREADS=%i'%(olga.omp_thr),shell=True,executable='/bin/bash')
 
     # Run real
-    #if(debug): print('... WRF -> real.exe')
-    #if(olga.mpiTasks > 1):
-    #    subprocess.call('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
-    #else:
-    #    subprocess.call('./real.exe >& %sreal.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    if(debug): print('... WRF -> real.exe')
+    if(olga.mpiTasks > 1):
+        subprocess.call('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    else:
+        subprocess.call('./real.exe >& %sreal.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
 
     # Run WRF as background process to allow other processes (download GFS, ..) to run at the same time..
-    #if(debug): print('... WRF -> wrf.exe')
-    #if(olga.mpiTasks > 1):
-    #    subprocess.call('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
-    #else:
-    #    subprocess.call('./wrf.exe >& %swrf.%s &'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    if(debug): print('... WRF -> wrf.exe')
+    if(olga.mpiTasks > 1):
+        subprocess.call('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    else:
+        subprocess.call('./wrf.exe >& %swrf.%s &'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
 
     # Load balancer Thunder
-    subprocess.call('sbatch run.slurm',shell=True,executable='/bin/bash')
+    #subprocess.call('sbatch run.slurm',shell=True,executable='/bin/bash')
 
     os.chdir(olga.domainRoot)
 

@@ -134,6 +134,7 @@ def get_nc_obj(file):
     
 """
 Read in data: all locations -> all time (mainly 2d fields)
+Note: after reading, data is stored as [time, lat, lon]
 """
 class readwrf_all:
     def __init__(self,olga,file_in,t0,t1):
@@ -203,7 +204,7 @@ class readwrf_all:
         self.L           = -(self.ustar**3. * tref) / (kappa * g * wthvs) # Obukhov length [m]
         wthvs[np.where(wthvs<0)] = 0. # remove negative flux for w* calculation 
         self.wstar       = (g * self.zi * wthvs / tref)**(1./3.) # convective velocity scale w* [m s-1]
-        self.wglider     = deepcopy(self.wstar - supd) # w* minus sink glider [m s-1]
+        self.wglider     = deepcopy(self.wstar - supd) # w* minus sink glider [m s
         self.wstar[np.where(self.wglider<0)] = 0. # set minimum updraft velocity to zero
 
         # Calculate the PFD
