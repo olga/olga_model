@@ -21,6 +21,7 @@ import gc
 import numpy as np
 import pylab as pl
 from mpl_toolkits.basemap import Basemap
+from matplotlib.colors import ListedColormap
 from scipy.ndimage.filters import gaussian_filter as gausf
 
 # Custom modules
@@ -97,8 +98,8 @@ def getFigureProperties(map_height, map_width):
 
 ## Function to create maps
 def create_maps(olga, wrfout, dom, times):
-    filter = True
-    fsigma = 0.5     # std dev of gaussian filter size..
+    filter = True    # Apply Gaussian filter to variables
+    fsigma = 0.5     # std dev of Gaussian filter 
 
     # Read WRF output
     wrf = readwrf_all(olga, wrfout, times[0], times[-1]) 
@@ -222,6 +223,7 @@ def create_maps(olga, wrfout, dom, times):
                 units = 'fraction'
                 lim   = 0.1
 
+
                 for i in range(0, wrf.nlat, intv):
                     for j in range(0, wrf.nlon, intv):
                         if(lat[i,j] > m.ymin and lat[i,j] < m.ymax and lon[i,j] > m.xmin and lon[i,j] < m.xmax): 
@@ -248,6 +250,59 @@ def create_maps(olga, wrfout, dom, times):
             # -------------------------------------------------
             # GLIDING SPECIFIC
             # -------------------------------------------------
+            # -------------------------------------------------
+            # Convection maps 
+            # -------------------------------------------------
+            if(var == 'convection'):
+                title = 'asdf'
+                cf = False
+
+                cmap = ListedColormap([(205./256., 45./256., 45./256.),\
+                                       (73. /256., 68./256., 68./256.),\
+                                       (186./256.,186./256.,186./256.),\
+                                       (119./256.,221./256.,255./256.),\
+                                       (119./256.,255./256.,154./256.)], 'indexed')
+
+
+                if(t==0):
+                    rr  = wrf.rr_mp[t,:,:] + wrf.rr_con[t,:,:]
+                    rrc = wrf.rr_con[t,:,:]
+                else:
+                    rr  = (wrf.rr_mp[t,:,:] + wrf.rr_con[t,:,:]) - (wrf.rr_mp[t-1,:,:] + wrf.rr_con[t-1,:,:])  
+                    rrc = wrf.rr_con[t,:,:] - wrf.rr_con[t-1,:,:]  
+
+                # 1. filter fields
+                rain  = gausf(rr[:,:], fsigma, mode='reflect')
+                cumul = gausf(wrf.zct[t,:,:] - wrf.zi[t,:,:], fsigma, mode='reflect')
+
+                # Create colored background
+                bg = np.zeros((wrf.nlat, wrf.nlon))
+                for i in range(wrf.nlat):
+                    for j in range(wrf.nlon):
+                        if(rain[i,j] > 0.1): # Rain
+                            bg[i,j] = 0.5
+                        elif(wrf.swd_frac[t,i,j] < 0.1): 
+                            bg[i,j] = 1.5
+                        elif(wrf.swd_frac[t,i,j] < 0.25):
+                            bg[i,j] = 2.5
+                        elif(wrf.hfx[t,i,j] > 0. and cumul[i,j] < 10):
+                            bg[i,j] = 3.5                  
+                        elif(wrf.hfx[t,i,j] > 0. and cumul[i,j] > 10):
+                            bg[i,j] = 4.5                  
+                bg = np.ma.masked_where(bg==0, bg)
+
+                cf    = m.pcolormesh(lon, lat, bg, vmin=0, vmax=5, cmap=cmap)
+                units = '-'
+
+ 
+                intv = 3
+                for i in range(0, wrf.nlat, intv):
+                    for j in range(0, wrf.nlon, intv):
+                        if(lat[i,j] > m.ymin and lat[i,j] < m.ymax and lon[i,j] > m.xmin and lon[i,j] < m.xmax): 
+                            if(wrf.hfx[t,i,j] > 0):
+                                pl.text(lon[i,j], lat[i,j], int((wrf.zi[t,i,j]+wrf.hgt[i,j])/100), size=6, ha='center', va='center', color='0.3')
+                doplot = True
+
             # -------------------------------------------------
             # Updraft velocity wstar
             # -------------------------------------------------
@@ -306,7 +361,6 @@ def create_maps(olga, wrfout, dom, times):
             # Finish plot!
             # -------------------------------------------------
             if(doplot):
-
                 # Plot terrain height contours
                 if(False):
                     levs = arange(50, 4000.01, 50.)

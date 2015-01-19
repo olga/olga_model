@@ -49,13 +49,13 @@ class olgaSettings:
         # Time settings
         self.ttotal       = 24 # Total time to simulate [h]
         self.tslice       = 24 # Split 'ttotal' in 'tslice' chunks [h]
-        self.dt_output    = ([60,30]) # 'history_interval' from namelist, per domain, in minutes
+        self.dt_output    = ([60,60]) # 'history_interval' from namelist, per domain, in minutes
 
         # ----------------------------------
         # Manually specify times (UTC) over which to make PFD's and time series. Only if both times are within
         # one 'tslice', maps are made. BvS: add better description :)
         # Same 'tanalysis' is used for all domains!
-        self.tanalysis    = ([0,22]) 
+        self.tanalysis    = ([4,22]) 
 
         # ----------------------------------
         # Main map settings per domain
@@ -74,10 +74,10 @@ class olgaSettings:
 
         # ----------------------------------
         # Plot variables maps
-        #vars1 = (['pfd','wstar','zidry','clouds','rr','wind10m','wind1000m'])         
-        #vars2 = (['pfd','wstar','zidry','clouds','cudepth'])         
-        vars1 = (['pfd'])         
-        vars2 = (['pfd'])         
+        vars1 = (['pfd','wstar','zidry','convection','clouds','rr','wind10m','wind1000m'])         
+        vars2 = (['pfd','wstar','zidry','convection','clouds','cudepth'])         
+        #vars1 = ([])         
+        #vars2 = (['convection'])         
         self.map_vars     = ([vars1,vars2]) # variables to plot per domain
 
         # ----------------------------------

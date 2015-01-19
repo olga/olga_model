@@ -76,17 +76,25 @@ def av(v1,v2):
 given day-of-year, time [utc], lat and lon, return potential (clear sky)
 shortwave incoming radiation
 """
-def swin(doy,time,lat,lon):
+def swin(doy, time, lat, lon, returnElev=False):
     doy    = float(doy)
     time   = float(time)
-    lon    = -lon   #?! 
+    lon    = -lon # ?! 
     sda    = 0.409 * np.cos(2. * np.pi * (doy - 173.) / 365.)
     sinlea = np.sin(2. * np.pi * lat / 360.) * np.sin(sda) - \
              np.cos(2. * np.pi * lat / 360.) * np.cos(sda) * \
              np.cos(2. * np.pi * (time*3600.) / 86400. - 2. * np.pi * lon / 360.)
-    sinlea = max(sinlea, 0.00000001)
+    if(np.size(lat)>1):
+        sinlea[np.where(sinlea <= 0)] = 1e-9
+    else:
+        sinlea = max(sinlea, 1e-9)
     Tr     = (0.6 + 0.2 * sinlea)
-    return 1368. * Tr * sinlea
+    swin   = 1368. * Tr * sinlea
+
+    if(returnElev == True):
+        return (swin, sinlea)
+    else:
+        return swin
 
 """
 Given updraft height and velocity, calculate potential cross-country (constant height) velocity
@@ -197,7 +205,16 @@ class readwrf_all:
         wrf_time_conversion(self)
         find_analysis_times(olga,self)
 
-        # Derived variables:
+        # Potential & fractional incoming shortwave radiation. Masked at -1 for sunrise/set
+        self.swd_t       = np.zeros((self.nt, self.nlat, self.nlon))
+        self.swd_frac    = np.zeros((self.nt, self.nlat, self.nlon))
+        self.sun_elev    = np.zeros((self.nt, self.nlat, self.nlon))
+        for t in range(self.nt):
+            self.swd_t[t,:,:], self.sun_elev[t,:,:] = swin(self.doy[t], self.hour[t], self.lat, self.lon, returnElev=True)
+        self.swd_frac    = self.swd / self.swd_t
+        self.swd_frac[self.sun_elev < 0.05] = -1
+
+        # Updraft velocity
         rhos             = self.ps / (Rd * self.T2) # surface density [kg m-3]
         wthvs            = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv)) # surface buoyancy flux [W m-2]
         wthvs[np.where(wthvs==0)] = eps # remove zero flux to prevent div/0
@@ -224,7 +241,6 @@ class readwrf_all:
 Read in data from single location -> all time
 """
 class readwrf_loc:
-
     def __init__(self,olga,file_in,glon,glat,t0,t1):
         t1 += 1
         n = 3 ; n1 = n+1
