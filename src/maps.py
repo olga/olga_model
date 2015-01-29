@@ -46,21 +46,25 @@ mar_right_px  = 80   # right margin in [px]
 def getDomain(olga, dom, wrf):
     if(olga.map_lat[dom] == -1):
         map_lat = np.average(wrf.lat)
+        print('latitude domain %i = %f'%(dom, map_lat))
     else:
         map_lat = olga.map_lat[dom]
 
     if(olga.map_lon[dom] == -1):
         map_lon = np.average(wrf.lon)
+        print('longitude domain %i = %f'%(dom, map_lon))
     else:
         map_lon = olga.map_lon[dom]
 
     if(olga.map_width[dom] == -1):
         map_width =  1.05 * haversine(wrf.lon.min(), map_lat, wrf.lon.max(), map_lat) * 1000
+        print('width domain %i = %f'%(dom, map_width))
     else:
         map_width = olga.map_width[dom]
 
     if(olga.map_height[dom] == -1):
         map_height =  1.05 * haversine(map_lon, wrf.lat.min(), map_lon, wrf.lat.max()) * 1000
+        print('height domain %i = %f'%(dom, map_height))
     else:
         map_height = olga.map_height[dom]
 
@@ -134,6 +138,7 @@ def create_maps(olga, wrfout, dom, times):
 
     # Loop over differnt time steps 
     for t in times:
+        print('Processing t=%i of %i'%(t,times[-1]))
         for var in olga.map_vars[dom]:
             fig        = pl.figure(figsize=(fig_width_in, fig_height_in), dpi=fig_dpi)
             m          = deepcopy(basem)
