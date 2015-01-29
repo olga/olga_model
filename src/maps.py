@@ -216,24 +216,20 @@ def create_maps(olga, wrfout, dom, times):
             # Cloud cover
             # -------------------------------------------------
             if(var == 'clouds'):
-                title = 'Cloud cover fraction (o=low  -=mid  |=high)'
-                levs  = np.arange(0.00, 1.001, 0.1)
-                intv  = 3
-                cf    = m.contourf(lon, lat, wrf.ccsum[t,:,:], levs, alpha=1., cmap=cld)
-                units = 'fraction'
-                lim   = 0.1
-
-
-                for i in range(0, wrf.nlat, intv):
-                    for j in range(0, wrf.nlon, intv):
-                        if(lat[i,j] > m.ymin and lat[i,j] < m.ymax and lon[i,j] > m.xmin and lon[i,j] < m.xmax): 
-                            if(wrf.cclow[t,i,j] > lim):
-                                pl.text(lon[i,j], lat[i,j], 'o', size=8, ha='center', va='center', color='0.1')
-                            if(wrf.ccmid[t,i,j] > lim):
-                                pl.text(lon[i,j], lat[i,j], '-', size=9, ha='center', va='center', color='0.2')
-                            if(wrf.cchig[t,i,j] > lim):
-                                pl.text(lon[i,j], lat[i,j], '|', size=8, ha='center', va='center', color='0.1')
                 doplot = True
+                title  = 'Cloud fraction (- low  / mid  . high)'
+                units  = 'fraction'
+
+                # Draw shaded contours for cloud cover
+                levs   = np.arange(0.00, 1.001, 0.1)
+                levs[0] = 0.02
+                cf     = m.contourf(lon, lat, wrf.ccsum[t,:,:], levs, alpha=1., cmap=cm.GnBu)
+
+                # Hatch areas of low/mid/high clouds
+                levs   = [0.05,100] 
+                cf2    = m.contourf(lon, lat, wrf.cclow[t,:,:], levs, colors='none', hatches=['-']) 
+                cf2    = m.contourf(lon, lat, wrf.ccmid[t,:,:], levs, colors='none', hatches=['/']) 
+                cf2    = m.contourf(lon, lat, wrf.cchig[t,:,:], levs, colors='none', hatches=['.']) 
 
             # -------------------------------------------------
             # Shortwave downwelling radiation
