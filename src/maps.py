@@ -195,22 +195,22 @@ def create_maps(olga, wrfout, dom, times):
             # rain
             # -------------------------------------------------
             if(var == 'rr'):
-                title = 'Precipitation over last hour (mm, o=convective)'
+                doplot = True
+                title  = 'Precip. between t=%02i-%02i UTC (mm, //=convective)'%(wrf.hour[t-1],wrf.hour[t])
+                units  = 'mm'
                 if(t==0):
                     rr  = wrf.rr_mp[t,:,:] + wrf.rr_con[t,:,:]
                     rrc = wrf.rr_con[t,:,:]
                 else:
                     rr  = (wrf.rr_mp[t,:,:] + wrf.rr_con[t,:,:]) - (wrf.rr_mp[t-1,:,:] + wrf.rr_con[t-1,:,:])  
-                    rrc = wrf.rr_con[t,:,:] - wrf.rr_con[t-1,:,:]  
-                levs  = np.arange(0.1, 30.0001, 0.5)
-                cf    = m.contourf(lon, lat, rr, levs, alpha=1., extend='both', cmap=rain3)
-                units = 'mm'
-                lim   = 0.1 ; intv  = 3
-                for i in range(0, wrf.nlat, intv):
-                    for j in range(0, wrf.nlon, intv):
-                        if(rrc[i,j] > lim and lat[i,j] > m.ymin and lat[i,j] < m.ymax and lon[i,j] > m.xmin and lon[i,j] < m.xmax):
-                            pl.text(lon[i,j], lat[i,j], 'o', size=6, ha='center', va='center', color='0.1')
-                doplot = True
+                    rrc = wrf.rr_con[t,:,:] - wrf.rr_con[t-1,:,:] 
+
+                # Draw shaded contours for precipitation intensity
+                levs   = [0,0.1,0.2,0.4,0.8,1,2,3,4,5,6,7,8,9,10,12,14]
+                cf     = m.contourf(lon, lat, rr, levs, alpha=1., extend='both', cmap=rain3nl)
+                # Hatch area where precipitation is convective
+                levs   = [0.1,100] 
+                cf2    = m.contourf(lon, lat, rrc, levs, colors='none', hatches=['//']) 
 
             # -------------------------------------------------
             # Cloud cover
