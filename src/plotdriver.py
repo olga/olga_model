@@ -54,7 +54,7 @@ def plot_driver(olga,dom,ptype):
     times = np.arange(t0,t1+1e-9,dtype=np.int)
 
     if(ptype == "maps"):
-        create_maps(olga,wrfout,dom,times) 
+        createMaps(olga,wrfout,dom,times) 
     elif(ptype=="time"):
         create_timeseries(olga,wrfout,dom,times)
     elif(ptype=="sounding"):
