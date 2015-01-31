@@ -1,0 +1,16 @@
+# Short name (second column) can't contains spaces within name as it is used for the file name
+Eelde,        EHGG, 06.583,  53.125
+Hamburg,      EDDH, 09.993,  53.631
+Soesterberg,  EHSB, 05.271,  52.131
+Woensdrecht,  EHWO, 04.341,  51.448
+Eindhoven,    EHEH, 05.342,  51.453   
+Saint-Hubert, EBSH, 05.404,  50.037
+Bruchsal,     EDTC, 08.564,  49.135
+Meschede,     EDKM, 08.239,  51.303
+Leipzig,      EDDP, 12.228,  51.421
+Hannover,     EDDV, 09.685,  52.463
+#Geilenkirch,   geil, 06.187,  50.968   
+#Wershoven,     wers, 06.796,  50.442   
+#Daun,          daun, 06.827,  50.203
+#Morsbach,      mors, 07.802,  50.848
+#Erfstad,       erfs, 06.700,  50.809
