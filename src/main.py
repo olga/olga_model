@@ -30,7 +30,13 @@ from multiprocessing import Process
 
 from src.plotdriver import plot_driver
 
-debug = True  
+debug = True 
+res = 'old' # 'old'
+
+## Execute command
+# @param task Task to start
+def execute(task):
+    subprocess.call(task, shell=True, executable='/bin/bash')
 
 ## Downloads the requested GFS data, or waits until available
 # @param olga Pointer to object with OLGA settings
@@ -55,7 +61,13 @@ def downloadGFS(olga,islice):
     for t in range(nt):
         tact = int(t0 + t * dtGFS) # Forecast time
         loc = '%s.%04i%02i%02i%02i'%(gfsbase,olga.year,olga.month,olga.day,olga.cycle) # Location at server
-        fil = 'gfs.t%02iz.pgrb2f%02i'%(olga.cycle,tact) # File at server
+        if(res == '0.25'):
+            fil = 'gfs.t%02iz.pgrb2.0p25.f%03i'%(olga.cycle,tact) # File at server
+        elif(res == 'old'):
+            fil = 'gfs.t%02iz.pgrb2f%02i'%(olga.cycle,tact) # File at server, old GFS naming
+        else:
+            sys.exit('Resolution %s invalid'%res)
+
         url = '%s/%s'%(loc,fil) # Path to file at server
 
         success = False
@@ -106,8 +118,8 @@ def downloadGFS(olga,islice):
 # @param searchstring String to search for
 # @param value Value to replace
 def replace(filein,searchstring,value):
-    arg =  'sed -i -e "s/\(' +searchstring+ r'\).*/\1 = ' +value+ '/g" ' + filein
-    subprocess.call(arg,shell=True,executable='/bin/bash')
+    execute('sed -i -e "s/\(' +searchstring+ r'\).*/\1 = ' +value+ '/g" ' + filein)
+    #subprocess.call(arg,shell=True,executable='/bin/bash')
 
 ## Slow way of creating a string consisting of n times the same string...
 # @param string String to glue
@@ -168,9 +180,12 @@ def execWPS(olga):
 
     if(olga.islice==0):
         # Cleanup stuff from previous day
-        subprocess.call('rm GRIBFILE* >& /dev/null',shell=True,executable='/bin/bash')
-        subprocess.call('rm FILE* >& /dev/null',shell=True,executable='/bin/bash')
-        subprocess.call('rm met_em* >& /dev/null',shell=True,executable='/bin/bash')
+        #subprocess.call('rm GRIBFILE* >& /dev/null',shell=True,executable='/bin/bash')
+        #subprocess.call('rm FILE* >& /dev/null',shell=True,executable='/bin/bash')
+        #subprocess.call('rm met_em* >& /dev/null',shell=True,executable='/bin/bash')
+        execute('rm GRIBFILE* >& /dev/null')
+        execute('rm FILE* >& /dev/null')
+        execute('rm met_em* >& /dev/null')
 
     # Each log will be saved in olgaLogs with yyyymmddhh added
     ss = olga.startstruct
@@ -182,21 +197,36 @@ def execWPS(olga):
 
     # Run geogrid
     if(debug): print('... WPS -> geogrid')
-    subprocess.call('./geogrid.exe >& %sgeogrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    #subprocess.call('./geogrid.exe >& %sgeogrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    execute('./geogrid.exe >& %sgeogrid.%s'%(olga.olgaLogs,logappend))
 
     # Link the GFS data to the WPS directory
     gfsData = '%s%04i%02i%02i'%(olga.gfsDataRoot,olga.year,olga.month,olga.day)
-    subprocess.call('./link_grib.csh '+gfsData+'/gfs*',shell=True,executable='/bin/bash')
+    #subprocess.call('./link_grib.csh '+gfsData+'/gfs*',shell=True,executable='/bin/bash')
+    execute('./link_grib.csh '+gfsData+'/gfs*')
 
-    # Check if Vtable present, if not link it
+    # Temp for switching between old and new GFS
+    # --------------------
+    #subprocess.call('rm Vtable',shell=True,executable='/bin/bash')
+    execute('rm Vtable')
+    if(res == '0.25'):
+        #subprocess.call('cp Vtable.GFS_0.25d Vtable',shell=True,executable='/bin/bash')
+        execute('cp Vtable.GFS_0.25d Vtable')
+    elif(res == 'old'):
+        #subprocess.call('cp Vtable.GFS_0.5d Vtable',shell=True,executable='/bin/bash')
+        execute('cp Vtable.GFS_0.5d Vtable')
+    # --------------------
+
     if(debug): print('... WPS -> ungrib')
 
     # Run ungrib
-    subprocess.call('./ungrib.exe >& %sungrib.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    #subprocess.call('./ungrib.exe >& %sungrib.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    execute('./ungrib.exe >& %sungrib.%s'%(olga.olgaLogs,logappend))
 
     # Run metgrid
     if(debug): print('... WPS -> metgrid')
-    subprocess.call('./metgrid.exe >& %smetgrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    #subprocess.call('./metgrid.exe >& %smetgrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+    execute('./metgrid.exe >& %smetgrid.%s'%(olga.olgaLogs,logappend))
 
     print('finished WPS at %s'%datetime.datetime.now().time())
     os.chdir(olga.domainRoot)
@@ -210,8 +240,10 @@ def execWRF(olga):
 
     # Remove restart file and output from previous day(s)
     if(olga.islice==0):
-        subprocess.call('rm wrfrst* >& /dev/null',shell=True,executable='/bin/bash')
-        subprocess.call('rm wrfout* >& /dev/null',shell=True,executable='/bin/bash')
+        #subprocess.call('rm wrfrst* >& /dev/null',shell=True,executable='/bin/bash')
+        #subprocess.call('rm wrfout* >& /dev/null',shell=True,executable='/bin/bash')
+        execute('rm wrfrst* >& /dev/null')
+        execute('rm wrfout* >& /dev/null')
 
     # Each log will be saved in olgaLogs with yyyymmddhh added
     ss = olga.startstruct
@@ -222,25 +254,33 @@ def execWRF(olga):
         os.mkdir(olga.olgaLogs)
  
     # Link the met_em input files 
-    subprocess.call('rm met_em*',shell=True,executable='/bin/bash')
-    subprocess.call('ln -s '+olga.wpsRoot+'met_em* .',shell=True,executable='/bin/bash')
+    #subprocess.call('rm met_em*',shell=True,executable='/bin/bash')
+    #subprocess.call('ln -s '+olga.wpsRoot+'met_em* .',shell=True,executable='/bin/bash')
+    execute('rm met_em*')
+    execute('ln -s '+olga.wpsRoot+'met_em* .')
 
-    if(olga.ompThreads > 1):
-        subprocess.call('export OMP_NUM_THREADS=%i'%(olga.omp_thr),shell=True,executable='/bin/bash')
+    #if(olga.ompThreads > 1):
+    #subprocess.call('export OMP_NUM_THREADS=%i'%(olga.ompThreads),shell=True,executable='/bin/bash')
+    execute('export OMP_NUM_THREADS=%i'%(olga.ompThreads))
+    execute('export | grep OMP')
 
     # Run real
     if(debug): print('... WRF -> real.exe')
     if(olga.mpiTasks > 1):
-        subprocess.call('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+        #subprocess.call('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+        execute('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpiTasks,olga.olgaLogs,logappend))
     else:
-        subprocess.call('./real.exe >& %sreal.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+        #subprocess.call('./real.exe >& %sreal.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+        execute('./real.exe >& %sreal.%s'%(olga.olgaLogs,logappend))
 
     # Run WRF as background process to allow other processes (download GFS, ..) to run at the same time..
     if(debug): print('... WRF -> wrf.exe')
     if(olga.mpiTasks > 1):
-        subprocess.call('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+        #subprocess.call('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+        execute('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend))
     else:
-        subprocess.call('./wrf.exe >& %swrf.%s &'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+        #subprocess.call('./wrf.exe >& %swrf.%s &'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
+        execute('./wrf.exe >& %swrf.%s &'%(olga.olgaLogs,logappend))
 
     # Load balancer Thunder
     #subprocess.call('sbatch run.slurm',shell=True,executable='/bin/bash')
@@ -280,12 +320,14 @@ def moveWRFOutput(olga):
             # For now, use ncrcat from NCO to merge the files.
             # If this turns out to be problematic (availability NCO on different linux distributions),
             # write own routine to do the merge (shouldn't be difficult)
-            subprocess.call('ncrcat -O %s %s%s'%(tmp,olga.wrfDataRoot,outname),shell=True,executable='/bin/bash')
+            #subprocess.call('ncrcat -O %s %s%s'%(tmp,olga.wrfDataRoot,outname),shell=True,executable='/bin/bash')
+            execute('ncrcat -O %s %s%s'%(tmp,olga.wrfDataRoot,outname))
 
 ## Create the plots / maps / soundings
 # @param olga Pointer to object with OLGA settings
 def execPlots(olga):
-    print('starting plots at %s'%datetime.datetime.now().time())
+    startTime = datetime.datetime.now()
+    print('Starting plots at %s'%startTime)
 
     # Spawn different processes for each mape type, saves quite some time..
     for dom in range(olga.ndom):
@@ -314,4 +356,5 @@ def execPlots(olga):
         if(olga.sounding[dom]==True):
             psound.join()
 
-    print('finished plots at %s'%datetime.datetime.now().time())
+    endTime = datetime.datetime.now()
+    print('finished plots at %s, execution took %s'%(endTime, endTime-startTime))
