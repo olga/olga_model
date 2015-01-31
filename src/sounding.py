@@ -61,16 +61,16 @@ def create_sounding(olga,wrfout,dom,times):
             sset.lclu   = d.lcl[t]
 
             # If time == 00 UTC or 12 UTC, try to get reference sounding for validation (only useful for historical runs)
-            sset.Tm   = np.array([])
-            sset.Tdm  = np.array([])
-            sset.pm   = np.array([])
-            if((d.time[t]/3600.)%12 == 0):
-                t = 0 if((d.time[t]/3600.) % 24 == 0) else 12
-                tmp = readsounding(int(name), int(d.year[t]), int(d.month[t]) ,int(d.day[t]), t)
-                if(tmp.success):
-                    sset.Tm   = tmp.T
-                    sset.Tdm  = tmp.Td
-                    sset.pm   = tmp.p * 100.
+            sset.Tm     = np.array([])
+            sset.Tdm    = np.array([])
+            sset.pm     = np.array([])
+            #if((d.time[t]/3600.)%12 == 0):
+            #    t = 0 if((d.time[t]/3600.) % 24 == 0) else 12
+            #    tmp = readsounding(int(name), int(d.year[t]), int(d.month[t]) ,int(d.day[t]), t)
+            #    if(tmp.success):
+            #        sset.Tm   = tmp.T
+            #        sset.Tdm  = tmp.Td
+            #        sset.pm   = tmp.p * 100.
 
             fig         = skewtlogp(olga,sset)
             xtime       = d.time[t] / 3600.
