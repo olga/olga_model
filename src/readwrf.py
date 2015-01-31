@@ -288,11 +288,20 @@ class readwrf_loc:
         self.v10         = np.apply_over_axes(np.mean,wrfin.variables["V10"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 10m v-wind [m s-1]
         self.q2          = np.apply_over_axes(np.mean,wrfin.variables["Q2"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 2m vapor mixing ratio [kg kg-1]
         self.swd         = np.apply_over_axes(np.mean,wrfin.variables["SWDOWN"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # shortwave incomming radiation at surface [W/m2]
+        self.rr_mp       = np.apply_over_axes(np.mean,wrfin.variables["RAINNC"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total microphysical rain [mm]
+        self.rr_con      = np.apply_over_axes(np.mean,wrfin.variables["RAINC"] [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total convective rain [mm]
+
+        # Rain over last period
+        self.drr_mp      = np.zeros(self.rr_mp.size)
+        self.drr_con     = np.zeros(self.rr_con.size)
+        self.drr_mp[1:]  = self.rr_mp[1:] - self.rr_mp[:-1]
+        self.drr_con[1:] = self.rr_con[1:] - self.rr_con[:-1]
 
         self.ccl         = np.zeros((3,nt))
         self.ccl[0,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,:35,  jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
         self.ccl[1,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,35:52,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
         self.ccl[2,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,52:,  jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
+
 
         try: # Try if the TEMF (bl_pbl_physics=10) variables are available:
             self.w       = np.apply_over_axes(np.mean,wrfin.variables["WUPD_TEMF"][t0:t1,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # updraft velocity TEMF 
@@ -317,6 +326,8 @@ class readwrf_loc:
             self.TEMF    = False
 
         # Derived variables:
+        self.slps        = self.ps / (1.-2.25577e-5 * self.hgt)**5.25588 # sea level pressure
+
         rhos             = self.ps / (Rd * self.T2) # surface density [kg m-3]
         wthvs            = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv)) # surface buoyancy flux [W m-2]
         wthvs[np.where(wthvs<0)] = 0. # remove negative flux for w* calc
@@ -343,6 +354,9 @@ class readwrf_loc:
         self.Td  = np.zeros_like(self.th) # dew point temperature [K]
         self.Tu  = np.zeros_like(self.th) # absolute temperature updrafts [K]
         self.Tdu = np.zeros_like(self.th) # dew point temperature updrafts [K]
+
+        e         = ((self.ps) * self.q2) / ((Rd/Rv) + self.q2) # vapor pressure
+        self.Td2  = ((1./273.) - (Rv/Lv) * np.log(e/611.))**-1.
 
         for t in range(nt):
             self.th[t,:]  = self.th[t,:] + 300. # potential temp = base state (300) + perturbation (T)
