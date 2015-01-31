@@ -12,4 +12,8 @@ ln -s $WPSPath/*.exe .
 ln -s $WPSPath/link_grib.csh .
 ln -s $WPSPath/geogrid .
 ln -s $WPSPath/metgrid .
+ln -s $WPSPath/ungrib .
 ln -s $WPSPath/ungrib/Variable_Tables/Vtable.GFS Vtable
+
+
+
