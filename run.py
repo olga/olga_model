@@ -7,14 +7,14 @@ from src.main import *
 #from domain_test.domainSettings import olgaSettings as settings_d1
 from OLGA_NL.domainSettings import olgaSettings as settings_d1
 
-mode = 'all'
+mode = 'post'
 
 olga = settings_d1()
 
 n = -1
-olga.year    = int(time.strftime('%Y'))
-olga.month   = int(time.strftime('%m'))
-olga.day     = int(time.strftime('%d'))
+olga.year    = 2014 #int(time.strftime('%Y'))
+olga.month   = 6    #int(time.strftime('%m'))
+olga.day     = 26   #int(time.strftime('%d'))
 olga.tstart  = 00   # start time of simulation
 olga.cycle   = 0    # which GFS cycle? {0,6,12,18}
 

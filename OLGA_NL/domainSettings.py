@@ -10,6 +10,7 @@ class readLocations:
         self.shortName = filein[:,1]  
         self.lon       = np.array(filein[:,2], dtype=np.float32)  
         self.lat       = np.array(filein[:,3], dtype=np.float32)  
+        self.type      = np.array(filein[:,4], dtype=np.int)  
         # Strip spaces
         self.longName  = [s.strip(' ') for s in self.longName]
         self.shortName = [s.strip(' ') for s in self.shortName]
