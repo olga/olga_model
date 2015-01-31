@@ -28,47 +28,46 @@ from skewtlogp import *
 
 ## Function to create maps
 def create_sounding(olga,wrfout,dom,times):
-    for name,lon,lat in zip(olga.meteogr_name[dom][:],olga.meteogr_lon[dom][:],olga.meteogr_lat[dom][:]):
+    for name, lon, lat in zip(olga.soundLoc[dom].shortName, olga.soundLoc[dom].lon, olga.soundLoc[dom].lat):
         # Read WRF data
 	d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
         sset = skewt_input()
         for t in times:
-            for stype in range(0,2):
-                #print "sounding %s, type=%i, time=%i"%(name,stype,t)
-                sset.stype  = stype
-                sset.hgt    = d.hgt[t]
-                sset.T      = d.T[t,:] 
-                sset.Td     = d.Td[t,:]
-                sset.p      = d.p[t,:] 
-                sset.z      = d.zf[t,:]
-                sset.u      = d.u[t,:]
-                sset.v      = d.v[t,:]
-                sset.name   = name
-                sset.time   = d.datetime[t]
-                sset.parcel = True
-                sset.ps     = d.ps[t]
-                sset.Ts     = d.T2[t]
-                sset.rs     = d.q2[t]
+            stype = 0
+            sset.stype  = stype
+            sset.hgt    = d.hgt[t]
+            sset.T      = d.T[t,:] 
+            sset.Td     = d.Td[t,:]
+            sset.p      = d.p[t,:] 
+            sset.z      = d.zf[t,:]
+            sset.u      = d.u[t,:]
+            sset.v      = d.v[t,:]
+            sset.name   = name
+            sset.time   = d.datetime[t]
+            sset.parcel = True
+            sset.ps     = d.ps[t]
+            sset.Ts     = d.T2[t]
+            sset.rs     = d.q2[t]
 
-                sset.Tu     = d.Tu[t,:] 
-                sset.Tdu    = d.Tdu[t,:] 
-                sset.cfru   = d.c3dtemf[t,:] 
-                sset.qlu    = d.qltemf[t,:]
-                sset.lclu   = d.lcl[t]
+            sset.Tu     = d.Tu[t,:] 
+            sset.Tdu    = d.Tdu[t,:] 
+            sset.cfru   = d.c3dtemf[t,:] 
+            sset.qlu    = d.qltemf[t,:]
+            sset.lclu   = d.lcl[t]
 
-                fig=skewtlogp(olga,sset)
+            fig         = skewtlogp(olga,sset)
 
-                xtime  = d.time[t] / 3600.
-                hour   = int(np.floor(xtime))
-                minute = int((xtime - hour) * 60.)
-                tmp    = str(hour).zfill(3) + str(minute).zfill(2)
+            xtime       = d.time[t] / 3600.
+            hour        = int(np.floor(xtime))
+            minute      = int((xtime - hour) * 60.)
+            tmp         = str(hour).zfill(4) + str(minute).zfill(2)
 
-                # Save figure
-                nameo = '%s%04i%02i%02i_t%02iz/%s_d%i_sounding_%i_%s.png'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle,tmp,dom+1,stype,name)
-                pl.savefig(nameo)
+            # Save figure
+            nameo = '%s%04i%02i%02i_t%02iz/sound_%s_%02i_%s.png'%(olga.figRoot, olga.year, olga.month, olga.day, olga.cycle, name, dom+1, tmp)
+            pl.savefig(nameo)
 
-                # Cleanup!
-                fig.clf()
-                pl.close()
-                gc.collect()
+            # Cleanup!
+            fig.clf()
+            pl.close()
+            gc.collect()
 
