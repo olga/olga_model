@@ -2,13 +2,23 @@ import numpy as np
 import pylab as pl
 from math import radians, cos, sin, asin, sqrt
 
-R = 6371.   # radius earth
+R    = 6371.   # radius earth
+UP   = 0      
+DOWN = 1
 
-def key_nearest(array,value):
+def key_nearest(array, value):
     return (np.abs(array-value)).argmin()
 
-def value_nearest(array,value):
+def value_nearest(array, value):
     return (np.abs(array-value)).argmin()
+
+def roundNumber(value, precision, mode=DOWN):
+    if(mode == DOWN):
+        return np.floor(value/float(precision))*precision
+    elif(mode == UP):
+        return np.ceil(value/float(precision))*precision
+    else:
+        print('round with mode=%i invalid')
 
 def modplot(ax,minorticks=True,removeax=True,removeaxis=['right','top'],movespine=True,spacing=2):
   if(minorticks):
