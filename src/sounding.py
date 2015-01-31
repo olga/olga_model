@@ -29,7 +29,6 @@ from skewtlogp import *
 ## Function to create maps
 def create_sounding(olga,wrfout,dom,times):
     for name, lon, lat in zip(olga.soundLoc[dom].shortName, olga.soundLoc[dom].lon, olga.soundLoc[dom].lat):
-        # Read WRF data
 	d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
         sset = skewt_input()
         for t in times:
@@ -46,7 +45,7 @@ def create_sounding(olga,wrfout,dom,times):
             sset.time   = d.datetime[t]
             sset.parcel = True
             sset.ps     = d.ps[t]
-            sset.Ts     = d.T2[t]
+            sset.Ts     = d.T[t,0]#d.T2[t]
             sset.rs     = d.q2[t]
 
             sset.Tu     = d.Tu[t,:] 

@@ -23,8 +23,6 @@ import sys
 import os
 import matplotlib.image as image
 
-#from settings import *
-
 from matplotlib import rc
 rc('font', size=9)
 rc('legend', fontsize=8)
@@ -213,7 +211,7 @@ def skewtlogp(olga, si):
     """
     if(si.stype==0):
         pbottom = 105000.       # highest pressure in diagram (bottom)
-        ptop = 10000.           # lowest pressue in diagram (top)
+        ptop = 15000.           # lowest pressue in diagram (top)
         ptop_thd = 40000        # top of dry adiabats
         ptop_mxr = 60000        # top of mixing ratio lines
         pbottom_thw = pbottom   # bottom of moist adiabats
@@ -445,7 +443,6 @@ def skewtlogp(olga, si):
     7. Lauch parcel
     """
     if(si.parcel == True):
-
         # HACK BvS -> why such difference between lowest level p and ps?
         si.ps = si.p[0]
         # HACK BvS don't use surface mixing ratio -> very high...
@@ -465,8 +462,8 @@ def skewtlogp(olga, si):
             niter  += 1;
 
         # Surface values        
-        psurfs = skewty(si.ps)
-        Tsurfs = skewtx(si.Ts-T0,psurfs)
+        psurfs  = skewty(si.ps)
+        Tsurfs  = skewtx(si.Ts-T0,psurfs)
         Tdsurfs = skewtx(Td(si.rs,si.ps)-T0,psurfs)
         pl.scatter(Tsurfs,psurfs,facecolor='none')
         pl.scatter(Tdsurfs,psurfs,facecolor='none')
@@ -477,9 +474,9 @@ def skewtlogp(olga, si):
         pl.scatter(Tlcls,plcls,facecolor='none')
         pl.plot([Tsurfs,Tlcls],[psurfs,plcls],'k-') 
         pl.plot([Tdsurfs,Tlcls],[psurfs,plcls],'k-')
-        if(si.stype == 1):
-            pl.plot([Tlcls-5*hs,Tlcls+5*hs],[plcls,plcls],'k',dashes=[2,1])
-            pl.text(Tlcls+6*hs,plcls,'LCL %i m'%(zlcl+si.hgt),ha='left',va='center',size=8)
+        #if(si.stype == 0):
+        pl.plot([Tlcls-5*hs,Tlcls+5*hs],[plcls,plcls],'k',dashes=[2,1])
+        pl.text(Tlcls+6*hs,plcls,'LCL %i m'%(zlcl+si.hgt),ha='left',va='center',size=8)
 
         # Moist adiabat from LCL upwards
         Ths    = si.Ts / exner(si.ps) 
@@ -502,19 +499,17 @@ def skewtlogp(olga, si):
     """
     if(si.Tu.size > 0):
         dw = (x11-x00)    # width of diagram
-        y = skewty(si.p)
-        #pl.plot(x,y,':',color='0.4')
+        y  = skewty(si.p)
         x = x00 + si.cfru * 0.2 * (x11-x00)
         pl.plot(x,y,'-',linewidth=1.5,color=c6) # cloud cover
-
 
         cfr_pos = np.where(si.cfru > 0.001)[0]
         if(np.size(cfr_pos)>1):
             pl.text(x00,y[cfr_pos[0]-1],'- %im'%(si.z[cfr_pos[0]-1]+si.hgt),ha='left',va='center',size=8,color=c6)
             pl.text(x00,y[cfr_pos[-1]],'- %im'%(si.z[cfr_pos[-1]]+si.hgt),ha='left',va='center',size=8,color=c6)
             kmax=np.where(si.cfru == si.cfru.max())[0][0]
-            #print kmax,si.cfru[kmax]*100.
             pl.text(x.max(),y[kmax],'- %i%%'%(si.cfru[kmax]*100.),ha='left',va='center',size=8,color=c6)
+
  
     """
     6. Finish diagram
