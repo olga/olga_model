@@ -20,6 +20,7 @@
 import numpy as np
 import pylab as pl
 import sys
+import os
 import matplotlib.image as image
 
 #from settings import *
@@ -199,7 +200,14 @@ class skewt_input:
 Main routine which makes the diagram
 input: si = skewt_input object
 """
-def skewtlogp(olga,si):
+def skewtlogp(olga, si):
+    """ 
+    Get directory of script for saving arrays
+    """
+    tmpPath = os.path.dirname(os.path.realpath(__file__))+'/tmp/'
+    if(not os.path.isdir(tmpPath)):
+        os.mkdir(tmpPath)
+
     """
     Settings for high and low sounding top
     """
@@ -260,8 +268,8 @@ def skewtlogp(olga,si):
     1. Create isotherms
     """
     for T in isotherms:
-        y = ([skewty(pbottom),skewty(ptop)])
-        x = ([skewtx(T,y[0]),skewtx(T,y[1])])
+        y = np.array([skewty(pbottom),skewty(ptop)])
+        x = np.array([skewtx(T,y[0]),skewtx(T,y[1])])
 
         # Check if partially out of bounds
         lloc = 0
@@ -292,71 +300,112 @@ def skewtlogp(olga,si):
     """
     3. Create dry adiabats
     """
-    p = np.arange(pbottom,(np.max(([ptop,ptop_thd]))-dp),-dp)
-    x = np.zeros(p.size)   
-    y = np.zeros(p.size)   
-   
-    for k in range(p.size):
-        y[k] = skewty(p[k])
-    for th in dryadiabats: 
-        x[:] = 0.
+    # Try loading the data from the tmp directory. If not available, calculate
+    # and save the arrays
+    try:
+        p = np.load(tmpPath+'theta_p_%i.arr'%si.stype)
+        y = np.load(tmpPath+'theta_y_%i.arr'%si.stype)
+        x = np.load(tmpPath+'theta_x_%i.arr'%si.stype)
+    except:
+        p = np.arange(pbottom,(np.max(([ptop,ptop_thd]))-dp),-dp)
+        x = np.zeros((dryadiabats.size, p.size))   
+        y = np.zeros(p.size)   
+
         for k in range(p.size):
-            xtmp = skewtx(((th+T0) * exner(p[k]))-T0,y[k])
-            if(xtmp >= x00 and xtmp <= x11):
-                x[k] = xtmp
-            else:
-                x[k] = -9999
-    
-        doPlot = np.where(x != -9999)
-        if(len(doPlot[0]) > 0):
-            lloc = max(0,np.size(x[doPlot])-int(5000./dp))
-            pl.plot(x[doPlot],y[doPlot],color=c1)
-            pl.text(x[doPlot][lloc],y[doPlot][lloc],int(th),color=c1,ha='center',va='center',backgroundcolor='w')
+            y[k] = skewty(p[k])
+        for i in range(dryadiabats.size):
+            x[i,:] = 0.
+            for k in range(p.size):
+                xtmp = skewtx(((dryadiabats[i]+T0) * exner(p[k]))-T0, y[k])
+                if(xtmp >= x00 and xtmp <= x11):
+                    x[i,k] = xtmp
+                else:
+                    x[i,k] = -9999
+
+        p.dump(tmpPath+'theta_p_%i.arr'%si.stype)
+        y.dump(tmpPath+'theta_y_%i.arr'%si.stype)
+        x.dump(tmpPath+'theta_x_%i.arr'%si.stype)
+
+    # Plot the dry adiabats
+    for i in range(dryadiabats.size): 
+        doPlot = np.where(x[i,:] != -9999)[0]
+        if(doPlot[0].size > 0):
+            lloc = max(0,np.size(x[i,doPlot])-int(5000./dp))
+            pl.plot(x[i,doPlot],y[doPlot],color=c1)
+            pl.text(x[i,doPlot][lloc],y[doPlot][lloc],int(dryadiabats[i]),color=c1,ha='center',va='center',backgroundcolor='w')
 
     """ 
     4. Create moist adiabats
     """
-    p = np.arange(np.min(([pbottom,pbottom_thw])),ptop-dp,-dp)
-    x = np.zeros(p.size)
-    y = np.zeros(p.size)
+    # Try loading the data from the tmp directory. If not available, calculate
+    # and save the arrays
+    try:
+        p = np.load(tmpPath+'thetam_p_%i.arr'%si.stype)
+        y = np.load(tmpPath+'thetam_y_%i.arr'%si.stype)
+        x = np.load(tmpPath+'thetam_x_%i.arr'%si.stype)
+    except:
+        p = np.arange(np.min(([pbottom,pbottom_thw])),ptop-dp,-dp)
+        x = np.zeros((moistadiabats.size, p.size))
+        y = np.zeros(p.size)
 
-    for thw0 in moistadiabats:
         for k in range(p.size):
-            thw = dsatlftskewt(thw0,p[k])
             y[k] = skewty(p[k])
-            xtmp = skewtx(thw,y[k])
-            if(xtmp >= x00 and xtmp <= x11):
-                x[k] = xtmp
-            else:
-                x[k] = -9999
+        for i in range(moistadiabats.size):
+            for k in range(p.size):
+                thw = dsatlftskewt(moistadiabats[i], p[k])
+                xtmp = skewtx(thw, y[k])
+                if(xtmp >= x00 and xtmp <= x11):
+                    x[i,k] = xtmp
+                else:
+                    x[i,k] = -9999
+        
+        p.dump(tmpPath+'thetam_p_%i.arr'%si.stype)
+        y.dump(tmpPath+'thetam_y_%i.arr'%si.stype)
+        x.dump(tmpPath+'thetam_x_%i.arr'%si.stype)
     
-        doPlot = np.where(x != -9999)
-        if(len(doPlot[0]) > 0):
-            lloc = max(0,np.size(x[doPlot])-int(8000./dp))
-            pl.plot(x[doPlot],y[doPlot],'--',color=c3)
-            pl.text(x[doPlot][lloc],y[doPlot][lloc],int(thw0),color=c3,ha='center',va='center',backgroundcolor='w')
+    # Plot the moist adiabats
+    for i in range(moistadiabats.size):
+        doPlot = np.where(x[i,:] != -9999)[0]
+        if(doPlot[0].size > 0):
+            lloc = max(0,np.size(x[i,doPlot])-int(8000./dp))
+            pl.plot(x[i,doPlot],y[doPlot],'--',color=c3)
+            pl.text(x[i,doPlot][lloc],y[doPlot][lloc],int(moistadiabats[i]),color=c3,ha='center',va='center',backgroundcolor='w')
  
     """ 
     5. Create isohumes / mixing ratio lines
     """
-    p = np.arange(pbottom,(np.max(([ptop,ptop_mxr]))-dp),-dp)
-    x = np.zeros(p.size)
-    y = np.zeros(p.size)
+    # Try loading the data from the tmp directory. If not available, calculate
+    # and save the arrays
+    try:
+        p = np.load(tmpPath+'mixr_p_%i.arr'%si.stype)
+        y = np.load(tmpPath+'mixr_y_%i.arr'%si.stype)
+        x = np.load(tmpPath+'mixr_x_%i.arr'%si.stype)
+    except:
+        p = np.arange(pbottom,(np.max(([ptop,ptop_mxr]))-dp),-dp)
+        x = np.zeros((mixrat.size, p.size))
+        y = np.zeros(p.size)
 
-    for mix0 in mixrat:
         for k in range(p.size):
-            mix = Td(mix0/1000.,p[k])-T0 
             y[k] = skewty(p[k])
-            xtmp = skewtx(mix,y[k])
-            if(xtmp >= x00 and xtmp <= x11):
-                x[k] = xtmp
-            else:
-                x[k] = -9999
+        for i in range(mixrat.size):
+            for k in range(p.size):
+                mix = Td(mixrat[i]/1000.,p[k])-T0 
+                xtmp = skewtx(mix,y[k])
+                if(xtmp >= x00 and xtmp <= x11):
+                    x[i,k] = xtmp
+                else:
+                    x[i,k] = -9999
 
-        doPlot = np.where(x != -9999)
-        if(len(doPlot[0]) > 0):
-            pl.plot(x[doPlot],y[doPlot],color=c5,dashes=[3,2])
-            pl.text(x[doPlot][-1],y[doPlot][-1]+vs,int(mix0),color=c5,ha='center',va='bottom',backgroundcolor='w')
+        p.dump(tmpPath+'mixr_p_%i.arr'%si.stype)
+        y.dump(tmpPath+'mixr_y_%i.arr'%si.stype)
+        x.dump(tmpPath+'mixr_x_%i.arr'%si.stype)
+
+    # Plot the mixing ratio lines
+    for i in range(mixrat.size):
+        doPlot = np.where(x[i,:] != -9999)[0]
+        if(doPlot[0].size > 0):
+            pl.plot(x[i,doPlot],y[doPlot],color=c5,dashes=[3,2])
+            pl.text(x[i,doPlot][-1],y[doPlot][-1]+vs,int(mixrat[i]),color=c5,ha='center',va='bottom',backgroundcolor='w')
 
     """
     6. Add sounding data
@@ -485,9 +534,10 @@ def skewtlogp(olga,si):
     label = 'Skew-T log-P, %s, %s UTC'%(si.name,si.time) 
     pl.figtext(0.5,0.97,label,ha='center')
 
-    img = image.imread(olga.olgaRoot+'include/olga_lr.png')
-    w=650;h=600
-    pl.figimage(img,10,6)
+    if(olga != -1):
+        img = image.imread(olga.olgaRoot+'include/olga_lr.png')
+        w=650;h=600
+        pl.figimage(img,10,6)
     pl.figtext(0.08,0.013,'Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='left')
 
     return fig
@@ -496,9 +546,10 @@ def skewtlogp(olga,si):
 Just for testing..
 """
 if __name__ == "__main__":
-    pl.close('all')
-    sset = skewt_input()
-    skewtlogp(sset)
-    sset.stype = 1
-    skewtlogp(sset)
-
+    for n in range(10):
+        pl.close('all')
+        sset = skewt_input()
+        skewtlogp(-1,sset)
+        sset.stype = 1
+        skewtlogp(-1,sset)
+        
