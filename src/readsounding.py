@@ -41,7 +41,7 @@ class readsounding:
                         self.Vd.append(float(vals[6]))
                     except ValueError:
                         skipped += 1
-            print('Skipped %2i lines in reading sounding'%skipped)
+            #print('Skipped %2i lines in reading sounding'%skipped)
 
             self.p  = np.array(self.p )
             self.z  = np.array(self.z )

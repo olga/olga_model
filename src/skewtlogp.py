@@ -183,16 +183,24 @@ class skewt_input:
         self.z    = np.array([])  # Sounding height levels
         self.name = ""            # Location
         self.time = ""            # Time
+
+        # Settings idealized parcel
         self.parcel = False       # Lauch parcel?
         self.ps   = -1            # Surface pressure
         self.Ts   = -9999         # Surface temperature of parcel
         self.rs   = -9999         # Surface moisture mixing ratio of parcel
 
+        # Updraft values from TEMF scheme
         self.Tu   = np.array([])  # updraft temperature
         self.Tdu  = np.array([])  # updraft dewpoint temperature
         self.cfru = np.array([])  # cloud fraction updraft
         self.qlu  = np.array([])  # liquid water updraft
         self.lclu = -1            # LCL updraft
+
+        # Data from measured sounding
+        self.Tm   = np.array([])  # Measured temperature
+        self.Tdm  = np.array([])  # Measured dew point temperature
+        self.pm   = np.array([])  # Pressure levels from measured sounding
 
 """
 Main routine which makes the diagram
@@ -438,6 +446,18 @@ def skewtlogp(olga, si):
             if(y[k] <= y11 and np.abs(si.p[k]-p_last) > dp_label):
                 pl.barbs(xb,y[k],u[k],v[k],length=5.2,linewidth=0.5,pivot='middle')  
                 p_last = si.p[k]
+
+    """
+    6.1 :) Try to add measured data
+    """
+    # 6.1 Temperature and dewpoint temperature
+    if(si.Tm.size > 0):
+        y  = skewty(si.pm)
+        x1 = skewtx(si.Tm,y)
+        x2 = skewtx(si.Tdm,y)
+
+        pl.plot(x1,y,'--',color=cT,linewidth=1)
+        pl.plot(x2,y,'--',color=cTd,linewidth=1)
 
     """
     7. Lauch parcel
