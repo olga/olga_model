@@ -98,21 +98,21 @@ def swin(doy, time, lat, lon, returnElev=False):
 
 """
 Given updraft height and velocity, calculate potential cross-country (constant height) velocity
-Input can be nD arrays, or single values. see constants.py for definitions a,b,c,peff,etc.
+Input can be nD arrays, or single values.
 """
-def VgemCrossCountry(z_upd,w_upd):
+def VgemCrossCountry(z_upd, w_upd, a, b, c, pdfEff):
     vstf    = -(b-(b-(4.*-a*(-c-w_upd))**0.5))/(2.*-a) # speed to fly given updraft (MacCready) velocity [km h-1]
     wstf    = -a*vstf**2.+b*vstf-c # sink glider at vstf [m s-1]
     alpha   = -wstf / (w_upd - wstf) # fraction time spent circling [-]
-    Vgem    = (1.-alpha)*vstf*peff # (1-alpha)*V = cross-country speed, correct for efficiency pilot [km h-1] 
+    Vgem    = (1.-alpha) * vstf * pdfEff # (1-alpha)*V = cross-country speed, correct for efficiency pilot [km h-1] 
 
     # Decrease potential speed for some arbitrary (to-do: tune) conditions
     if(np.size(z_upd)>1):
-        Vgem[np.where(z_upd<800)] = Vgem[np.where(z_upd<800)] / 2.
-        Vgem[np.where(z_upd<500)] = 0.
+        Vgem[z_upd < 800] *= 0.5
+        Vgem[z_upd < 500]  = 0.
     else:
-        Vgem = Vgem / 2. if z_upd<800 else Pv
-        Vgem = 0.        if z_upd<500 else Pv
+        Vgem = Vgem * 0.5 if z_upd < 800 else Pv
+        Vgem = 0.         if z_upd < 500 else Pv
 
     return Vgem
 
@@ -221,19 +221,29 @@ class readwrf_all:
         self.L           = -(self.ustar**3. * tref) / (kappa * g * wthvs) # Obukhov length [m]
         wthvs[np.where(wthvs<0)] = 0. # remove negative flux for w* calculation 
         self.wstar       = (g * self.zi * wthvs / tref)**(1./3.) # convective velocity scale w* [m s-1]
-        self.wglider     = deepcopy(self.wstar - supd) # w* minus sink glider [m s
-        self.wstar[np.where(self.wglider<0)] = 0. # set minimum updraft velocity to zero
+        self.wglider     = deepcopy(self.wstar) - olga.sinkGlider # w* minus sink glider [m s-1]
+        self.wglider[self.wglider<0] = 0. # Limit updraft velocity glider to zero
 
-        # Calculate the PFD
+        # Calculate the PFD, only if there is a full day.
         if(np.size(self.t0_ana) > 0):
-            self.date_PFD = []
-            self.PFD = np.zeros((np.size(self.t0_ana),self.nlat,self.nlon))
+            self.date_PFD = [] # List to store the datetime string of PFD calculation
+            self.PFD = np.zeros((np.size(self.t0_ana), np.size(olga.pfdNames), self.nlat, self.nlon)) # Empty array for PFD
+
+            # Loop over different days 
             for i in range(np.size(self.t0_ana)):
-                self.date_PFD.append(self.date[self.t0_ana[i]])
-                pV  = VgemCrossCountry(self.zi[self.t0_ana[i]:self.t1_ana[i]+1],self.wstar[self.t0_ana[i]:self.t1_ana[i]+1])
-                # integrate to obtain cumulative flyable distance
-                for t2 in range(1,pV.shape[0]):
-                    self.PFD[i,:,:] += pV[t2-1,:,:] * self.dt 
+                t0 = self.t0_ana[i]
+                t1 = self.t1_ana[i]+1
+                self.date_PFD.append(self.date[t0])
+
+                # Loop over different glider types
+                for j in range(np.size(olga.pfdNames)):
+                    # Calculate the instantaneous achievable cross-country velocity given updraft velocity. Some corrections are applied.
+                    pV  = VgemCrossCountry(self.zi[t0:t1], self.wglider[t0:t1], olga.pfdA[j], olga.pfdB[j], olga.pfdC[j], olga.pfdEff[j])
+
+                    # integrate to obtain cumulative flyable distance. 
+                    # At each time, the average distance over the past ouput period is added
+                    for t2 in range(1, pV.shape[0]):
+                        self.PFD[i,j,:,:] += 0.5*(pV[t2-1,:,:]+pV[t2,:,:]) * self.dt 
         else:
             self.PFD = False
 
@@ -326,20 +336,20 @@ class readwrf_loc:
             self.TEMF    = False
 
         # Derived variables:
-        self.slps        = self.ps / (1.-2.25577e-5 * self.hgt)**5.25588 # sea level pressure
+        self.slps          = self.ps / (1.-2.25577e-5 * self.hgt)**5.25588 # sea level pressure
+        rhos               = self.ps / (Rd * self.T2) # surface density [kg m-3]
+        wthvs              = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv)) # surface buoyancy flux [W m-2]
+        wthvs[wthvs<0]     = 0. # remove negative flux for w* calc
+        self.zi[self.zi<0] = 0. # remove negative updraft heights (..)
+        self.wstar         = (g * self.zi * wthvs/tref)**(1./3.) # convective velocity scale w*
+        self.wstar[self.wstar < olga.sinkGlider] = 0. # convective velocity scale w* - sink glider
 
-        rhos             = self.ps / (Rd * self.T2) # surface density [kg m-3]
-        wthvs            = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv)) # surface buoyancy flux [W m-2]
-        wthvs[np.where(wthvs<0)] = 0. # remove negative flux for w* calc
-        self.zi[np.where(self.zi<0)] = 0. 
-        self.wstar       = (g * self.zi * wthvs/tref)**(1./3.) # convective velocity scale w*
-        self.wstar[np.where(self.wstar<supd)] = 0. # convective velocity scale w* - sink glider
-        self.pV          = VgemCrossCountry(self.zi,self.wstar) # potential cross-country velocity
-        self.cPFD        = np.zeros_like(self.pV) # cumulative potential flight distance
-        for t in range(1,nt):
-            self.cPFD[t] = self.cPFD[t-1] + av(self.pV[t-1],self.pV[t]) * self.dt
-            if(self.hour[t] < self.hour[t-1]): # new day: reset PFD
-                self.cPFD[t] = 0.
+        #self.pV          = VgemCrossCountry(self.zi,self.wstar) # potential cross-country velocity
+        #self.cPFD        = np.zeros_like(self.pV) # cumulative potential flight distance
+        #for t in range(1,nt):
+        #    self.cPFD[t] = self.cPFD[t-1] + av(self.pV[t-1],self.pV[t]) * self.dt
+        #    if(self.hour[t] < self.hour[t-1]): # new day: reset PFD
+        #        self.cPFD[t] = 0.
 
         # Get potential incoming shortwave radiation:
         self.swd_theory = np.zeros(nt)

@@ -53,12 +53,11 @@ class olgaSettings:
         # ----------------------------------
         # Read ASCII file with locations, here used for everything
         loc1 = readLocations(self.domainRoot + 'locations.txt')
-        #loc2 = readLocations(self.domainRoot + 'airports.txt')
 
         # ----------------------------------
         # Computational settings. 
-        self.mpiTasks    = 4 # Number of MPI tasks
-        self.ompThreads  = 1 # Number of OpenMP threads
+        self.mpiTasks    = 4 # Number of MPI tasks, only use if compiled with DMEM 
+        self.ompThreads  = 1 # Number of OpenMP threads, ignored if not compiled with SMEM
 
         # ----------------------------------
         # Number of domains. This can be less than the size of the arrays below
@@ -79,10 +78,9 @@ class olgaSettings:
 
         # ----------------------------------
         # Main map settings per domain
-        self.maps         = ([True,False]) # Make maps or not
-
-        # By setting map_lat, map_lon, map_width and map_height to -1, OLGA automatically
+        # By setting map_lat, map_lon, map_width and map_height or -1, OLGA automatically
         # tries to determine the best settings. Useful for setting up domains and first tests
+        self.maps         = ([True,False]) # Make maps or not
         self.map_lat      = ([51.2,-1]) # Central latitude of map [deg]
         self.map_lon      = ([7.9,-1]) # Central longitude of map [deg]
         self.map_width    = ([690000,-1]) # Domain plot width [m]
@@ -104,18 +102,31 @@ class olgaSettings:
         # ----------------------------------
         # Plot variables maps
         vars1 = (['pfd','wstar','zidry','cudepth','convection','clouds','rain','wind10m','wind1000m'])         
-        vars2 = (['pfd','wstar','zidry','convection','clouds','cudepth'])         
         #vars1 = (['pfd'])         
-        #vars2 = (['rr'])         
+        vars2 = ([''])         
         self.map_vars     = ([vars1,vars2]) # variables to plot per domain
 
         # ----------------------------------
-        # Settings soundings (Detailed settings are in src/skewtlogp.py)
-        self.sounding     = ([True,False]) # Make soundings or not
+        # Random settings
+        self.sinkGlider  = 1. # Glider sink in updraft [m/s]. Used to calculate updraft velocity, PFD, etc.
+
+        # ----------------------------------
+        # Settings potential flight distance calculation. Shared for all domains
+        # For each set of constants, a PFD calculation is done
+        self.pfdNames = (['ventus','cirrus']) # Used only for file name, so no spaces
+        self.pfdNotes = (['Ventus2-18m @ 45 kg/m3','Std Cirrus @ 30 kg/m3']) # Additional notes for PFD calculation
+        self.pfdA     = ([1.05e-4, 1.71e-4]) # a-coefficient polar
+        self.pfdB     = ([1.79e-2, 2.43e-2]) # b-coefficient polar
+        self.pfdC     = ([1.3099,  1.4600 ]) # c-coefficient polar
+        self.pfdEff   = ([0.75, 0.75]) # Efficiency pilot [-]
+
+        # ----------------------------------
+        # Settings soundings
+        self.sounding     = ([True, False]) # Make soundings or not
         self.soundLoc     = ([loc1, loc1]) # Location of soundings
 
         # Settings time series (meteograms)
-        self.meteogr      = ([True,False]) # Make meteograms or not
+        self.meteogr      = ([True, False]) # Make meteograms or not
         self.meteogrLoc   = ([loc1, loc1]) # Location of meteograms
 
         # -----------------------------------------------------

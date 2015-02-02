@@ -48,7 +48,7 @@ def create_timeseries(olga,wrfout,dom,times):
 
                 fig = pl.figure(figsize=(olga.fig_width_px/float(olga.fig_dpi), olga.fig_width_px/float(olga.fig_dpi)))
                 #                   L    B    R    T    ws  hs
-                fig.subplots_adjust(0.10,0.11,0.98,0.88,0.60,0.50)
+                fig.subplots_adjust(0.10,0.11,0.98,0.88,0.35,0.55)
                 pl.figtext(0.5,0.95,'%s [%.2fN, %.2fE]'%(longName,lat,lon),size=9,ha='center')
                 pl.figtext(0.5,0.93,'%s'%(d.date[t0]),size=8,ha='center')
                 gs = pl.matplotlib.gridspec.GridSpec(4,2,height_ratios=[1.,1.,0.4,1],width_ratios=[2,1])
@@ -56,7 +56,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 # -------------------------------------------------
                 # Updraft velocity / height
                 # -------------------------------------------------
-                ax = pl.subplot(gs[:2,0]); modplot(ax,removeaxis=['top'])
+                ax = pl.subplot(gs[:2,0]); modplot(ax)
                 ax.set_title('Updraft velocity and height',loc='left')
                 zs = d.z[0,0]  # terrain height (lowest half level)
                 wm = 3.5       # scaling for colormap
@@ -81,14 +81,14 @@ def create_timeseries(olga,wrfout,dom,times):
                 pl.yticks(np.arange(0,3000.001,500))
                 pl.grid(linestyle=':',color='0.5')
 
-                ax2 = ax.twinx()
-                ax2.plot(d.hour[t0:t1+1],d.cPFD[t0:t1+1],linewidth=2,color='0.5',label='CFD')
-                pl.xlim(d.hour[t0],d.hour[t1])
-                pl.ylim(0,900)
-                pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
-                pl.legend(frameon=False,loc=1)
-                pl.ylabel('Cumulative flight distance (CFD) [km]')
-                pl.yticks(np.arange(0,900.001,150))
+                #ax2 = ax.twinx()
+                #ax2.plot(d.hour[t0:t1+1],d.cPFD[t0:t1+1],linewidth=2,color='0.5',label='CFD')
+                #pl.xlim(d.hour[t0],d.hour[t1])
+                #pl.ylim(0,900)
+                #pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
+                #pl.legend(frameon=False,loc=1)
+                #pl.ylabel('Cumulative flight distance (CFD) [km]')
+                #pl.yticks(np.arange(0,900.001,150))
 
                 # -------------------------------------------------
                 # Pressure
@@ -135,6 +135,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 pl.plot(d.hour[t0:t1], d.swd[t0:t1], 'k-')
                 pl.plot(d.hour[t0:t1], d.swd_theory[t0:t1], 'k:')
                 pl.ylabel('W/m2')
+                pl.xlabel('time UTC [h]')
                 pl.xlim(d.hour[t0],d.hour[t1])
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
 
