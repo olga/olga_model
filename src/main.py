@@ -31,12 +31,17 @@ from multiprocessing import Process
 from src.plotdriver import plot_driver
 
 debug = True 
-res = 'old' # 'old'
+res = '0.25' # '0.25' or 'old'
 
 ## Execute command
 # @param task Task to start
 def execute(task):
     subprocess.call(task, shell=True, executable='/bin/bash')
+
+def progress(count, blockSize, totalSize):
+    percent = int(count*blockSize*100/totalSize)
+    sys.stdout.write("\r ... %d percent"%percent)
+    sys.stdout.flush()
 
 ## Downloads the requested GFS data, or waits until available
 # @param olga Pointer to object with OLGA settings
@@ -100,16 +105,17 @@ def downloadGFS(olga,islice):
                     if(check.code == 200):
                         # File available, download! 
                         if(debug): print('file available at GFS server -> downloading')
-                        urllib.urlretrieve(url,gfsrundir+fil)
+                        urllib.urlretrieve(url,gfsrundir+fil, reporthook=progress)
+                        print(' ')
                     else:
                         # File not (yet) available, sleep a while and re-do the checks 
                         print('file not found on server, sleep 5min')
                         time.sleep(300)
             except:
-                # Something weird happened. Sleep 5 minutes, try again
-                print('weird exception:')
+                # Something weird happened. Sleep a bit, try again
+                print('weird exception: '),
                 print(sys.exc_info()[0]) 
-                time.sleep(300)
+                time.sleep(100)
 
     print('finished GFS at %s'%datetime.datetime.now().time())
 
@@ -199,6 +205,7 @@ def execWPS(olga):
     if(debug): print('... WPS -> geogrid')
     #subprocess.call('./geogrid.exe >& %sgeogrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
     execute('./geogrid.exe >& %sgeogrid.%s'%(olga.olgaLogs,logappend))
+    #execute('./geogrid.exe')
 
     # Link the GFS data to the WPS directory
     gfsData = '%s%04i%02i%02i'%(olga.gfsDataRoot,olga.year,olga.month,olga.day)
@@ -208,7 +215,7 @@ def execWPS(olga):
     # Temp for switching between old and new GFS
     # --------------------
     #subprocess.call('rm Vtable',shell=True,executable='/bin/bash')
-    execute('rm Vtable')
+    execute('rm Vtable >& /dev/null')
     if(res == '0.25'):
         #subprocess.call('cp Vtable.GFS_0.25d Vtable',shell=True,executable='/bin/bash')
         execute('cp Vtable.GFS_0.25d Vtable')
@@ -222,11 +229,13 @@ def execWPS(olga):
     # Run ungrib
     #subprocess.call('./ungrib.exe >& %sungrib.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
     execute('./ungrib.exe >& %sungrib.%s'%(olga.olgaLogs,logappend))
+    #execute('./ungrib.exe')
 
     # Run metgrid
     if(debug): print('... WPS -> metgrid')
     #subprocess.call('./metgrid.exe >& %smetgrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
     execute('./metgrid.exe >& %smetgrid.%s'%(olga.olgaLogs,logappend))
+    #execute('./metgrid.exe')
 
     print('finished WPS at %s'%datetime.datetime.now().time())
     os.chdir(olga.domainRoot)

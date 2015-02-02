@@ -22,7 +22,7 @@ class olgaSettings:
         # Local file system settings.
         # Full path to directory of this script. Append with '/' !!
         
-        if(True): # Mint ---------------------
+        if(False): # Mint ---------------------
             self.olgaRoot     = '/home/bart/WRFnl/olga_model/' # Mint 
             self.domainRoot   = '/home/bart/WRFnl/olga_model/OLGA_NL/' # Mint 
 
@@ -35,6 +35,20 @@ class olgaSettings:
             self.figRoot      = '/home/scratch1/WRFnl/outputOLGA/' # Path to save OLGA output
             self.wrfDataRoot  = '/home/scratch1/WRFnl/outputWRF/'  # Path to store the WRF output
             self.gfsDataRoot  = '/home/scratch1/WRFnl/inputGFS/'   # Path to store the GFS data
+
+        if(True): # MPIPC ---------------------
+            self.olgaRoot     = '/home/zmaw/m300241/WRFnl/olga_model/'
+            self.domainRoot   = '/home/zmaw/m300241/WRFnl/olga_model/OLGA_NL/'
+
+            # The following directories are by default defined relative to the current directory. 
+            # However, also absolute paths, at other disks/partitions/etc. are possible to store
+            # e.g. the large input and output files somwhere else.
+            self.wpsRoot      = '/scratch/local2/WRFnl/WPS/'        # Path to root of WPS run directory
+            self.wrfRoot      = '/scratch/local2/WRFnl/WRF/'        # Path to root of WRF run directory
+            self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
+            self.figRoot      = '/scratch/local2/WRFnl/outputOLGA/' # Path to sve OLGA output
+            self.wrfDataRoot  = '/scratch/local2/WRFnl/outputWRF/'  # Path to store the WRF output
+            self.gfsDataRoot  = '/scratch/local2/WRFnl/inputGFS/'   # Path to store the GFS data
 
         if(False): # Thunder -----------------
             self.olgaRoot     = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/' # Thunder
