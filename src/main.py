@@ -43,10 +43,15 @@ def progress(count, blockSize, totalSize):
     sys.stdout.write("\r ... %d percent"%percent)
     sys.stdout.flush()
 
+## Print to stdout, and flush buffer
+def printf(message):
+    print(message)
+    sys.stdout.flush() 
+
 ## Downloads the requested GFS data, or waits until available
 # @param olga Pointer to object with OLGA settings
 def downloadGFS(olga,islice):
-    print('Obtaining GFS data...')
+    printf('Obtaining GFS data...')
     gfsbase = 'http://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod/gfs'
     gfsrundir = '%s%04i%02i%02i/'%(olga.gfsDataRoot,olga.year,olga.month,olga.day) # where to save files
 
@@ -54,7 +59,7 @@ def downloadGFS(olga,islice):
 
     # Check if GFS data directory exists, if not create it
     if not os.path.exists(gfsrundir):
-        if(debug): print('Making directory %s'%gfsrundir)
+        if(debug): printf('Making directory %s'%gfsrundir)
         os.mkdir(gfsrundir)
 
     # Calculate first and last hour to download
@@ -79,10 +84,10 @@ def downloadGFS(olga,islice):
         while(success == False):
             # Test: put try around everything to catch weird exceptions
             try:
-                if(debug): print('processing %s .. '%fil),
+                if(debug): printf('processing %s .. '%fil)
                 # Check if file locally available and valid
                 if(os.path.isfile(gfsrundir+fil)):
-                    if(debug): print('found local .. '),
+                    if(debug): printf('found local .. '),
                     # Check if same size as remote:
                     remote = urllib.urlopen(url)
                     # for re-running old cases, the file might have been removed online.
@@ -92,32 +97,32 @@ def downloadGFS(olga,islice):
                         local = open(gfsrundir+fil,'rb')
                         size_local = len(local.read())
                         if(int(size_remote) == int(size_local)):
-                            if(debug): print('size remote/local match, success!')
+                            if(debug): printf('size remote/local match, success!')
                             success = True
                         else:
-                            if(debug): print('size remote/local differ, re-download .. '),
+                            if(debug): printf('size remote/local differ, re-download .. '),
                     else:
-                        if(debug): print('remote not available for comparision: assume all is fine :)')
+                        if(debug): printf('remote not available for comparision: assume all is fine :)')
                         success = True
                 # If not, check if available at server:
                 if(success == False):
                     check = urllib.urlopen(url)
                     if(check.code == 200):
                         # File available, download! 
-                        if(debug): print('file available at GFS server -> downloading')
+                        if(debug): printf('file available at GFS server -> downloading')
                         urllib.urlretrieve(url,gfsrundir+fil, reporthook=progress)
-                        print(' ')
+                        printf(' ')
                     else:
                         # File not (yet) available, sleep a while and re-do the checks 
-                        print('file not found on server, sleep 5min')
+                        printf('file not found on server, sleep 5min')
                         time.sleep(300)
             except:
                 # Something weird happened. Sleep a bit, try again
-                print('weird exception: '),
-                print(sys.exc_info()[0]) 
+                printf('weird exception: '),
+                printf(sys.exc_info()[0]) 
                 time.sleep(100)
 
-    print('finished GFS at %s'%datetime.datetime.now().time())
+    printf('finished GFS at %s'%datetime.datetime.now().time())
 
 ## replace everything after '=' on line containing 'searchstring' with 'value' in 'filein' 
 # @param filein Path to file
@@ -140,7 +145,7 @@ def printn(string,n,separator=','):
 ## Update WRF and WPS namelists
 # @param olga Pointer to object with OLGA settings
 def updateNamelists(olga):
-    print('updating namelists WPS and WRF...')
+    printf('updating namelists WPS and WRF...')
 
     # Update WRF namelist
     replace(olga.wrfRoot+'namelist.input','start_year',   printn(olga.startstruct.year,   olga.ndom))
@@ -180,7 +185,7 @@ def updateNamelists(olga):
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
 def execWPS(olga):
-    print('Running WPS at %s'%datetime.datetime.now().time())
+    printf('Running WPS at %s'%datetime.datetime.now().time())
     # Grr, we have to call the routines from the directory itself...
     os.chdir(olga.wpsRoot)
 
@@ -202,7 +207,7 @@ def execWPS(olga):
         os.mkdir(olga.olgaLogs)
 
     # Run geogrid
-    if(debug): print('... WPS -> geogrid')
+    if(debug): printf('... WPS -> geogrid')
     #subprocess.call('./geogrid.exe >& %sgeogrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
     execute('./geogrid.exe >& %sgeogrid.%s'%(olga.olgaLogs,logappend))
     #execute('./geogrid.exe')
@@ -224,7 +229,7 @@ def execWPS(olga):
         execute('cp Vtable.GFS_0.5d Vtable')
     # --------------------
 
-    if(debug): print('... WPS -> ungrib')
+    if(debug): printf('... WPS -> ungrib')
 
     # Run ungrib
     #subprocess.call('./ungrib.exe >& %sungrib.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
@@ -232,18 +237,18 @@ def execWPS(olga):
     #execute('./ungrib.exe')
 
     # Run metgrid
-    if(debug): print('... WPS -> metgrid')
+    if(debug): printf('... WPS -> metgrid')
     #subprocess.call('./metgrid.exe >& %smetgrid.%s'%(olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
     execute('./metgrid.exe >& %smetgrid.%s'%(olga.olgaLogs,logappend))
     #execute('./metgrid.exe')
 
-    print('finished WPS at %s'%datetime.datetime.now().time())
+    printf('finished WPS at %s'%datetime.datetime.now().time())
     os.chdir(olga.domainRoot)
 
 ## Run the WRF steps
 # @param olga Pointer to object with OLGA settings
 def execWRF(olga):
-    print('Running WRF at %s'%datetime.datetime.now().time())
+    printf('Running WRF at %s'%datetime.datetime.now().time())
     # Grr, we have to call the routines from the directory itself...
     os.chdir(olga.wrfRoot)
 
@@ -274,7 +279,7 @@ def execWRF(olga):
     execute('export | grep OMP')
 
     # Run real
-    if(debug): print('... WRF -> real.exe')
+    if(debug): printf('... WRF -> real.exe')
     if(olga.mpiTasks > 1):
         #subprocess.call('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
         execute('mpirun -n %i ./real.exe >& %sreal.%s'%(olga.mpiTasks,olga.olgaLogs,logappend))
@@ -283,7 +288,7 @@ def execWRF(olga):
         execute('./real.exe >& %sreal.%s'%(olga.olgaLogs,logappend))
 
     # Run WRF as background process to allow other processes (download GFS, ..) to run at the same time..
-    if(debug): print('... WRF -> wrf.exe')
+    if(debug): printf('... WRF -> wrf.exe')
     if(olga.mpiTasks > 1):
         #subprocess.call('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend),shell=True,executable='/bin/bash')
         execute('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend))
@@ -299,7 +304,7 @@ def execWRF(olga):
 ## Wait until the required restart file is available (i.e. WRF finished)
 # @param olga Pointer to object with OLGA settings
 def wait4WRF(olga):
-    print('Waiting for WRF to finish')
+    printf('Waiting for WRF to finish')
 
     es = olga.endstruct
     wrfrst = '%swrfrst_d01_%04i-%02i-%02i_%02i:%02i:00'%(olga.wrfRoot,es.year,es.month,es.day,es.hour,es.minute)
@@ -309,7 +314,7 @@ def wait4WRF(olga):
         if(not os.path.isfile(wrfrst)):
             time.sleep(10)
         else: 
-            print('finished WRF at %s'%datetime.datetime.now().time())
+            printf('finished WRF at %s'%datetime.datetime.now().time())
             break
 
 ## Copy WRF output to wrfDataRoot
@@ -336,24 +341,24 @@ def moveWRFOutput(olga):
 # @param olga Pointer to object with OLGA settings
 def execPlots(olga):
     startTime = datetime.datetime.now()
-    print('Starting plots at %s'%startTime)
+    printf('Starting plots at %s'%startTime)
 
     # Spawn different processes for each mape type, saves quite some time..
     for dom in range(olga.ndom):
         if(olga.maps[dom]==True):
-            print('making maps for domain=%i'%(dom+1))
+            printf('making maps for domain=%i'%(dom+1))
             #plot_driver(olga,dom,'maps')
             pmap = Process(target=plot_driver, args=(olga,dom,'maps',))
             pmap.start()
 
         if(olga.meteogr[dom]):
-            print('making time series for domain=%i'%(dom+1))
+            printf('making time series for domain=%i'%(dom+1))
             #plot_driver(olga,dom,'time')
             pmgram = Process(target=plot_driver, args=(olga,dom,'time',))
             pmgram.start()
 
         if(olga.sounding[dom]==True):
-            print('making soundings for domain=%i'%(dom+1))
+            printf('making soundings for domain=%i'%(dom+1))
             #plot_driver(olga,dom,'sounding')
             psound = Process(target=plot_driver, args=(olga,dom,'sounding',))
             psound.start()
@@ -366,4 +371,4 @@ def execPlots(olga):
             psound.join()
 
     endTime = datetime.datetime.now()
-    print('finished plots at %s, execution took %s'%(endTime, endTime-startTime))
+    printf('finished plots at %s, execution took %s'%(endTime, endTime-startTime))
