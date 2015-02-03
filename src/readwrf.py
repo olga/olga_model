@@ -342,7 +342,8 @@ class readwrf_loc:
         wthvs[wthvs<0]     = 0. # remove negative flux for w* calc
         self.zi[self.zi<0] = 0. # remove negative updraft heights (..)
         self.wstar         = (g * self.zi * wthvs/tref)**(1./3.) # convective velocity scale w*
-        self.wstar[self.wstar < olga.sinkGlider] = 0. # convective velocity scale w* - sink glider
+        self.wglider        = deepcopy(self.wstar) - olga.sinkGlider
+        self.wglider[self.wglider < 0] = 0. # convective velocity scale w* - sink glider
 
         #self.pV          = VgemCrossCountry(self.zi,self.wstar) # potential cross-country velocity
         #self.cPFD        = np.zeros_like(self.pV) # cumulative potential flight distance
