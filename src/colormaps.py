@@ -130,7 +130,7 @@ rain2   = cmap_ncl('precip2_17lev')
 rain2nl = nonlin_cmap(rain2,2.) 
 rain3 = cmap_ncl('precip3_16lev') 
 rain3nl = nonlin_cmap(rain3,2.) 
-cloud = nonlin_cmap(pl.cm.Greys_r,2.)
+cloud = pl.cm.Greys
 
 # -------------------------
 # Test colormaps
@@ -145,9 +145,9 @@ def show_cmap(cmap, levs):
     pl.contourf(x,y,z,levs,extend='both',cmap=cmap)
     pl.colorbar() 
 
-pl.close('all')
-levs  = np.arange(0, 800.1, 100)
-show_cmap(wup, levs)
+#pl.close('all')
+#levs  = np.arange(0, 1.001, 0.1)
+#show_cmap(sun, levs)
 
-levs  = np.arange(0, 3.01, 0.5)
-show_cmap(wup, levs)
+#levs  = np.arange(0, 3.01, 0.5)
+#show_cmap(wup, levs)

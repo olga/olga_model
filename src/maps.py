@@ -201,6 +201,25 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             cf2    = m.contourf(lon, lat, cchig, levs, colors='none', hatches=['.']) 
 
         # -------------------------------------------------
+        # Fraction of potential incoming shortwave radiation at surface
+        # -------------------------------------------------
+        elif(var == 'swd'):
+            doplot = True
+            title  = 'Incoming solar radiation (// = night)'
+            units  = 'percentage'
+            fSigma = 0.5
+
+            data  = gaussianFilter(wrf.swdf[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.swdf[t,:,:]
+
+            # Draw shaded contours for cloud cover
+            levs   = np.arange(0.00, 100.01, 5)
+            cf     = m.contourf(lon, lat, data*100., levs, extend='both', alpha=1., cmap=cloud)
+
+            # Hatch night area
+            levs   = [-2,-0.5] 
+            cf2    = m.contourf(lon, lat, data, levs, colors='none', hatches=['/']) 
+
+        # -------------------------------------------------
         # Updraft velocity wstar
         # -------------------------------------------------
         elif(var == 'wstar'):

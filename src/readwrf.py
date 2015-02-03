@@ -177,8 +177,10 @@ class readwrf_all:
         self.ustar       = wrfin.variables["UST"][t0:t1,:,:] # surface friction velocity [m/s]
         self.slps        = wrfin.variables["PSFC"][t0:t1,:,:] \
                            / (1.-2.25577e-5 * self.hgt[:,:])**5.25588 # sea level pressure
-        self.swd         = wrfin.variables["SWDOWN"][t0:t1,:,:] # shortwave incomming radiation at surface [W/m2]
-
+        self.swd         = wrfin.variables["SWDNB"][t0:t1,:,:] # shortwave incomming radiation at surface [W/m2]
+        self.swdc        = wrfin.variables["SWDNBC"][t0:t1,:,:] # clear sky shortwave incomming radiation at surface [W/m2]
+        self.swdc[self.swdc==0] = 1e-9
+ 
         # Try if the TEMF (bl_pbl_physics=10) variables are available:
         try: 
             self.zi      = wrfin.variables["HD_TEMF"][t0:t1,:,:] # dry thermal top TEMF
@@ -206,13 +208,15 @@ class readwrf_all:
         find_analysis_times(olga,self)
 
         # Potential & fractional incoming shortwave radiation. Masked at -1 for sunrise/set
-        self.swd_t       = np.zeros((self.nt, self.nlat, self.nlon))
-        self.swd_frac    = np.zeros((self.nt, self.nlat, self.nlon))
-        self.sun_elev    = np.zeros((self.nt, self.nlat, self.nlon))
-        for t in range(self.nt):
-            self.swd_t[t,:,:], self.sun_elev[t,:,:] = swin(self.doy[t], self.hour[t], self.lat, self.lon, returnElev=True)
-        self.swd_frac    = self.swd / self.swd_t
-        self.swd_frac[self.sun_elev < 0.05] = -1
+        #self.swd_t       = np.zeros((self.nt, self.nlat, self.nlon))
+        #self.swd_frac    = np.zeros((self.nt, self.nlat, self.nlon))
+        #self.sun_elev    = np.zeros((self.nt, self.nlat, self.nlon))
+        #for t in range(self.nt):
+        #    self.swd_t[t,:,:], self.sun_elev[t,:,:] = swin(self.doy[t], self.hour[t], self.lat, self.lon, returnElev=True)
+        #self.swd_frac    = self.swd / self.swd_t
+        #self.swd_frac[self.sun_elev < 0.05] = -1
+        self.swdf         = self.swd / self.swdc # Fraction of incoming shortwave radiation
+        self.swdf[self.swdc < 1] = -1 # Mask for night 
 
         # Updraft velocity
         rhos             = self.ps / (Rd * self.T2) # surface density [kg m-3]
