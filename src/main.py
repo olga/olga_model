@@ -372,3 +372,17 @@ def execPlots(olga):
 
     endTime = datetime.datetime.now()
     printf('finished plots at %s, execution took %s'%(endTime, endTime-startTime))
+
+## Create the plots / maps / soundings
+# @param olga Pointer to object with OLGA settings
+def uploadPlots(olga):
+    startTime = datetime.datetime.now()
+    printf('Starting upload at %s'%startTime)
+ 
+    # What's the best way to do this.....? For now hard coded
+    local  = '%s%04i%02i%02i_t%02iz'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle)
+    remote = 'vanstratum-com@ssh.pcextreme.nl:~/domains/vanstratum.com/htdocs/olga/results/'
+    execute('scp -r %s %s'%(local, remote))
+
+    endTime = datetime.datetime.now()
+    printf('finished upload at %s'%endTime)

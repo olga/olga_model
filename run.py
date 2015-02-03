@@ -11,10 +11,9 @@ mode = 'all'
 
 olga = settings_d1()
 
-n = -1
-olga.year    = int(time.strftime('%Y'))
-olga.month   = int(time.strftime('%m'))
-olga.day     = int(time.strftime('%d'))
+olga.year    = 2015 #int(time.strftime('%Y'))
+olga.month   = 02 #int(time.strftime('%m'))
+olga.day     = 02 #int(time.strftime('%d'))
 olga.tstart  = 00   # start time of simulation
 olga.cycle   = 0    # which GFS cycle? {0,6,12,18}
 
@@ -43,6 +42,8 @@ for islice in range(nslice):
         moveWRFOutput(olga)
     if(mode == 'all' or mode == 'post'):
         execPlots(olga)
+    if(mode == 'all'):
+        uploadPlots(olga) 
 
 print('--------------------------------')
 print('Execution time OLGA: %s'%(datetime.datetime.now()-startTime))
