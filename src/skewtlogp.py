@@ -530,7 +530,6 @@ def skewtlogp(olga, si):
             kmax=np.where(si.cfru == si.cfru.max())[0][0]
             pl.text(x.max(),y[kmax],'- %i%%'%(si.cfru[kmax]*100.),ha='left',va='center',size=8,color=c6)
 
- 
     """
     6. Finish diagram
     """ 
@@ -550,10 +549,9 @@ def skewtlogp(olga, si):
     pl.figtext(0.5,0.97,label,ha='center')
 
     if(olga != -1):
-        img = image.imread(olga.olgaRoot+'include/olga_lr.png')
-        w=650;h=600
-        pl.figimage(img,10,6)
-    pl.figtext(0.08,0.013,'Open Limited-area Gliding Analysis. 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='left')
+        img = image.imread(olga.olgaRoot+'include/olga_left.png')
+        pl.figimage(img,7,5)
+    pl.figtext(0.99,0.011,'%s'%olga.map_desc[0],size=7,ha='right')
 
     return fig
 

@@ -32,7 +32,7 @@ from readsounding import *
 def create_sounding(olga,wrfout,dom,times):
     for name, longName, lon, lat, type in zip(olga.soundLoc[dom].shortName, olga.soundLoc[dom].longName, olga.soundLoc[dom].lon, olga.soundLoc[dom].lat, olga.soundLoc[dom].type):
         if(type == 1 or type == 2):
-	    d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
+            d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
             sset = skewt_input()
 
             for t in times:
@@ -45,13 +45,13 @@ def create_sounding(olga,wrfout,dom,times):
                 sset.z      = d.zf[t,:]
                 sset.u      = d.u[t,:]
                 sset.v      = d.v[t,:]
-                sset.name   = name
+                sset.name   = longName
                 sset.time   = d.datetime[t]
 
                 # Idealized parcel settings
                 sset.parcel = True
                 sset.ps     = d.ps[t]
-                sset.Ts     = d.T[t,0]#d.T2[t]
+                sset.Ts     = d.T[t,0]
                 sset.rs     = d.q2[t]
 
                 # Add data from TEMF updrafts

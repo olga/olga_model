@@ -31,7 +31,7 @@ def create_timeseries(olga,wrfout,dom,times):
 
     # Create 4-color colormap
     wupd = cmap_discrete(wup,np.linspace(0,1,4))
-    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_lr.png')
+    olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_left.png')
 
     # Loop over requested locations
     for name, longName, lon, lat, type in zip(olga.soundLoc[dom].shortName, olga.soundLoc[dom].longName, olga.soundLoc[dom].lon, olga.soundLoc[dom].lat, olga.soundLoc[dom].type):
@@ -133,7 +133,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 ax = pl.subplot(gs[3,1]); modplot(ax)
                 ax.set_title('Shortwave radiation',loc='left')
                 pl.plot(d.hour[t0:t1], d.swd[t0:t1], 'k-')
-                pl.plot(d.hour[t0:t1], d.swd_theory[t0:t1], 'k:')
+                pl.plot(d.hour[t0:t1], d.swdc[t0:t1], 'k:')
                 pl.ylabel('W/m2')
                 pl.xlabel('time UTC [h]')
                 pl.xlim(d.hour[t0],d.hour[t1])
@@ -183,9 +183,8 @@ def create_timeseries(olga,wrfout,dom,times):
                 pl.xlabel('time UTC [h]')
 
                 # Add logo 
-                w=650;h=600
-                pl.figimage(olga_logo,10,6)
-                pl.figtext(0.5,0.010,'OLGA: 6 x 6 km GFS-initiated WRF-ARW forecast [olga.vanstratum.com]',size=7,ha='center')
+                pl.figimage(olga_logo,7,5)
+                pl.figtext(0.99,0.011,'%s'%(olga.map_desc[dom]),size=7,ha='right')
 
                 # Save figure
                 tmp  = '%06i'%(olga.islice*24.)

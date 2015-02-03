@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="345.75116"
+   height="105.72646"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="olga_right.svg"
+   inkscape:export-filename="/home/zmaw/m300241/WRFnl/olga_model/include/olga_right.png"
+   inkscape:export-xdpi="30.562643"
+   inkscape:export-ydpi="30.562643">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 50.891693 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="101.33823 : 50.891693 : 1"
+       inkscape:persp3d-origin="50.669113 : 33.927795 : 1"
+       id="perspective10" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="99.081434"
+     inkscape:cy="46.362266"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1360"
+     inkscape:window-height="854"
+     inkscape:window-x="186"
+     inkscape:window-y="43"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-326.38918,-478.41657)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.39215687;stroke-dasharray:none"
+       d="m 589.9704,543.25465 68.43783,-0.25254 c 0,0 10.08249,-1.85999 9.72272,-11.49049 -0.41104,-11.00322 -11.11168,-11.99556 -11.11168,-11.99556 0,0 2.37508,-7.68352 -5.05076,-16.16244 -6.87328,-7.84799 -17.67767,-4.67195 -17.67767,-4.67195 0,0 -6.41284,-19.9607 -25.25382,-15.65736 -21.17168,4.83568 -18.18274,26.39023 -18.18274,26.39023 0,0 -15.64482,2.49111 -15.78363,17.42513 -0.15883,17.08716 14.89975,16.41498 14.89975,16.41498 z"
+       id="path3827"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccscscscsc" />
+    <text
+       xml:space="preserve"
+       style="font-size:33.34047698999999909px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:0.39215687;stroke:none;font-family:Sans"
+       x="569.08478"
+       y="579.94275"
+       id="text3829"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3831"
+         x="569.08478"
+         y="579.94275"
+         style="font-size:37.53604125999999752px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:0.39215687;font-family:Ubuntu;-inkscape-font-specification:Ubuntu">OLGA</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:33.75257874px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:0.54901961;stroke:none;font-family:Sans"
+       x="323.12518"
+       y="577.75104"
+       id="text3589"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3591"
+         x="323.12518"
+         y="577.75104"
+         style="font-size:34px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:0.39215687;font-family:Ubuntu;-inkscape-font-specification:Ubuntu">[olga.github.io]</tspan></text>
+  </g>
+</svg>

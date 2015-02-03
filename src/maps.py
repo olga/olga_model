@@ -309,7 +309,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
                 m.drawrivers(linewidth=0.5, color='#0066FF')
  
             # Add description variables, units, OLGA label, logo, etc. 
-            pl.figtext(axl, axb/2,'OLGA: %s GFS-initiated WRF-ARW forecast [olga.vanstratum.com]'%olga.map_desc[dom],size=6,ha='left', va='center')
+            pl.figtext(axl, axb/2,'%s'%olga.map_desc[dom],size=7,ha='left', va='center')
 
             if(var=='pfd'):
                 subtitle = 'cumulative distance over: %s'%str(wrf.date_PFD[t]) 
@@ -321,7 +321,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             ax.set_title(subtitle, loc='right', size=8)
 
             # Add OLGA logo
-            pl.figimage(olga.olga_logo, olga.fig_width_px-45, 6)
+            pl.figimage(olga.olga_logo, olga.fig_width_px-121, 4)
 
             # Get name and save figure 
             if(var=='pfd'):
@@ -367,7 +367,7 @@ def createMaps(olga, wrfout, dom, times):
                     lat_1=map_lat, lat_0=map_lat, lon_0=map_lon)
 
     # Read in the OLGA logo
-    olga.olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_lr.png')
+    olga.olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_right.png')
 
     # Coordinates cities/airfields/etc
     if(olga.drawCities[dom]):
