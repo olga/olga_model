@@ -63,8 +63,8 @@ def create_timeseries(olga,wrfout,dom,times):
                 bw1 = 0.6      # width of sub-cloud updrafts
                 bw2 = 0.8      # width of cloud updrafts
                 for i in range(t0,t1+1):
-                    if(d.wstar[i] > 0.0):
-                        color = wup((np.floor(d.wstar[i])+0.5)/wm)
+                    if(d.wglider[i] > 0.0):
+                        color = wup((np.floor(d.wglider[i])+0.5)/wm)
                         pl.bar(d.hour[i]-0.5*bw1, d.zi[i],         width=bw1, bottom=zs,         color=color,           edgecolor='none')    
                         pl.bar(d.hour[i]-0.5*bw2, d.ct[i]-d.zi[i], width=bw2, bottom=d.zi[i]+zs, color='k',  alpha=0.3, edgecolor='none')    
 
