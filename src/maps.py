@@ -229,7 +229,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             fSigma = 1.
 
             levs   = np.arange(0, 3.001, 0.5)
-            data   = gaussianFilter(wrf.wstar[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.wstar[t,:,:]
+            data   = gaussianFilter(wrf.wglider[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.wglider[t,:,:]
             cf     = m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
 
         # -------------------------------------------------
