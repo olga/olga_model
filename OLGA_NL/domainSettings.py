@@ -103,19 +103,19 @@ class olgaSettings:
         self.drawRivers   = ([True,False]) # Draw rivers
         self.drawCities   = ([True,False]) # Draw cities
         self.cityLoc      = ([loc1, loc1]) # Location of city/airport/.. markers on maps
-        self.map_desc     = (['6x6km','2x2km'])
+        self.map_desc     = (['6x6km GFS-initiated WRF-ARW [olga.vanstratum.com]',''])
 
         # Figure settings. For maps, the height is determined from the map aspect ratio
         self.fig_width_px  = 650  # width of figure [px]
         self.fig_dpi       = 100  # resolution in [px/in]
-        self.map_bottom_px = 20   # bottom margin [px]
+        self.map_bottom_px = 22   # bottom margin [px]
         self.map_top_px    = 25   # top margin in [px]
         self.map_left_px   = 12   # left margin in [px]
         self.map_right_px  = 80   # right margin in [px]
 
         # ----------------------------------
         # Plot variables maps
-        vars1 = (['pfd','wstar','zidry','cudepth','convection','clouds','rain','wind10m','wind1000m'])         
+        vars1 = (['pfd','wstar','zidry','cudepth','convection','swd','rain','wind10m','wind1000m'])         
         #vars1 = (['pfd'])         
         vars2 = ([''])         
         self.map_vars     = ([vars1,vars2]) # variables to plot per domain
