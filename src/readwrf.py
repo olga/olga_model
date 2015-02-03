@@ -179,7 +179,7 @@ class readwrf_all:
                            / (1.-2.25577e-5 * self.hgt[:,:])**5.25588 # sea level pressure
         self.swd         = wrfin.variables["SWDNB"][t0:t1,:,:] # shortwave incomming radiation at surface [W/m2]
         self.swdc        = wrfin.variables["SWDNBC"][t0:t1,:,:] # clear sky shortwave incomming radiation at surface [W/m2]
-        self.swdc[self.swdc==0] = 1e-9
+        self.swdc[self.swdc==0] = 1e-12
  
         # Try if the TEMF (bl_pbl_physics=10) variables are available:
         try: 
@@ -208,14 +208,7 @@ class readwrf_all:
         find_analysis_times(olga,self)
 
         # Potential & fractional incoming shortwave radiation. Masked at -1 for sunrise/set
-        #self.swd_t       = np.zeros((self.nt, self.nlat, self.nlon))
-        #self.swd_frac    = np.zeros((self.nt, self.nlat, self.nlon))
-        #self.sun_elev    = np.zeros((self.nt, self.nlat, self.nlon))
-        #for t in range(self.nt):
-        #    self.swd_t[t,:,:], self.sun_elev[t,:,:] = swin(self.doy[t], self.hour[t], self.lat, self.lon, returnElev=True)
-        #self.swd_frac    = self.swd / self.swd_t
-        #self.swd_frac[self.sun_elev < 0.05] = -1
-        self.swdf         = self.swd / self.swdc # Fraction of incoming shortwave radiation
+        self.swdf        = self.swd / self.swdc # Fraction of incoming shortwave radiation
         self.swdf[self.swdc < 1] = -1 # Mask for night 
 
         # Updraft velocity
@@ -223,7 +216,7 @@ class readwrf_all:
         wthvs            = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv)) # surface buoyancy flux [W m-2]
         wthvs[np.where(wthvs==0)] = eps # remove zero flux to prevent div/0
         self.L           = -(self.ustar**3. * tref) / (kappa * g * wthvs) # Obukhov length [m]
-        wthvs[np.where(wthvs<0)] = 0. # remove negative flux for w* calculation 
+        wthvs[np.where(wthvs<0)] = 1e-9 # remove negative flux for w* calculation 
         self.wstar       = (g * self.zi * wthvs / tref)**(1./3.) # convective velocity scale w* [m s-1]
         self.wglider     = deepcopy(self.wstar) - olga.sinkGlider # w* minus sink glider [m s-1]
         self.wglider[self.wglider<0] = 0. # Limit updraft velocity glider to zero
@@ -301,9 +294,12 @@ class readwrf_loc:
         self.u10         = np.apply_over_axes(np.mean,wrfin.variables["U10"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 10m u-wind [m s-1] 
         self.v10         = np.apply_over_axes(np.mean,wrfin.variables["V10"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 10m v-wind [m s-1]
         self.q2          = np.apply_over_axes(np.mean,wrfin.variables["Q2"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 2m vapor mixing ratio [kg kg-1]
-        self.swd         = np.apply_over_axes(np.mean,wrfin.variables["SWDOWN"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # shortwave incomming radiation at surface [W/m2]
         self.rr_mp       = np.apply_over_axes(np.mean,wrfin.variables["RAINNC"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total microphysical rain [mm]
         self.rr_con      = np.apply_over_axes(np.mean,wrfin.variables["RAINC"] [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total convective rain [mm]
+
+        self.swd         = np.apply_over_axes(np.mean,wrfin.variables["SWDNB"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # shortwave incomming radiation at surface [W/m2]
+        self.swdc        = np.apply_over_axes(np.mean,wrfin.variables["SWDNBC"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # clear sky shortwave incomming radiation at surface [W/m2]
+        self.swdc[self.swdc==0] = 1e-12 # Prevent divide by zeros
 
         # Rain over last period
         self.drr_mp      = np.zeros(self.rr_mp.size)
@@ -356,11 +352,9 @@ class readwrf_loc:
         #        self.cPFD[t] = 0.
 
         # Get potential incoming shortwave radiation:
-        self.swd_theory = np.zeros(nt)
-        self.swd_frac = np.zeros(nt)
-        for t in range(nt):
-            self.swd_theory[t] = swin(self.doy[t],self.hour[t],self.lat,self.lon)
-            self.swd_frac[t] = min([1.,max([1e-3,self.swd[t]]) / max([1.e-3,self.swd_theory[t]])])
+        self.swdf = self.swd / self.swdc 
+        #self.swdf[self.swdf < 0] = 0.
+        #self.swdf[self.swdf > 1] = 1.
 
         # Calculate temperature and dewpoint from potential temperature and total water mixing ratio
         self.qt  = self.qv + self.ql  # total water mixing ratio [kg kg-1]
