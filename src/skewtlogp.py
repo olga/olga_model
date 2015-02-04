@@ -566,4 +566,3 @@ if __name__ == "__main__":
         skewtlogp(-1,sset)
         sset.stype = 1
         skewtlogp(-1,sset)
-        

@@ -16,12 +16,11 @@ Hannover,     EDDV, 09.685, 52.463, 0
 
 # Sounding locations:
 Norderney,    10113, 07.15, 53.71, 1
-#Schleswig,    10035, 09.55, 54.53, 1
 Bergen,       10238, 09.93, 52.81, 1
 Essen,        10410, 06.96, 51.40, 1
 Meiningen,    10548, 10.38, 50.56, 1
 Idar-Obers,   10618, 07.33, 49.70, 1
-deBilt,       06260, 05.18, 52.10, 1
+deBilt,       06260, 05.18, 52.10, 2
 Beauvecchain, 06458, 04.77, 50.75, 1
 
 

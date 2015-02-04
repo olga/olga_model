@@ -22,7 +22,7 @@ class olgaSettings:
         # Local file system settings.
         # Full path to directory of this script. Append with '/' !!
         
-        if(False): # Mint ---------------------
+        if(True): # Mint ---------------------
             self.olgaRoot     = '/home/bart/WRFnl/olga_model/' # Mint 
             self.domainRoot   = '/home/bart/WRFnl/olga_model/OLGA_NL/' # Mint 
 
@@ -36,7 +36,7 @@ class olgaSettings:
             self.wrfDataRoot  = '/home/scratch1/WRFnl/outputWRF/'  # Path to store the WRF output
             self.gfsDataRoot  = '/home/scratch1/WRFnl/inputGFS/'   # Path to store the GFS data
 
-        if(True): # MPIPC ---------------------
+        if(False): # MPIPC ---------------------
             self.olgaRoot     = '/home/zmaw/m300241/WRFnl/olga_model/'
             self.domainRoot   = '/home/zmaw/m300241/WRFnl/olga_model/OLGA_NL/'
 
@@ -94,7 +94,7 @@ class olgaSettings:
         # Main map settings per domain
         # By setting map_lat, map_lon, map_width and map_height or -1, OLGA automatically
         # tries to determine the best settings. Useful for setting up domains and first tests
-        self.maps         = ([True,False]) # Make maps or not
+        self.maps         = ([False,False]) # Make maps or not
         self.map_lat      = ([51.2,-1]) # Central latitude of map [deg]
         self.map_lon      = ([7.9,-1]) # Central longitude of map [deg]
         self.map_width    = ([690000,-1]) # Domain plot width [m]
@@ -122,7 +122,7 @@ class olgaSettings:
 
         # ----------------------------------
         # Random settings
-        self.sinkGlider  = 1. # Glider sink in updraft [m/s]. Used to calculate updraft velocity, PFD, etc.
+        self.sinkGlider  = 0.8 # Glider sink in updraft [m/s]. Used to calculate updraft velocity, PFD, etc.
 
         # ----------------------------------
         # Settings potential flight distance calculation. Shared for all domains
