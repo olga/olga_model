@@ -182,9 +182,9 @@ def create_timeseries(olga,wrfout,dom,times):
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
                 pl.xlabel('time UTC [h]')
 
-                # Add logo 
-                pl.figimage(olga_logo,7,5)
-                pl.figtext(0.99,0.011,'%s'%(olga.map_desc[dom]),size=7,ha='right')
+                # Add logo (105px wide) 
+                pl.figimage(olga_logo, 10, olga.fig_width_px-45)
+                pl.figtext(0.01, 0.011, '%s'%(olga.map_desc[dom]), size=7, ha='left')
 
                 # Save figure
                 tmp  = '%06i'%(olga.islice*24.)

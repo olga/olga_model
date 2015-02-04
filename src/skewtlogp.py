@@ -255,7 +255,7 @@ def skewtlogp(olga, si):
     """
     Setup figure
     """
-    fig = pl.figure(figsize=(6.5,6))
+    fig = pl.figure(figsize=(olga.fig_width_px/float(olga.fig_dpi), olga.fig_width_px/float(olga.fig_dpi)))
     #                   L    B    R    T    ws  hs
     fig.subplots_adjust(0.08,0.10,1.0,0.93,0.2,0.08)
     pl.subplot(111)
@@ -551,6 +551,7 @@ def skewtlogp(olga, si):
     if(olga != -1):
         img = image.imread(olga.olgaRoot+'include/olga_left.png')
         pl.figimage(img,7,5)
+        #pl.figimage(img,10,olga.fig_width_px-45)
     pl.figtext(0.99,0.011,'%s'%olga.map_desc[0],size=7,ha='right')
 
     return fig
