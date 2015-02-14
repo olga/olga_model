@@ -99,8 +99,8 @@ def create_timeseries(olga,wrfout,dom,times):
                 ax.set_title('Updraft velocity and height',loc='left')
                 zs  = d.z[0,0]  # terrain height (lowest half level)
                 wm  = 4         # scaling for colormap
-                bw1 = 0.7       # width of sub-cloud updrafts
-                bw2 = 0.8       # width of cloud updrafts
+                bw1 = 0.70       # width of sub-cloud updrafts
+                bw2 = 0.85       # width of cloud updrafts
 
                 # Loop over all time steps
                 for tt in range(t0,t1+1):
@@ -121,8 +121,8 @@ def create_timeseries(olga,wrfout,dom,times):
                     if(np.size(c3d)> 0): 
                         cb = c3d[0][0]-1
                         ct = c3d[0][-1]+1
-                        pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='w', alpha=0.5, edgecolor='k')   
-                   
+                        pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='0.9', alpha=0.5, edgecolor='k')   
+
                 # Add line at surface
                 pl.plot([d.hour[t0], d.hour[t1]],[zs, zs], 'k:')
                 pl.text(d.hour[t0]+0.2,zs,'surface',size=7,ha='left',va='bottom')
@@ -139,7 +139,6 @@ def create_timeseries(olga,wrfout,dom,times):
                 pl.ylabel('z [m AMSL]')
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
                 pl.yticks(np.arange(0,3000.001,500))
-
 
                 # -------------------------------------------------
                 # Pressure

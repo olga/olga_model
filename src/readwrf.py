@@ -251,6 +251,7 @@ class readwrf_loc:
     def __init__(self,olga,file_in,glon,glat,t0,t1):
         t1 += 1
         n = 3 ; n1 = n+1
+
         wrfin            = get_nc_obj(file_in)
         ntglob           = wrfin.variables["XTIME"][:].size # number of time steps in output
         nt               = wrfin.variables["XTIME"][t0:t1].size ; self.nt = nt 
@@ -297,7 +298,7 @@ class readwrf_loc:
         self.rr_mp       = np.apply_over_axes(np.mean,wrfin.variables["RAINNC"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total microphysical rain [mm]
         self.rr_con      = np.apply_over_axes(np.mean,wrfin.variables["RAINC"] [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total convective rain [mm]
 
-        self.swd         = np.apply_over_axes(np.mean,wrfin.variables["SWDNB"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # shortwave incomming radiation at surface [W/m2]
+        self.swd         = np.apply_over_axes(np.mean,wrfin.variables["SWDNB"] [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # shortwave incomming radiation at surface [W/m2]
         self.swdc        = np.apply_over_axes(np.mean,wrfin.variables["SWDNBC"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # clear sky shortwave incomming radiation at surface [W/m2]
         self.swdc[self.swdc==0] = 1e-12 # Prevent divide by zeros
 
@@ -307,11 +308,20 @@ class readwrf_loc:
         self.drr_mp[1:]  = self.rr_mp[1:] - self.rr_mp[:-1]
         self.drr_con[1:] = self.rr_con[1:] - self.rr_con[:-1]
 
-        self.ccl         = np.zeros((3,nt))
-        self.ccl[0,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,:35,  jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
-        self.ccl[1,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,35:52,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
-        self.ccl[2,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,52:,  jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
+        # Low (z < 2000m), mid (2000m >= z > 6000m) and high (z >= 6000m) clouds:
+        k2000 = key_nearest(self.zf[0,:], 2000)
+        k6000 = key_nearest(self.zf[0,:], 6000)
 
+        # This is still messy.. Tacking the maximum cloud fraction from each layer results mostly in an on-off cloud
+        # fraction (either 0 or 100%). Taking the mean over all layers which have clouds seems to work ~okay.
+        self.ccl         = np.zeros((3,nt))
+        for t in range(t0,t1,1):
+            tmp1 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,:k2000,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            self.ccl[0,t] = tmp1[tmp1>0].mean() if tmp1.max() > 0 else 0  
+            tmp2 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k2000:k6000,jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            self.ccl[1,t] = tmp1[tmp2>0].mean() if tmp2.max() > 0 else 0 
+            tmp3 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k6000:,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            self.ccl[2,t] = tmp1[tmp3>0].mean() if tmp3.max() > 0 else 0 
 
         try: # Try if the TEMF (bl_pbl_physics=10) variables are available:
             self.w       = np.apply_over_axes(np.mean,wrfin.variables["WUPD_TEMF"][t0:t1,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # updraft velocity TEMF 
