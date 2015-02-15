@@ -31,24 +31,31 @@ def create_timeseries(olga,wrfout,dom,times):
 
     # Create 4-color colormap
     #wupd = cmap_discrete(wup,np.linspace(0,1,5))
-    wupd = cmap_discrete(cm.jet,np.linspace(0,1,5))
-
+    #wupd = cmap_discrete(cm.jet,np.linspace(0,1,5))
     wupd = [[0.02, 0.71, 1.00, 1.],\
             [0.02, 1.00, 0.16, 1.],\
             [0.87, 1.00, 0.02, 1.],\
             [1.00, 0.16, 0.02, 1.]]
 
+    # colormap for cloud cover
+    cld   = make_colormap({0.:'#05b5ff',1.0:'#ffffff'})
+
     olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_left.png')
+
+    
 
     # Loop over requested locations
     for name, longName, lon, lat, type in zip(olga.soundLoc[dom].shortName, olga.soundLoc[dom].longName, olga.soundLoc[dom].lon, olga.soundLoc[dom].lat, olga.soundLoc[dom].type):
         if(type == 0 or type == 2):
             print(longName)
             # Read WRF data
+            print('reading WRF')
 	    d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
+            print('finished reading WRF')
 
             # Loop over diffent day (if available):
             for t in range(np.size(d.t0_ana)):
+                print('start figure')
                 t0 = d.t0_ana[t]
                 t1 = d.t1_ana[t]
                 x0 = d.hour[t0]
@@ -102,6 +109,8 @@ def create_timeseries(olga,wrfout,dom,times):
                 bw1 = 0.70       # width of sub-cloud updrafts
                 bw2 = 0.85       # width of cloud updrafts
 
+                print('start loop')
+
                 # Loop over all time steps
                 for tt in range(t0,t1+1):
                     # Plot updraft velocity 
@@ -122,6 +131,9 @@ def create_timeseries(olga,wrfout,dom,times):
                         cb = c3d[0][0]-1
                         ct = c3d[0][-1]+1
                         pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='0.9', alpha=0.5, edgecolor='k')   
+
+
+                print('end loop')
 
                 # Add line at surface
                 pl.plot([d.hour[t0], d.hour[t1]],[zs, zs], 'k:')
@@ -158,8 +170,8 @@ def create_timeseries(olga,wrfout,dom,times):
                 # -------------------------------------------------
                 ax = pl.subplot(gs[1,1]); modplot(ax)
                 ax.set_title('T and Td at 2m',loc='left')
-                pl.plot(d.hour[t0:t1], d.T2[t0:t1]-273.15, 'r-', label='T')
-                pl.plot(d.hour[t0:t1], d.Td2[t0:t1]-273.15, 'b-', label='Td')
+                pl.plot(d.hour[t0:t1], d.T2[t0:t1]-273.15, 'k-', label='T')
+                pl.plot(d.hour[t0:t1], d.Td2[t0:t1]-273.15, 'k-', label='Td', dashes=[4,2])
                 pl.ylabel('celcius')
                 pl.xlim(d.hour[t0],d.hour[t1])
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
@@ -183,35 +195,27 @@ def create_timeseries(olga,wrfout,dom,times):
                 ax = pl.subplot(gs[3,1]); modplot(ax)
                 ax.set_title('Shortwave radiation',loc='left')
                 pl.plot(d.hour[t0:t1], d.swd[t0:t1], 'k-')
-                pl.plot(d.hour[t0:t1], d.swdc[t0:t1], 'k:', label='potential')
+                pl.plot(d.hour[t0:t1], d.swdc[t0:t1], 'k-', label='Pot.', dashes=[4,2])
                 pl.ylabel('W/m2')
                 pl.xlabel('time UTC [h]')
                 pl.xlim(d.hour[t0],d.hour[t1])
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
                 pl.ylim(0,1000)
                 pl.yticks(np.arange(0,1000.01,200))
-                pl.legend(frameon=False,loc=2)
+                pl.legend(frameon=False, loc=2, borderpad=0)
 
                 # -------------------------------------------------
                 # Cloud cover
                 # -------------------------------------------------
                 ax = pl.subplot(gs[2,0]); modplot(ax)
                 ax.set_title('Cloud cover',loc='left')
-                pl.pcolormesh(d.ccl,cmap=pl.cm.bone_r,vmin=0,vmax=1)
+                pl.pcolormesh(d.ccl,cmap=cld,vmin=0,vmax=1)
                 pl.text(d.hour[t0]-0.4,0.5,'low',size=7,ha='right',va='center')
                 pl.text(d.hour[t0]-0.4,1.5,'middle',size=7,ha='right',va='center')
                 pl.text(d.hour[t0]-0.4,2.5,'high',size=7,ha='right',va='center')
                 pl.xlim(d.hour[t0],d.hour[t1])
                 ax.set_yticks([])
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
-
-                #ax2 = ax.twinx()
-                #ax2.plot(d.hour[t0:t1+1],d.swd_frac[t0:t1+1]*100.,linewidth=2,color='y',label='% sun')
-                #pl.xlim(d.hour[t0],d.hour[t1])
-                #pl.ylim(0,105)
-                #pl.yticks([0,25,50,75,100])
-                #pl.legend(frameon=False,loc=4)
-                #pl.ylabel('Sun [%]')
 
                 # -------------------------------------------------
                 # Wind
@@ -244,3 +248,5 @@ def create_timeseries(olga,wrfout,dom,times):
                 #name = '%s%04i%02i%02i_t%02iz/%s_d%i_tser_%s.png'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle,tmp,dom+1,name)
                 name = '%s%04i%02i%02i_t%02iz/tser_%s_%02i_%s.png'%(olga.figRoot, olga.year, olga.month, olga.day, olga.cycle, name, dom+1, tmp)
                 pl.savefig(name, dpi=olga.fig_dpi)
+
+                print('finished figure')
