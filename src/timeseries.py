@@ -47,15 +47,11 @@ def create_timeseries(olga,wrfout,dom,times):
     # Loop over requested locations
     for name, longName, lon, lat, type in zip(olga.soundLoc[dom].shortName, olga.soundLoc[dom].longName, olga.soundLoc[dom].lon, olga.soundLoc[dom].lat, olga.soundLoc[dom].type):
         if(type == 0 or type == 2):
-            print(longName)
             # Read WRF data
-            print('reading WRF')
 	    d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
-            print('finished reading WRF')
 
             # Loop over diffent day (if available):
             for t in range(np.size(d.t0_ana)):
-                print('start figure')
                 t0 = d.t0_ana[t]
                 t1 = d.t1_ana[t]
                 x0 = d.hour[t0]
@@ -109,8 +105,6 @@ def create_timeseries(olga,wrfout,dom,times):
                 bw1 = 0.70       # width of sub-cloud updrafts
                 bw2 = 0.85       # width of cloud updrafts
 
-                print('start loop')
-
                 # Loop over all time steps
                 for tt in range(t0,t1+1):
                     # Plot updraft velocity 
@@ -131,9 +125,6 @@ def create_timeseries(olga,wrfout,dom,times):
                         cb = c3d[0][0]-1
                         ct = c3d[0][-1]+1
                         pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='0.9', alpha=0.5, edgecolor='k')   
-
-
-                print('end loop')
 
                 # Add line at surface
                 pl.plot([d.hour[t0], d.hour[t1]],[zs, zs], 'k:')
@@ -248,5 +239,3 @@ def create_timeseries(olga,wrfout,dom,times):
                 #name = '%s%04i%02i%02i_t%02iz/%s_d%i_tser_%s.png'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle,tmp,dom+1,name)
                 name = '%s%04i%02i%02i_t%02iz/tser_%s_%02i_%s.png'%(olga.figRoot, olga.year, olga.month, olga.day, olga.cycle, name, dom+1, tmp)
                 pl.savefig(name, dpi=olga.fig_dpi)
-
-                print('finished figure')
