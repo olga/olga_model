@@ -284,6 +284,7 @@ class readwrf_loc:
         # For the next variables, average over area
         self.ps          = np.apply_over_axes(np.mean,wrfin.variables["PSFC"]  [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # surface pressure [pa]
         self.T2          = np.apply_over_axes(np.mean,wrfin.variables["T2"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 2m temperature [K]
+        self.q2          = np.apply_over_axes(np.mean,wrfin.variables["Q2"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 2m vapor mixing ratio [kg kg-1]
         self.hfx         = np.apply_over_axes(np.mean,wrfin.variables["HFX"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # sensible heat flux [W m-2]
         self.lh          = np.apply_over_axes(np.mean,wrfin.variables["LH"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # latent heat flux [W m-2]
         self.th          = np.apply_over_axes(np.mean,wrfin.variables["T"]     [t0:t1,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # potential temperature [K]
@@ -294,7 +295,6 @@ class readwrf_loc:
         self.v           = np.apply_over_axes(np.mean,wrfin.variables["V"]     [t0:t1,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # v-wind component [m s-1]
         self.u10         = np.apply_over_axes(np.mean,wrfin.variables["U10"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 10m u-wind [m s-1] 
         self.v10         = np.apply_over_axes(np.mean,wrfin.variables["V10"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 10m v-wind [m s-1]
-        self.q2          = np.apply_over_axes(np.mean,wrfin.variables["Q2"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 2m vapor mixing ratio [kg kg-1]
         self.rr_mp       = np.apply_over_axes(np.mean,wrfin.variables["RAINNC"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total microphysical rain [mm]
         self.rr_con      = np.apply_over_axes(np.mean,wrfin.variables["RAINC"] [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total convective rain [mm]
 
@@ -386,7 +386,6 @@ class readwrf_loc:
             if(self.TEMF):
                 self.Tu[t,:]  = self.thtemf[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.) # 1.e5 = reference pressure
                 e             = ((self.p[t,:]) * self.qttemf[t,:]) / ((Rd/Rv) + self.qttemf[t,:]) # vapor pressure
-                # ?!?!
                 e[np.where(e<=0)] = 1e-9
                 self.Tdu[t,:] = ((1./273.) - (Rv/Lv) * np.log(e/611.))**-1.
             else:

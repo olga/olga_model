@@ -41,7 +41,7 @@ def create_sounding(olga,wrfout,dom,times):
                 sset.hgt    = d.hgt[t]
                 sset.T      = d.T[t,:] 
                 sset.Td     = d.Td[t,:]
-                sset.p      = d.p[t,:] 
+                sset.p      = d.p[t,:]
                 sset.z      = d.zf[t,:]
                 sset.u      = d.u[t,:]
                 sset.v      = d.v[t,:]
@@ -50,9 +50,9 @@ def create_sounding(olga,wrfout,dom,times):
 
                 # Idealized parcel settings
                 sset.parcel = True
-                sset.ps     = d.ps[t]
-                sset.Ts     = d.T[t,0]
-                sset.rs     = d.q2[t]
+                sset.ps     = np.average(d.p [t,0])    # Start pressure level parcel
+                sset.Ts     = np.average(d.th[t,0]*(d.p[t,0]/1e5)**(287./1005.))    # Start temperature parcel
+                sset.rs     = np.average(d.qv[t,0])    # Start moisture mixing ration parcel
 
                 # Add data from TEMF updrafts
                 sset.Tu     = d.Tu[t,:] 
@@ -87,4 +87,6 @@ def create_sounding(olga,wrfout,dom,times):
                 fig.clf()
                 pl.close()
                 gc.collect()
+
+                #sys.exit()
 
