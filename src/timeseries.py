@@ -38,7 +38,7 @@ def create_timeseries(olga,wrfout,dom,times):
             [1.00, 0.16, 0.02, 1.]]
 
     # colormap for cloud cover
-    cld   = make_colormap({0.:'#05b5ff',1.0:'#ffffff'})
+    cld   = make_colormap({0.:'#05b5ff', 0.3:'#bdecff', 1.0:'#ffffff'})
 
     olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_left.png')
 
