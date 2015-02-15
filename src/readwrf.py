@@ -211,7 +211,7 @@ class readwrf_all:
         self.swdf        = self.swd / self.swdc # Fraction of incoming shortwave radiation
         self.swdf[self.swdc < 1] = -1 # Mask for night 
 
-        # Updraft velocity
+        # Updraft velocity: wstar
         rhos             = self.ps / (Rd * self.T2) # surface density [kg m-3]
         wthvs            = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv)) # surface buoyancy flux [W m-2]
         wthvs[np.where(wthvs==0)] = eps # remove zero flux to prevent div/0
@@ -236,13 +236,15 @@ class readwrf_all:
                 for j in range(np.size(olga.pfdNames)):
                     # Calculate the instantaneous achievable cross-country velocity given updraft velocity. Some corrections are applied.
                     pV  = VgemCrossCountry(self.zi[t0:t1], self.wglider[t0:t1], olga.pfdA[j], olga.pfdB[j], olga.pfdC[j], olga.pfdEff[j])
-
                     # integrate to obtain cumulative flyable distance. 
                     # At each time, the average distance over the past ouput period is added
                     for t2 in range(1, pV.shape[0]):
                         self.PFD[i,j,:,:] += 0.5*(pV[t2-1,:,:]+pV[t2,:,:]) * self.dt 
         else:
             self.PFD = False
+
+        # Updraft velocity: TEMF
+
 
 """
 Read in data from single location -> all time
@@ -355,17 +357,8 @@ class readwrf_loc:
         self.wglider        = deepcopy(self.wstar) - olga.sinkGlider
         self.wglider[self.wglider < 0] = 0. # convective velocity scale w* - sink glider
 
-        #self.pV          = VgemCrossCountry(self.zi,self.wstar) # potential cross-country velocity
-        #self.cPFD        = np.zeros_like(self.pV) # cumulative potential flight distance
-        #for t in range(1,nt):
-        #    self.cPFD[t] = self.cPFD[t-1] + av(self.pV[t-1],self.pV[t]) * self.dt
-        #    if(self.hour[t] < self.hour[t-1]): # new day: reset PFD
-        #        self.cPFD[t] = 0.
-
         # Get potential incoming shortwave radiation:
         self.swdf = self.swd / self.swdc 
-        #self.swdf[self.swdf < 0] = 0.
-        #self.swdf[self.swdf > 1] = 1.
 
         # Calculate temperature and dewpoint from potential temperature and total water mixing ratio
         self.qt  = self.qv + self.ql  # total water mixing ratio [kg kg-1]
