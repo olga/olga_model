@@ -42,8 +42,6 @@ def create_timeseries(olga,wrfout,dom,times):
 
     olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_left.png')
 
-    
-
     # Loop over requested locations
     for name, longName, lon, lat, type in zip(olga.soundLoc[dom].shortName, olga.soundLoc[dom].longName, olga.soundLoc[dom].lon, olga.soundLoc[dom].lat, olga.soundLoc[dom].type):
         if(type == 0 or type == 2):
@@ -120,11 +118,17 @@ def create_timeseries(olga,wrfout,dom,times):
                             pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color='w', edgecolor='none')    
                      
                     # Plot outline cumulus clouds 
-                    c3d = np.where((d.c3dtemf[tt,:] > 0.01) & (d.w[tt,:] > 0.02))
+                    #c3d = np.where((d.c3dtemf[tt,:] > 0.01) & (d.w[tt,:] > 0.02))
+                    c3d = np.where((d.qltemf[tt,:] > 1e-4) & (d.w[tt,:] > 0.02))
                     if(np.size(c3d)> 0): 
                         cb = c3d[0][0]-1
                         ct = c3d[0][-1]+1
                         pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='0.9', alpha=0.5, edgecolor='k')   
+
+                # For debugging:
+                #pl.plot(d.hour[t0:t1], d.zi[t0:t1]+zs,  'k-', label='HD_TEMF')
+                #pl.plot(d.hour[t0:t1], d.ct[t0:t1]+zs,  'r-', label='CT_TEMF')
+                #pl.plot(d.hour[t0:t1], d.lcl[t0:t1]+zs, 'g-', label='LCL_TEMF')
 
                 # Add line at surface
                 pl.plot([d.hour[t0], d.hour[t1]],[zs, zs], 'k:')
