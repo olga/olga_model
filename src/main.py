@@ -110,8 +110,9 @@ def downloadGFS(olga,islice):
                     if(check.code == 200):
                         # File available, download! 
                         if(debug): printf('file available at GFS server -> downloading')
-                        urllib.urlretrieve(url,gfsrundir+fil, reporthook=progress)
-                        printf(' ')
+                        #urllib.urlretrieve(url,gfsrundir+fil, reporthook=progress)
+                        urllib.urlretrieve(url,gfsrundir+fil)
+                        #printf(' ')
                     else:
                         # File not (yet) available, sleep a while and re-do the checks 
                         printf('file not found on server, sleep 5min')
