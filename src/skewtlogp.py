@@ -174,7 +174,7 @@ Input class for sounding
 class skewt_input:
     def __init__(self):
         self.stype = 0            # 0=high top, 1=low top
-        self.hgt  = -1            # Surface height ASML
+        self.hgt  = 0             # Surface height ASML
         self.T    = np.array([])  # Sounding temperature
         self.Td   = np.array([])  # Sounding dewpoint temperature
         self.u    = np.array([])  # Sounding u-wind
@@ -219,7 +219,7 @@ def skewtlogp(olga, si):
     """
     if(si.stype==0):
         pbottom = 105000.       # highest pressure in diagram (bottom)
-        ptop = 15000.           # lowest pressue in diagram (top)
+        ptop = 20000.           # lowest pressue in diagram (top)
         ptop_thd = 40000        # top of dry adiabats
         ptop_mxr = 60000        # top of mixing ratio lines
         pbottom_thw = pbottom   # bottom of moist adiabats
@@ -231,7 +231,7 @@ def skewtlogp(olga, si):
         isotherms     = np.arange(-100,30.001,10)
         isobars       = np.array([1050.,1000.,850.,700.,500.,400.,300.,250.,200.,150.,100.,50])*100.
         dryadiabats   = np.arange(-30,50.001,10) 
-        moistadiabats = np.array([28.,24.,20.,16.,12.,8.])
+        moistadiabats = np.array([28.,24.,20.,16.,12.,8.,4.,0.])
         mixrat        = np.array([20.,12.,8.,5.,3.,2.,1.])
     elif(si.stype==1):
         pbottom = 105000.       # highest pressure in diagram (bottom)
@@ -247,7 +247,7 @@ def skewtlogp(olga, si):
         isotherms     = np.arange(-100,60.001,10)
         isobars       = np.array([1050.,1000.,900.,850.,700.,600.,500.])*100.
         dryadiabats   = np.arange(-10,30.001,5) 
-        moistadiabats = np.array([28.,24.,20.,16.,12.,8.])
+        moistadiabats = np.array([28.,24.,20.,16.,12.,8.,4.,0.])
         mixrat        = np.array([20.,12.,8.,5.,3.,2.,1.])
     else:
         sys.exit('stype=%i not supported!'%stype)
@@ -255,7 +255,7 @@ def skewtlogp(olga, si):
     """
     Setup figure
     """
-    fig = pl.figure(figsize=(6.5,6))
+    fig = pl.figure(figsize=(olga.fig_width_px/float(olga.fig_dpi), olga.fig_width_px/float(olga.fig_dpi)))
     #                   L    B    R    T    ws  hs
     fig.subplots_adjust(0.08,0.10,1.0,0.93,0.2,0.08)
     pl.subplot(111)
@@ -431,7 +431,7 @@ def skewtlogp(olga, si):
         p_last = 1e9 
         for k in range(si.z.size):
             if(y[k] <= y11 and np.abs(si.p[k]-p_last) > dp_label):
-                pl.text(x11+hs,y[k],str(int(si.z[k]+si.hgt))+'m',color=c2,ha='right',va='center',size=7,backgroundcolor='w')
+                pl.text(x11+hs,y[k],str(int(si.z[k]))+'m',color=c2,ha='right',va='center',size=7,backgroundcolor='w')
                 p_last = si.p[k]
 
     # 6.2 Wind barbs
@@ -463,48 +463,47 @@ def skewtlogp(olga, si):
     7. Lauch parcel
     """
     if(si.parcel == True):
-        # HACK BvS -> why such difference between lowest level p and ps?
-        si.ps = si.p[0]
-        # HACK BvS don't use surface mixing ratio -> very high...
-        si.rs = rs(si.Td[0],si.ps)
+        # Plot starting position:
+        p0s  = skewty(si.ps)
+        T0s  = skewtx(si.Ts-T0, p0s)
+        Td0s = skewtx(Td(si.rs,si.ps)-T0, p0s)
+        pl.scatter(T0s, p0s, facecolor='none')
+        pl.scatter(Td0s,p0s, facecolor='none')
 
-        # Iteratively find Lifting Condensation Level (LCL)
-        zlcl  = 1000. 
-        RHlcl = 0.9
-        niter = 0;
-        while(((RHlcl <= 0.9999) or (RHlcl >= 1.0001)) and niter < 30): 
-            zlcl   += (1.-RHlcl) * 1000.;
-            Plcl    = si.ps / np.exp((g * zlcl)/(Rd * si.Ts));
-            Tlcl    = si.Ts * exner(Plcl,si.ps) # pow(Ps / Plcl,Rd / cp);
-            esatlcl = 0.611e3 * np.exp((Lv / Rv) * ((1. / 273.15)-(1. / Tlcl)));
-            elcl    = si.rs * Plcl / 0.622;
-            RHlcl   = elcl / esatlcl;
-            niter  += 1;
+        # Lists to hold parcel pressure, temp and dewpoint temp during ascent
+        pp  = [si.ps]
+        Tp  = [si.Ts]
+        Tdp = [Td(si.rs, si.ps)]
 
-        # Surface values        
-        psurfs  = skewty(si.ps)
-        Tsurfs  = skewtx(si.Ts-T0,psurfs)
-        Tdsurfs = skewtx(Td(si.rs,si.ps)-T0,psurfs)
-        pl.scatter(Tsurfs,psurfs,facecolor='none')
-        pl.scatter(Tdsurfs,psurfs,facecolor='none')
+        # Launch parcel
+        n = 0
+        while(Tp[-1] > Tdp[-1] and n<1000):
+            n  += 1
+            dp2 = max(1,(Tp[-1] - Tdp[-1])*300) # bit weird, but fast
+            pp. append(pp[-1] - dp2)
+            Tp. append(si.Ts*exner(pp[-1], si.ps))
+            Tdp.append(Td(si.rs, pp[-1]))
 
-        # Dry adiabat + mixing ratio up to LCL
-        plcls  = skewty(Plcl)
-        Tlcls  = skewtx(Tlcl-T0,plcls)
-        pl.scatter(Tlcls,plcls,facecolor='none')
-        pl.plot([Tsurfs,Tlcls],[psurfs,plcls],'k-') 
-        pl.plot([Tdsurfs,Tlcls],[psurfs,plcls],'k-')
-        #if(si.stype == 0):
-        pl.plot([Tlcls-5*hs,Tlcls+5*hs],[plcls,plcls],'k',dashes=[2,1])
-        pl.text(Tlcls+6*hs,plcls,'LCL %i m'%(zlcl+si.hgt),ha='left',va='center',size=8)
+        # Plot lines from surface --> LCL
+        ps   = skewty(np.array(pp))
+        Tps  = skewtx(np.array(Tp)-T0,  ps)
+        Tdps = skewtx(np.array(Tdp)-T0, ps)
+        pl.plot(Tps,  ps, 'k', linewidth=1.5, dashes=[4,2])
+        pl.plot(Tdps, ps, 'k', linewidth=1.5, dashes=[4,2])
+        pl.scatter(Tps[-1], ps[-1], facecolor='none')
 
-        # Moist adiabat from LCL upwards
-        Ths    = si.Ts / exner(si.ps) 
-        thw0   = dsatlftskewt(Ths-T0,Plcl)+T0 
-        thwlcl = dsatlftskewt(thw0-T0,Plcl)+T0
-        thw0  -= thwlcl - Tlcl
+        # Iteratively find the moist adiabat starting at p0, which goes through the temperature at LCL
+        Ths      = si.Ts / exner(si.ps, p0)         # potential temperature surface (@p0)
+        ThwsLCL  = dsatlftskewt(Ths-T0, pp[-1])+T0  # Temp moist adiabat at plcl, through Ths
+        thw0     = Ths - (ThwsLCL - Tp[-1])         # First estimate of moist adiabat passing through Tlcl
 
-        p = np.arange(Plcl,ptop,-dp)
+        ThwLCL   = dsatlftskewt(thw0-T0, pp[-1])+T0
+        while(np.abs(ThwLCL-Tp[-1]) > 0.1):
+            thw0    -= ThwLCL-Tp[-1] 
+            ThwLCL   = dsatlftskewt(thw0-T0, pp[-1])+T0
+
+        # Plot moist adiabat from LCL upwards
+        p = np.arange(pp[-1], ptop, -dp)
         x = np.zeros(p.size)
         y = np.zeros(p.size)
         for k in range(p.size):
@@ -512,12 +511,14 @@ def skewtlogp(olga, si):
             y[k] = skewty(p[k])
             x[k] = skewtx(thw,y[k])
 
-        pl.plot(x,y,'k-')
+        pl.plot(x,y,'k', linewidth=1.5, dashes=[4,2])
+
 
     """
     Add info from TEMF boundary layer scheme
     """
     if(si.Tu.size > 0):
+        # Cloud fraction
         dw = (x11-x00)    # width of diagram
         y  = skewty(si.p)
         x = x00 + si.cfru * 0.2 * (x11-x00)
@@ -525,8 +526,8 @@ def skewtlogp(olga, si):
 
         cfr_pos = np.where(si.cfru > 0.001)[0]
         if(np.size(cfr_pos)>1):
-            pl.text(x00,y[cfr_pos[0]-1],'- %im'%(si.z[cfr_pos[0]-1]+si.hgt),ha='left',va='center',size=8,color=c6)
-            pl.text(x00,y[cfr_pos[-1]],'- %im'%(si.z[cfr_pos[-1]]+si.hgt),ha='left',va='center',size=8,color=c6)
+            pl.text(x00,y[cfr_pos[0]-1],'- %im'%(si.z[cfr_pos[0]-1]),ha='left',va='center',size=8,color=c6)
+            pl.text(x00,y[cfr_pos[-1]],'- %im'%(si.z[cfr_pos[-1]]),ha='left',va='center',size=8,color=c6)
             kmax=np.where(si.cfru == si.cfru.max())[0][0]
             pl.text(x.max(),y[kmax],'- %i%%'%(si.cfru[kmax]*100.),ha='left',va='center',size=8,color=c6)
 
@@ -551,6 +552,7 @@ def skewtlogp(olga, si):
     if(olga != -1):
         img = image.imread(olga.olgaRoot+'include/olga_left.png')
         pl.figimage(img,7,5)
+        #pl.figimage(img,10,olga.fig_width_px-45)
     pl.figtext(0.99,0.011,'%s'%olga.map_desc[0],size=7,ha='right')
 
     return fig
@@ -565,4 +567,3 @@ if __name__ == "__main__":
         skewtlogp(-1,sset)
         sset.stype = 1
         skewtlogp(-1,sset)
-        

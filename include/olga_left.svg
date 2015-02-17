@@ -9,15 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="345.34341"
-   height="105.72646"
+   width="341.9343"
+   height="105.68281"
    id="svg2"
    version="1.1"
-   inkscape:version="0.47 r22583"
+   inkscape:version="0.48.4 r9939"
    sodipodi:docname="olga_left.svg"
-   inkscape:export-filename="/home/zmaw/m300241/WRFnl/olga_model/include/olga_left.png"
-   inkscape:export-xdpi="30.562643"
-   inkscape:export-ydpi="30.562643">
+   inkscape:export-filename="/home/bart/WRFnl/olga_model/include/olga_left.png"
+   inkscape:export-xdpi="25.548147"
+   inkscape:export-ydpi="25.548147">
   <defs
      id="defs4">
     <inkscape:perspective
@@ -35,9 +35,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="112.70705"
-     inkscape:cy="61.259061"
+     inkscape:zoom="0.7"
+     inkscape:cx="180.12665"
+     inkscape:cy="158.87709"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -45,11 +45,11 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1360"
-     inkscape:window-height="854"
-     inkscape:window-x="242"
-     inkscape:window-y="88"
-     inkscape:window-maximized="0" />
+     inkscape:window-width="1920"
+     inkscape:window-height="1030"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -66,16 +66,16 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-570.96158,-478.41657)">
+     transform="translate(-200.38918,-478.46023)">
     <path
-       style="fill:none;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.39215687;stroke-dasharray:none"
+       style="fill:none;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.47058824;stroke-dasharray:none"
        d="m 589.9704,543.25465 68.43783,-0.25254 c 0,0 10.08249,-1.85999 9.72272,-11.49049 -0.41104,-11.00322 -11.11168,-11.99556 -11.11168,-11.99556 0,0 2.37508,-7.68352 -5.05076,-16.16244 -6.87328,-7.84799 -17.67767,-4.67195 -17.67767,-4.67195 0,0 -6.41284,-19.9607 -25.25382,-15.65736 -21.17168,4.83568 -18.18274,26.39023 -18.18274,26.39023 0,0 -15.64482,2.49111 -15.78363,17.42513 -0.15883,17.08716 14.89975,16.41498 14.89975,16.41498 z"
        id="path3827"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccscscscsc" />
     <text
        xml:space="preserve"
-       style="font-size:33.34047699px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:0.54901961;stroke:none;font-family:Sans"
+       style="font-size:33.34047699px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:0.47058824;stroke:none;font-family:Sans"
        x="569.08478"
        y="579.94275"
        id="text3829"
@@ -84,18 +84,57 @@
          id="tspan3831"
          x="569.08478"
          y="579.94275"
-         style="font-size:37.53604125999999752px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:0.39215687;font-family:Ubuntu;-inkscape-font-specification:Ubuntu">OLGA</tspan></text>
+         style="font-size:37.53604126px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:0.47058824;font-family:Ubuntu;-inkscape-font-specification:Ubuntu">OLGA</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text2816"
        y="577.75104"
-       x="685.12518"
-       style="font-size:33.75257874px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:0.54901961;stroke:none;font-family:Sans"
+       x="679.12518"
+       style="font-size:33.75257874px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:0.39215686;stroke:none;font-family:Sans"
        xml:space="preserve"><tspan
-         style="font-size:34px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:0.39215687;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+         style="font-size:34px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:0.39215686;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
          y="577.75104"
-         x="685.12518"
+         x="679.12518"
          id="tspan2818"
          sodipodi:role="line">[olga.github.io]</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:0.47058824;stroke-dasharray:none"
+       d="m 460.1486,543.27202 68.43783,-0.25254 c 0,0 10.08249,-1.85999 9.72272,-11.49049 -0.41104,-11.00322 -11.11168,-11.99556 -11.11168,-11.99556 0,0 2.37508,-7.68352 -5.05076,-16.16244 -6.87328,-7.84799 -17.67767,-4.67195 -17.67767,-4.67195 0,0 -6.41284,-19.9607 -25.25382,-15.65736 -21.17168,4.83568 -18.18274,26.39023 -18.18274,26.39023 0,0 -15.64482,2.49111 -15.78363,17.42513 -0.15883,17.08716 14.89975,16.41498 14.89975,16.41498 z"
+       id="path3827-4"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccscscscsc"
+       inkscape:export-filename="/home/bart/WRFnl/olga_model/include/olga_right.png"
+       inkscape:export-xdpi="25.548147"
+       inkscape:export-ydpi="25.548147" />
+    <text
+       xml:space="preserve"
+       style="font-size:33.34047699px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:0.62814068;stroke:none;font-family:Sans"
+       x="439.263"
+       y="579.96014"
+       id="text3829-8"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/bart/WRFnl/olga_model/include/olga_right.png"
+       inkscape:export-xdpi="25.548147"
+       inkscape:export-ydpi="25.548147"><tspan
+         sodipodi:role="line"
+         id="tspan3831-4"
+         x="439.263"
+         y="579.96014"
+         style="font-size:37.53604126px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#000000;fill-opacity:0.47058824;font-family:Ubuntu;-inkscape-font-specification:Ubuntu">OLGA</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:33.75257874px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:0.39215686;stroke:none;font-family:Sans"
+       x="197.12518"
+       y="577.75104"
+       id="text3805"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/bart/WRFnl/olga_model/include/olga_right.png"
+       inkscape:export-xdpi="25.548147"
+       inkscape:export-ydpi="25.548147"><tspan
+         sodipodi:role="line"
+         id="tspan3807"
+         x="197.12518"
+         y="577.75104"
+         style="font-size:34px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:0.39215686;font-family:Ubuntu;-inkscape-font-specification:Ubuntu">[olga.github.io]</tspan></text>
   </g>
 </svg>

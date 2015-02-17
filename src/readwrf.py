@@ -28,6 +28,12 @@ from tools import *
 # TMP BVS
 from pylab import *
 
+# Switch to read NetCDF as single or double precision
+# not sure if necessary; at least the NetCDF reader from 
+# Scientific.IO returns single precision by default. But
+# e.g. numpy.zeros(bla) is double precision by default.  
+prec = np.float32
+
 ## Convert the output from WRF ("Times" variable) to a time in hours
 # @param ts_in Single line of WRF's "Times" variable
 def timestring2time(ts_in):
@@ -146,79 +152,93 @@ Note: after reading, data is stored as [time, lat, lon]
 """
 class readwrf_all:
     def __init__(self,olga,file_in,t0,t1):
-        #print 'reading file %s'%file
-        t1              += 1
-        wrfin            = get_nc_obj(file_in)
-        ntglob           = wrfin.variables["XTIME"][:].size # number of time steps in output
-        nt               = wrfin.variables["XTIME"][t0:t1].size ; self.nt = nt 
+        t1         += 1
+        wrfin       = get_nc_obj(file_in)
+        ntglob      = wrfin.variables["XTIME"][:].size # number of time steps in NetCDF file
+        self.nt     = wrfin.variables["XTIME"][t0:t1].size # number of time steps in current slice 
 
         # In our case, {lat/lon/hgt} doesn't change in time since we don't have moving domains... 
-        self.lat         = wrfin.variables["XLAT"][0,:,:] # latitude
-        self.nlat        = np.size(self.lat[:,0])
-        self.lon         = wrfin.variables["XLONG"][0,:,:] # longitude
-        self.nlon        = np.size(self.lon[0,:])
-        self.hgt         = wrfin.variables["HGT"][0,:,:] # terrain height 
+        self.lat    = wrfin.variables["XLAT"][0,:,:].astype(prec) # latitude
+        self.lon    = wrfin.variables["XLONG"][0,:,:].astype(prec) # longitude
+        self.hgt    = wrfin.variables["HGT"][0,:,:].astype(prec) # terrain height 
+        self.nlat   = np.size(self.lat[:,0])
+        self.nlon   = np.size(self.lon[0,:])
 
         # Base state variables
-        self.T00         = wrfin.variables["T00"][t0:t1] # reference temperature [K]
-        self.P00         = wrfin.variables["P00"][t0:t1] # reference pressure [pa]
-        self.ps          = wrfin.variables["PSFC"][t0:t1,:,:] # surface pressure [pa] 
-        self.T2          = wrfin.variables["T2"][t0:t1,:,:] # 2m temperature [K]
+        self.T00    = wrfin.variables["T00"][t0:t1].astype(prec) # reference temperature [K]
+        self.P00    = wrfin.variables["P00"][t0:t1].astype(prec) # reference pressure [pa]
+        self.ps     = wrfin.variables["PSFC"][t0:t1,:,:].astype(prec) # surface pressure [pa] 
+        self.T2     = wrfin.variables["T2"][t0:t1,:,:].astype(prec) # 2m temperature [K]
 
         # read in for all domains:
-        self.hfx         = wrfin.variables["HFX"][t0:t1,:,:] # sensible heat flux [W/m2]
-        self.lh          = wrfin.variables["LH"][t0:t1,:,:] # latent heat flux [W/m2]
-        self.rr_mp       = wrfin.variables["RAINNC"][t0:t1,:,:] # total microphysical rain [mm]
-        self.rr_con      = wrfin.variables["RAINC"][t0:t1,:,:] # total convective rain [mm]
-        self.U10         = wrfin.variables["U10"][t0:t1,:,:] # 10m u-wind [m/s]
-        self.V10         = wrfin.variables["V10"][t0:t1,:,:] # 10m v-wind [m/s]
-        self.U1000       = (wrfin.variables["U"][t0:t1,25,:,1:] + wrfin.variables["U"][t0:t1,25,:,:-1])/2.
-        self.V1000       = (wrfin.variables["V"][t0:t1,25,1:,:] + wrfin.variables["V"][t0:t1,25,:-1,:])/2.
-        self.ustar       = wrfin.variables["UST"][t0:t1,:,:] # surface friction velocity [m/s]
-        self.slps        = wrfin.variables["PSFC"][t0:t1,:,:] \
-                           / (1.-2.25577e-5 * self.hgt[:,:])**5.25588 # sea level pressure
-        self.swd         = wrfin.variables["SWDNB"][t0:t1,:,:] # shortwave incomming radiation at surface [W/m2]
-        self.swdc        = wrfin.variables["SWDNBC"][t0:t1,:,:] # clear sky shortwave incomming radiation at surface [W/m2]
-        self.swdc[self.swdc==0] = 1e-12
- 
-        # Try if the TEMF (bl_pbl_physics=10) variables are available:
-        try: 
-            self.zi      = wrfin.variables["HD_TEMF"][t0:t1,:,:] # dry thermal top TEMF
-            self.zct     = wrfin.variables["HCT_TEMF"][t0:t1,:,:] # cloud top TEMF
-            self.TEMF    = True
-        except KeyError: # Use PBLH from other schemes, set cloud top to zero
-            self.zi      = wrfin.variables["PBLH"][t0:t1,:,:] # boundary layer height [m]
-            self.zct     = np.zeros_like(self.zi) + filval 
-            self.TEMF    = False
+        self.hfx    = wrfin.variables["HFX"][t0:t1,:,:].astype(prec) # sensible heat flux [W/m2]
+        self.lh     = wrfin.variables["LH"][t0:t1,:,:].astype(prec) # latent heat flux [W/m2]
+        self.rr_mp  = wrfin.variables["RAINNC"][t0:t1,:,:].astype(prec) # total microphysical rain [mm]
+        self.rr_con = wrfin.variables["RAINC"][t0:t1,:,:].astype(prec) # total convective rain [mm]
+        self.U10    = wrfin.variables["U10"][t0:t1,:,:].astype(prec) # 10m u-wind [m/s]
+        self.V10    = wrfin.variables["V10"][t0:t1,:,:].astype(prec) # 10m v-wind [m/s]
+        self.U1000  = (wrfin.variables["U"][t0:t1,25,:,1:].astype(prec) + wrfin.variables["U"][t0:t1,25,:,:-1].astype(prec))/2.
+        self.V1000  = (wrfin.variables["V"][t0:t1,25,1:,:].astype(prec) + wrfin.variables["V"][t0:t1,25,:-1,:].astype(prec))/2.
+        self.ustar  = wrfin.variables["UST"][t0:t1,:,:].astype(prec) # surface friction velocity [m/s]
+        self.slps   = wrfin.variables["PSFC"][t0:t1,:,:].astype(prec) \
+                           / (1.-2.25577e-5 * self.hgt[:,:].astype(prec))**5.25588 # sea level pressure
+
+        self.swd    = wrfin.variables["SWDNB"][t0:t1,:,:].astype(prec) # shortwave incomming radiation at surface [W/m2]
+        self.swdc   = wrfin.variables["SWDNBC"][t0:t1,:,:].astype(prec) # clear sky shortwave incomming radiation at surface [W/m2]
+        self.swdc[self.swdc==0] = 1e-5
+        self.swdf   = self.swd / self.swdc # Fraction of incoming shortwave radiation
+        self.swdf[self.swdc < 1] = -1 # Mask for night 
+
+        # TEMF-specific variables and calculations, all defined AGL 
+        self.zi     = wrfin.variables["HD_TEMF"][t0:t1,:,:].astype(prec) # dry thermal top TEMF
+        self.zct    = wrfin.variables["HCT_TEMF"][t0:t1,:,:].astype(prec) # cloud top TEMF
+        self.zlcl   = wrfin.variables["LCL_TEMF"][t0:t1,:,:].astype(prec) # LCL TEMF
+      
+        # Derived from TEMF: 
+        #self.zi2    = np.zeros_like(self.zi, dtype=prec) # dry thermal top where w<0.5 m/s, or cloud base
+        #self.wup    = np.zeros_like(self.zi, dtype=prec) # sub-cloud layer averaged updraft velocity
+        #       
+        #for t in range(t0, t1, 1):
+        #    for j in range(self.nlat):
+        #        for i in range(self.nlon):
+        #            z        = (wrfin.variables["PH"][t,:,j,i] + wrfin.variables["PHB"][t,:,j,i]) / g # half levels [m]
+        #            zf       = 0.5*(z[1:]+z[:-1]) # full levels [m]
+        #            wup_temf = wrfin.variables["WUPD_TEMF"][t,:,j,i].astype(prec) # updraft velocity TEMF [m/s] 
+        #            ql_temf  = wrfin.variables["QLUP_TEMF"][t,:,j,i].astype(prec) # updraft liquid water TEMF [kg kg-1]
+
+        #            wpos  = np.where(wup_temf > 0.5)
+        #            qlpos = np.where(ql_temf > 1e-4)
+        #            
+        #            kzi = wpos[0][-1]  if np.size(wpos) >0 else 0
+        #            kcb = qlpos[0][-1] if np.size(qlpos)>0 else 0
+
+        #            if(kzi > 0):
+        #                print t,j,i,kzi,kcb
 
         # REALLLLY ugly (and incorrect), but seems to work quite okay...:
         #   in theory: if one grid level cloud cover = 100%, total column should be 100%
         #   in WRF: this creates a 0% or 100% cloud cover switch. Averaging seems to do better.....
         #   to-do: weighted average? 
-        self.cclow       = np.sum(wrfin.variables["CLDFRA"][t0:t1,:35,:,:],axis=1)   / 35. 
-        self.ccmid       = np.sum(wrfin.variables["CLDFRA"][t0:t1,35:52,:,:],axis=1) / 17. 
-        self.cchig       = np.sum(wrfin.variables["CLDFRA"][t0:t1,52:,:,:],axis=1)   / 11.
-        self.ccsum       = self.cclow + self.ccmid + self.cchig
+        self.cclow  = np.sum(wrfin.variables["CLDFRA"][t0:t1,:35,:,:],axis=1)   / 35. 
+        self.ccmid  = np.sum(wrfin.variables["CLDFRA"][t0:t1,35:52,:,:],axis=1) / 17. 
+        self.cchig  = np.sum(wrfin.variables["CLDFRA"][t0:t1,52:,:,:],axis=1)   / 11.
+        self.ccsum  = self.cclow + self.ccmid + self.cchig
         self.ccsum[np.where(self.ccsum>1.)] = 1.
 
         # Read in the different time variables, and do some conversions in "wrf_time_conversion"
-        self.times       = wrfin.variables["Times"][t0:t1,:] # date-time as individual characters
-        self.time        = wrfin.variables["XTIME"][t0:t1] * 60. # time since start of simulation [s]
+        self.times  = wrfin.variables["Times"][t0:t1,:] # date-time as individual characters
+        self.time   = wrfin.variables["XTIME"][t0:t1] * 60. # time since start of simulation [s]
         wrf_time_conversion(self)
         find_analysis_times(olga,self)
 
-        # Potential & fractional incoming shortwave radiation. Masked at -1 for sunrise/set
-        self.swdf        = self.swd / self.swdc # Fraction of incoming shortwave radiation
-        self.swdf[self.swdc < 1] = -1 # Mask for night 
-
-        # Updraft velocity
-        rhos             = self.ps / (Rd * self.T2) # surface density [kg m-3]
-        wthvs            = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv)) # surface buoyancy flux [W m-2]
+        # Updraft velocity: wstar
+        rhos        = self.ps / (Rd * self.T2) # surface density [kg m-3]
+        wthvs       = (self.hfx/(rhos*cp)) + 0.61*self.T2*(self.lh/(rhos*Lv)) # surface buoyancy flux [W m-2]
         wthvs[np.where(wthvs==0)] = eps # remove zero flux to prevent div/0
-        self.L           = -(self.ustar**3. * tref) / (kappa * g * wthvs) # Obukhov length [m]
+        self.L      = -(self.ustar**3. * tref) / (kappa * g * wthvs) # Obukhov length [m]
         wthvs[np.where(wthvs<0)] = 1e-9 # remove negative flux for w* calculation 
-        self.wstar       = (g * self.zi * wthvs / tref)**(1./3.) # convective velocity scale w* [m s-1]
-        self.wglider     = deepcopy(self.wstar) - olga.sinkGlider # w* minus sink glider [m s-1]
+        self.wstar  = (g * self.zi * wthvs / tref)**(1./3.) # convective velocity scale w* [m s-1]
+        self.wglider= deepcopy(self.wstar) - olga.sinkGlider # w* minus sink glider [m s-1]
         self.wglider[self.wglider<0] = 0. # Limit updraft velocity glider to zero
 
         # Calculate the PFD, only if there is a full day.
@@ -236,7 +256,6 @@ class readwrf_all:
                 for j in range(np.size(olga.pfdNames)):
                     # Calculate the instantaneous achievable cross-country velocity given updraft velocity. Some corrections are applied.
                     pV  = VgemCrossCountry(self.zi[t0:t1], self.wglider[t0:t1], olga.pfdA[j], olga.pfdB[j], olga.pfdC[j], olga.pfdEff[j])
-
                     # integrate to obtain cumulative flyable distance. 
                     # At each time, the average distance over the past ouput period is added
                     for t2 in range(1, pV.shape[0]):
@@ -251,6 +270,7 @@ class readwrf_loc:
     def __init__(self,olga,file_in,glon,glat,t0,t1):
         t1 += 1
         n = 3 ; n1 = n+1
+
         wrfin            = get_nc_obj(file_in)
         ntglob           = wrfin.variables["XTIME"][:].size # number of time steps in output
         nt               = wrfin.variables["XTIME"][t0:t1].size ; self.nt = nt 
@@ -283,6 +303,7 @@ class readwrf_loc:
         # For the next variables, average over area
         self.ps          = np.apply_over_axes(np.mean,wrfin.variables["PSFC"]  [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # surface pressure [pa]
         self.T2          = np.apply_over_axes(np.mean,wrfin.variables["T2"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 2m temperature [K]
+        self.q2          = np.apply_over_axes(np.mean,wrfin.variables["Q2"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 2m vapor mixing ratio [kg kg-1]
         self.hfx         = np.apply_over_axes(np.mean,wrfin.variables["HFX"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # sensible heat flux [W m-2]
         self.lh          = np.apply_over_axes(np.mean,wrfin.variables["LH"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # latent heat flux [W m-2]
         self.th          = np.apply_over_axes(np.mean,wrfin.variables["T"]     [t0:t1,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # potential temperature [K]
@@ -293,11 +314,10 @@ class readwrf_loc:
         self.v           = np.apply_over_axes(np.mean,wrfin.variables["V"]     [t0:t1,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # v-wind component [m s-1]
         self.u10         = np.apply_over_axes(np.mean,wrfin.variables["U10"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 10m u-wind [m s-1] 
         self.v10         = np.apply_over_axes(np.mean,wrfin.variables["V10"]   [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 10m v-wind [m s-1]
-        self.q2          = np.apply_over_axes(np.mean,wrfin.variables["Q2"]    [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # 2m vapor mixing ratio [kg kg-1]
         self.rr_mp       = np.apply_over_axes(np.mean,wrfin.variables["RAINNC"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total microphysical rain [mm]
         self.rr_con      = np.apply_over_axes(np.mean,wrfin.variables["RAINC"] [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # total convective rain [mm]
 
-        self.swd         = np.apply_over_axes(np.mean,wrfin.variables["SWDNB"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # shortwave incomming radiation at surface [W/m2]
+        self.swd         = np.apply_over_axes(np.mean,wrfin.variables["SWDNB"] [t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # shortwave incomming radiation at surface [W/m2]
         self.swdc        = np.apply_over_axes(np.mean,wrfin.variables["SWDNBC"][t0:t1,  jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0] # clear sky shortwave incomming radiation at surface [W/m2]
         self.swdc[self.swdc==0] = 1e-12 # Prevent divide by zeros
 
@@ -307,11 +327,20 @@ class readwrf_loc:
         self.drr_mp[1:]  = self.rr_mp[1:] - self.rr_mp[:-1]
         self.drr_con[1:] = self.rr_con[1:] - self.rr_con[:-1]
 
-        self.ccl         = np.zeros((3,nt))
-        self.ccl[0,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,:35,  jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
-        self.ccl[1,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,35:52,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
-        self.ccl[2,:]    = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t0:t1,52:,  jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,0,0,0] 
+        # Low (z < 2000m), mid (2000m >= z > 6000m) and high (z >= 6000m) clouds:
+        k2000 = key_nearest(self.zf[0,:], 2000)
+        k6000 = key_nearest(self.zf[0,:], 6000)
 
+        # This is still messy.. Tacking the maximum cloud fraction from each layer results mostly in an on-off cloud
+        # fraction (either 0 or 100%). Taking the mean over all layers which have clouds seems to work ~okay.
+        self.ccl         = np.zeros((3,nt))
+        for t in range(t0,t1,1):
+            tmp1 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,:k2000,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            self.ccl[0,t] = tmp1[tmp1>0].mean() if tmp1.max() > 0 else 0  
+            tmp2 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k2000:k6000,jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            self.ccl[1,t] = tmp1[tmp2>0].mean() if tmp2.max() > 0 else 0 
+            tmp3 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k6000:,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            self.ccl[2,t] = tmp1[tmp3>0].mean() if tmp3.max() > 0 else 0 
 
         try: # Try if the TEMF (bl_pbl_physics=10) variables are available:
             self.w       = np.apply_over_axes(np.mean,wrfin.variables["WUPD_TEMF"][t0:t1,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # updraft velocity TEMF 
@@ -345,17 +374,8 @@ class readwrf_loc:
         self.wglider        = deepcopy(self.wstar) - olga.sinkGlider
         self.wglider[self.wglider < 0] = 0. # convective velocity scale w* - sink glider
 
-        #self.pV          = VgemCrossCountry(self.zi,self.wstar) # potential cross-country velocity
-        #self.cPFD        = np.zeros_like(self.pV) # cumulative potential flight distance
-        #for t in range(1,nt):
-        #    self.cPFD[t] = self.cPFD[t-1] + av(self.pV[t-1],self.pV[t]) * self.dt
-        #    if(self.hour[t] < self.hour[t-1]): # new day: reset PFD
-        #        self.cPFD[t] = 0.
-
         # Get potential incoming shortwave radiation:
         self.swdf = self.swd / self.swdc 
-        #self.swdf[self.swdf < 0] = 0.
-        #self.swdf[self.swdf > 1] = 1.
 
         # Calculate temperature and dewpoint from potential temperature and total water mixing ratio
         self.qt  = self.qv + self.ql  # total water mixing ratio [kg kg-1]
@@ -376,7 +396,6 @@ class readwrf_loc:
             if(self.TEMF):
                 self.Tu[t,:]  = self.thtemf[t,:] * (self.p[t,:] / 1.e5)**(287.05/1004.) # 1.e5 = reference pressure
                 e             = ((self.p[t,:]) * self.qttemf[t,:]) / ((Rd/Rv) + self.qttemf[t,:]) # vapor pressure
-                # ?!?!
                 e[np.where(e<=0)] = 1e-9
                 self.Tdu[t,:] = ((1./273.) - (Rv/Lv) * np.log(e/611.))**-1.
             else:

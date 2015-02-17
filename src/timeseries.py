@@ -30,7 +30,16 @@ from tools import *
 def create_timeseries(olga,wrfout,dom,times):
 
     # Create 4-color colormap
-    wupd = cmap_discrete(wup,np.linspace(0,1,4))
+    #wupd = cmap_discrete(wup,np.linspace(0,1,5))
+    #wupd = cmap_discrete(cm.jet,np.linspace(0,1,5))
+    wupd = [[0.02, 0.71, 1.00, 1.],\
+            [0.02, 1.00, 0.16, 1.],\
+            [0.87, 1.00, 0.02, 1.],\
+            [1.00, 0.16, 0.02, 1.]]
+
+    # colormap for cloud cover
+    cld   = make_colormap({0.:'#05b5ff', 0.3:'#bdecff', 1.0:'#ffffff'})
+
     olga_logo = pl.matplotlib.image.imread(olga.olgaRoot+'include/olga_left.png')
 
     # Loop over requested locations
@@ -54,41 +63,89 @@ def create_timeseries(olga,wrfout,dom,times):
                 gs = pl.matplotlib.gridspec.GridSpec(4,2,height_ratios=[1.,1.,0.4,1],width_ratios=[2,1])
 
                 # -------------------------------------------------
-                # Updraft velocity / height
+                # Updraft velocity / height: wstar
+                # -------------------------------------------------
+                #ax = pl.subplot(gs[:2,0]); modplot(ax)
+                #ax.set_title('Updraft velocity and height',loc='left')
+                #zs = d.z[0,0]  # terrain height (lowest half level)
+                #wm = 3.5       # scaling for colormap
+                #bw1 = 0.6      # width of sub-cloud updrafts
+                #bw2 = 0.8      # width of cloud updrafts
+                #for i in range(t0,t1+1):
+                #    if(d.wglider[i] > 0.0):
+                #        color = wup((np.floor(d.wglider[i])+0.5)/wm)
+                #        pl.bar(d.hour[i]-0.5*bw1, d.zi[i],         width=bw1, bottom=zs,         color=color,           edgecolor='none')    
+                #        pl.bar(d.hour[i]-0.5*bw2, d.ct[i]-d.zi[i], width=bw2, bottom=d.zi[i]+zs, color='k',  alpha=0.3, edgecolor='none')    
+
+                ## Add surface
+                #pl.plot([d.hour[t0], d.hour[t1]],[zs, zs], 'k:')
+                #pl.text(d.hour[t0]+0.2,zs,'surface',size=7,ha='left',va='bottom')
+
+                ## Add sort-of colorbar
+                #wups = ([0.5,1.5,2.5,3.5])
+                #names = (['0-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
+                #for wu,nam in zip(wups,names):
+                #    pl.scatter([-10],[300],color=wup(wu/wm),label=nam)
+                #pl.legend(frameon=False,loc=2)  
+                #pl.xlim(d.hour[t0],d.hour[t1])
+                #pl.ylim(0,3000)
+                #pl.ylabel('z [m AMSL]')
+                #pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
+                #pl.yticks(np.arange(0,3000.001,500))
+
+                # -------------------------------------------------
+                # Updraft velocity / height: vertical velocity TEMF
                 # -------------------------------------------------
                 ax = pl.subplot(gs[:2,0]); modplot(ax)
                 ax.set_title('Updraft velocity and height',loc='left')
-                zs = d.z[0,0]  # terrain height (lowest half level)
-                wm = 3.5       # scaling for colormap
-                bw1 = 0.6      # width of sub-cloud updrafts
-                bw2 = 0.8      # width of cloud updrafts
-                for i in range(t0,t1+1):
-                    if(d.wglider[i] > 0.0):
-                        color = wup((np.floor(d.wglider[i])+0.5)/wm)
-                        pl.bar(d.hour[i]-0.5*bw1, d.zi[i],         width=bw1, bottom=zs,         color=color,           edgecolor='none')    
-                        pl.bar(d.hour[i]-0.5*bw2, d.ct[i]-d.zi[i], width=bw2, bottom=d.zi[i]+zs, color='k',  alpha=0.3, edgecolor='none')    
+                zs  = d.z[0,0]  # terrain height (lowest half level)
+                wm  = 4         # scaling for colormap
+                bw1 = 0.70       # width of sub-cloud updrafts
+                bw2 = 0.85       # width of cloud updrafts
+
+                # Loop over all time steps
+                for tt in range(t0,t1+1):
+                    # Plot updraft velocity 
+                    for k in range(d.zf[tt,:].size):
+                        if(d.w[tt,k] > 0.5 and d.z[tt,k] < 3000):
+                            wl  = np.max((0, d.w[tt,k]      ))
+                            c3d = np.max((0, d.c3dtemf[tt,k]))
+                            wc  = min(3,np.floor(wl)/float(wm)*wm)
+                            cc  = wupd[int(wc)]
+
+                            pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color=cc, edgecolor='none')    
+                        else:
+                            pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color='w', edgecolor='none')    
+                     
+                    # Plot outline cumulus clouds 
+                    #c3d = np.where((d.c3dtemf[tt,:] > 0.01) & (d.w[tt,:] > 0.02))
+                    c3d = np.where((d.qltemf[tt,:] > 1e-4) & (d.w[tt,:] > 0.02))
+                    if(np.size(c3d)> 0): 
+                        cb = c3d[0][0]-1
+                        ct = c3d[0][-1]+1
+                        pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='0.9', alpha=0.5, edgecolor='k')   
+
+                # For debugging:
+                #pl.plot(d.hour[t0:t1], d.zi[t0:t1]+zs,  'k-', label='HD_TEMF')
+                #pl.plot(d.hour[t0:t1], d.ct[t0:t1]+zs,  'r-', label='CT_TEMF')
+                #pl.plot(d.hour[t0:t1], d.lcl[t0:t1]+zs, 'g-', label='LCL_TEMF')
+
+                # Add line at surface
+                pl.plot([d.hour[t0], d.hour[t1]],[zs, zs], 'k:')
+                pl.text(d.hour[t0]+0.2,zs,'surface',size=7,ha='left',va='bottom')
 
                 # Add sort-of colorbar
-                wups = ([0.5,1.5,2.5,3.5])
+                wups = ([0,1,2,3])
                 names = (['0-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
                 for wu,nam in zip(wups,names):
-                    pl.scatter([-10],[300],color=wup(wu/wm),label=nam)
+                    pl.scatter([-10],[300],color=wupd[wu],label=nam)
+                pl.plot([-10,-10],[300,300],'k-',label='cumulus')
                 pl.legend(frameon=False,loc=2)  
                 pl.xlim(d.hour[t0],d.hour[t1])
                 pl.ylim(0,3000)
                 pl.ylabel('z [m AMSL]')
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
                 pl.yticks(np.arange(0,3000.001,500))
-                pl.grid(linestyle=':',color='0.5')
-
-                #ax2 = ax.twinx()
-                #ax2.plot(d.hour[t0:t1+1],d.cPFD[t0:t1+1],linewidth=2,color='0.5',label='CFD')
-                #pl.xlim(d.hour[t0],d.hour[t1])
-                #pl.ylim(0,900)
-                #pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
-                #pl.legend(frameon=False,loc=1)
-                #pl.ylabel('Cumulative flight distance (CFD) [km]')
-                #pl.yticks(np.arange(0,900.001,150))
 
                 # -------------------------------------------------
                 # Pressure
@@ -108,8 +165,8 @@ def create_timeseries(olga,wrfout,dom,times):
                 # -------------------------------------------------
                 ax = pl.subplot(gs[1,1]); modplot(ax)
                 ax.set_title('T and Td at 2m',loc='left')
-                pl.plot(d.hour[t0:t1], d.T2[t0:t1]-273.15, 'r-', label='T')
-                pl.plot(d.hour[t0:t1], d.Td2[t0:t1]-273.15, 'b-', label='Td')
+                pl.plot(d.hour[t0:t1], d.T2[t0:t1]-273.15, 'k-', label='T')
+                pl.plot(d.hour[t0:t1], d.Td2[t0:t1]-273.15, 'k-', label='Td', dashes=[4,2])
                 pl.ylabel('celcius')
                 pl.xlim(d.hour[t0],d.hour[t1])
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
@@ -120,8 +177,8 @@ def create_timeseries(olga,wrfout,dom,times):
                 # -------------------------------------------------
                 ax = pl.subplot(gs[2,1]); modplot(ax)
                 ax.set_title('Rain',loc='left')
-                pl.bar(d.hour[t0:t1], d.drr_mp[t0:t1], color='b', edgecolor='none')
-                pl.bar(d.hour[t0:t1], d.drr_con[t0:t1], bottom=d.drr_mp[t0:t1], color='g', edgecolor='none')
+                pl.bar(d.hour[t0:t1], d.drr_mp[t0:t1], color='g', edgecolor='none')
+                pl.bar(d.hour[t0:t1], d.drr_con[t0:t1], bottom=d.drr_mp[t0:t1], color='b', edgecolor='none')
                 pl.ylabel('mm')
                 pl.xlim(d.hour[t0],d.hour[t1])
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
@@ -133,32 +190,27 @@ def create_timeseries(olga,wrfout,dom,times):
                 ax = pl.subplot(gs[3,1]); modplot(ax)
                 ax.set_title('Shortwave radiation',loc='left')
                 pl.plot(d.hour[t0:t1], d.swd[t0:t1], 'k-')
-                pl.plot(d.hour[t0:t1], d.swdc[t0:t1], 'k:')
+                pl.plot(d.hour[t0:t1], d.swdc[t0:t1], 'k-', label='Pot.', dashes=[4,2])
                 pl.ylabel('W/m2')
                 pl.xlabel('time UTC [h]')
                 pl.xlim(d.hour[t0],d.hour[t1])
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
+                pl.ylim(0,1000)
+                pl.yticks(np.arange(0,1000.01,200))
+                pl.legend(frameon=False, loc=2, borderpad=0)
 
                 # -------------------------------------------------
                 # Cloud cover
                 # -------------------------------------------------
                 ax = pl.subplot(gs[2,0]); modplot(ax)
                 ax.set_title('Cloud cover',loc='left')
-                pl.pcolormesh(d.ccl,cmap=pl.cm.bone_r,vmin=0,vmax=1)
+                pl.pcolormesh(d.ccl,cmap=cld,vmin=0,vmax=1)
                 pl.text(d.hour[t0]-0.4,0.5,'low',size=7,ha='right',va='center')
                 pl.text(d.hour[t0]-0.4,1.5,'middle',size=7,ha='right',va='center')
                 pl.text(d.hour[t0]-0.4,2.5,'high',size=7,ha='right',va='center')
                 pl.xlim(d.hour[t0],d.hour[t1])
                 ax.set_yticks([])
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
-
-                #ax2 = ax.twinx()
-                #ax2.plot(d.hour[t0:t1+1],d.swd_frac[t0:t1+1]*100.,linewidth=2,color='y',label='% sun')
-                #pl.xlim(d.hour[t0],d.hour[t1])
-                #pl.ylim(0,105)
-                #pl.yticks([0,25,50,75,100])
-                #pl.legend(frameon=False,loc=4)
-                #pl.ylabel('Sun [%]')
 
                 # -------------------------------------------------
                 # Wind
@@ -182,9 +234,9 @@ def create_timeseries(olga,wrfout,dom,times):
                 pl.xticks(np.arange(d.hour[t0],d.hour[t1]+0.001,2))
                 pl.xlabel('time UTC [h]')
 
-                # Add logo 
-                pl.figimage(olga_logo,7,5)
-                pl.figtext(0.99,0.011,'%s'%(olga.map_desc[dom]),size=7,ha='right')
+                # Add logo (105px wide) 
+                pl.figimage(olga_logo, 10, olga.fig_width_px-40)
+                pl.figtext(0.01, 0.011, '%s'%(olga.map_desc[dom]), size=7, ha='left')
 
                 # Save figure
                 tmp  = '%06i'%(olga.islice*24.)
