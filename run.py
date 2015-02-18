@@ -11,16 +11,17 @@ mode = 'post'
 
 olga = settings_d1()
 
-olga.year    = 2014 #int(time.strftime('%Y'))
-olga.month   = 6 #int(time.strftime('%m'))
-olga.day     = 26 #int(time.strftime('%d'))
+olga.year    = 2015 #int(time.strftime('%Y'))
+olga.month   = 2 #int(time.strftime('%m'))
+olga.day     = 19 #int(time.strftime('%d'))
 olga.tstart  = 00   # start time of simulation
 olga.cycle   = 0    # which GFS cycle? {0,6,12,18}
 
-olga.basestr = "%s%s%s_t%02iz"%(olga.year, olga.month, olga.day, olga.cycle) # base string for output
+#olga.basestr = "%s%s%s_t%02iz"%(olga.year, olga.month, olga.day, olga.cycle) # base string for output
 
 print('--------------------------------')
-print('Starting OLGA: %s'%(datetime.datetime.now()))
+print('Starting OLGA for %02i-%02i-%04i %02iz'%(olga.day, olga.month, olga.year, olga.cycle))
+print('Start time: %s'%(datetime.datetime.now()))
 print('--------------------------------')
 
 # Loop over the time slices
