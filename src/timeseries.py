@@ -105,25 +105,30 @@ def create_timeseries(olga,wrfout,dom,times):
 
                 # Loop over all time steps
                 for tt in range(t0,t1+1):
-                    # Plot updraft velocity 
-                    for k in range(d.zf[tt,:].size):
-                        if(d.w[tt,k] > 0.5 and d.z[tt,k] < 3000):
-                            wl  = np.max((0, d.w[tt,k]      ))
-                            c3d = np.max((0, d.c3dtemf[tt,k]))
-                            wc  = min(3,np.floor(wl)/float(wm)*wm)
-                            cc  = wupd[int(wc)]
+                    # Limit to 'significant' buoyancy flux (fairly random choice)
+                    if(d.wthvs[tt] > 0.02):
+                        # Plot updraft velocity 
+                        for k in range(d.zf[tt,:].size):
+                            if(d.w[tt,k] > 0.5 and d.z[tt,k] < 3000):
+                                wl  = np.max((0, d.w[tt,k]      ))
+                                c3d = np.max((0, d.c3dtemf[tt,k]))
+                                wc  = min(3,np.floor(wl)/float(wm)*wm)
+                                cc  = wupd[int(wc)]
 
-                            pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color=cc, edgecolor='none')    
-                        else:
-                            pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color='w', edgecolor='none')    
-                     
-                    # Plot outline cumulus clouds 
-                    #c3d = np.where((d.c3dtemf[tt,:] > 0.01) & (d.w[tt,:] > 0.02))
-                    c3d = np.where((d.qltemf[tt,:] > 1e-4) & (d.w[tt,:] > 0.02))
-                    if(np.size(c3d)> 0): 
-                        cb = c3d[0][0]-1
-                        ct = c3d[0][-1]+1
-                        pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='0.9', alpha=0.5, edgecolor='k')   
+                                pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color=cc, edgecolor='none')    
+                            else:
+                                pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color='w', edgecolor='none')    
+
+                            if(d.qltemf[tt,k] > 1e-4 and d.w[tt,k] > 0.02):
+                                pl.bar(d.hour[tt]-0.5*bw2, d.z[tt,k+1], width=bw2, bottom=d.z[tt,k], color='none', alpha=0.5, edgecolor='k')   
+                            else:
+                                pass
+
+                        #c3d = np.where((d.qltemf[tt,:] > 1e-4) & (d.w[tt,:] > 0.02))
+                        #if(np.size(c3d)> 0): 
+                        #    cb = c3d[0][0]-1
+                        #    ct = c3d[0][-1]+1
+                        #    pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='0.9', alpha=0.5, edgecolor='k')   
 
                 # For debugging:
                 #pl.plot(d.hour[t0:t1], d.zi[t0:t1]+zs,  'k-', label='HD_TEMF')

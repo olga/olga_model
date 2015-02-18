@@ -373,6 +373,7 @@ class readwrf_loc:
         self.wstar         = (g * self.zi * wthvs/tref)**(1./3.) # convective velocity scale w*
         self.wglider        = deepcopy(self.wstar) - olga.sinkGlider
         self.wglider[self.wglider < 0] = 0. # convective velocity scale w* - sink glider
+        self.wthvs = wthvs 
 
         # Get potential incoming shortwave radiation:
         self.swdf = self.swd / self.swdc 
