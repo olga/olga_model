@@ -26,16 +26,28 @@ from readwrf import *
 from colormaps import *
 from tools import *
 
+def w_discretized(w_in):
+    """ Discretizes the updraft velocity, and define bar color """
+    if(w_in < 0.5):
+        w_out = 0
+        w_color = [1.00, 1.00, 1.00, 1.00]
+    elif(w_in >= 0.5 and w_in < 1.0):
+        w_out = 1
+        w_color = [0.02, 0.71, 1.00, 1.00]
+    elif(w_in >= 1.0 and w_in < 2.0):
+        w_out = 2
+        w_color = [0.02, 1.00, 0.16, 1.00]
+    elif(w_in >= 2.0 and w_in < 3.0):
+        w_out = 3
+        w_color = [0.87, 1.00, 0.02, 1.00]
+    elif(w_in >= 3.0):
+        w_out = 4
+        w_color = [1.00, 0.16, 0.02, 1.00]
+
+    return (w_out, w_color)
+
 ## Function to create time series
 def create_timeseries(olga,wrfout,dom,times):
-
-    # Create 4-color colormap
-    #wupd = cmap_discrete(wup,np.linspace(0,1,5))
-    #wupd = cmap_discrete(cm.jet,np.linspace(0,1,5))
-    wupd = [[0.02, 0.71, 1.00, 1.],\
-            [0.02, 1.00, 0.16, 1.],\
-            [0.87, 1.00, 0.02, 1.],\
-            [1.00, 0.16, 0.02, 1.]]
 
     # colormap for cloud cover
     cld   = make_colormap({0.:'#05b5ff', 0.3:'#bdecff', 1.0:'#ffffff'})
@@ -108,44 +120,50 @@ def create_timeseries(olga,wrfout,dom,times):
                     # Limit to 'significant' buoyancy flux (fairly random choice)
                     if(d.wthvs[tt] > 0.02):
                         # Plot updraft velocity 
-                        for k in range(d.zf[tt,:].size):
-                            if(d.w[tt,k] > 0.5 and d.z[tt,k] < 3000):
-                                wl  = np.max((0, d.w[tt,k]      ))
-                                c3d = np.max((0, d.c3dtemf[tt,k]))
-                                wc  = min(3,np.floor(wl)/float(wm)*wm)
-                                cc  = wupd[int(wc)]
+                        cloud = False  # flag to see if we have cumulus
+                        for k in range(key_nearest(d.zf[tt,:], 3000) + 1):
+                            w  = np.max((0, d.w[tt,k]))
 
-                                pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color=cc, edgecolor='none')    
-                            else:
-                                pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k], color='w', edgecolor='none')    
+                            # Set previous discretized updraft velocity (wc_p) and level (k_p)
+                            if(k == 0):
+                                wc_p, cc_p = w_discretized(w)
+                                k_p  = k
 
-                            if(d.qltemf[tt,k] > 1e-4 and d.w[tt,k] > 0.02):
-                                pl.bar(d.hour[tt]-0.5*bw2, d.z[tt,k+1], width=bw2, bottom=d.z[tt,k], color='none', alpha=0.5, edgecolor='k')   
-                            else:
-                                pass
+                            # Current discretized updraft velocity
+                            wc_a, cc_a = w_discretized(w)                           
+ 
+                            # If current velocity differs from previous, draw bar from k_p to k
+                            if(wc_a != wc_p):
+                                pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k_p], color=cc_p, edgecolor='none')    
+                                wc_p = wc_a 
+                                cc_p = cc_a
+                                k_p  = k
 
-                        #c3d = np.where((d.qltemf[tt,:] > 1e-4) & (d.w[tt,:] > 0.02))
-                        #if(np.size(c3d)> 0): 
-                        #    cb = c3d[0][0]-1
-                        #    ct = c3d[0][-1]+1
-                        #    pl.bar(d.hour[tt]-0.5*bw2, d.zf[tt,ct]-d.zf[tt,cb], width=bw2, bottom=d.zf[tt,cb], color='0.9', alpha=0.5, edgecolor='k')   
+                        # Plot cumulus clouds
+                        cloud = False  # flag to see if we have cumulus
+                        for k in range(key_nearest(d.zf[tt,:], 3000) + 1):
+                            ql = np.max((0, d.qltemf[tt,k]))
 
-                # For debugging:
-                #pl.plot(d.hour[t0:t1], d.zi[t0:t1]+zs,  'k-', label='HD_TEMF')
-                #pl.plot(d.hour[t0:t1], d.ct[t0:t1]+zs,  'r-', label='CT_TEMF')
-                #pl.plot(d.hour[t0:t1], d.lcl[t0:t1]+zs, 'g-', label='LCL_TEMF')
+                            if(ql >= 1e-4 and cloud == False):
+                                cloud = True
+                                kc_p = k
+
+                            if(ql < 1e-4 and cloud == True):
+                                pl.bar(d.hour[tt]-0.5*bw2, d.z[tt,k+1], width=bw2, bottom=d.z[tt,kc_p], color='0.9', edgecolor='k', alpha=0.5)    
+                                cloud = False 
 
                 # Add line at surface
                 pl.plot([d.hour[t0], d.hour[t1]],[zs, zs], 'k:')
                 pl.text(d.hour[t0]+0.2,zs,'surface',size=7,ha='left',va='bottom')
 
                 # Add sort-of colorbar
-                wups = ([0,1,2,3])
-                names = (['0-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
-                for wu,nam in zip(wups,names):
-                    pl.scatter([-10],[300],color=wupd[wu],label=nam)
+                wups = ([0.5,1,2,3])
+                names = (['0.5-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
+                for wu,nam in zip(wups,names): 
+                    tmp, cc = w_discretized(wu)
+                    pl.scatter([-10], [300], marker='s', color=cc, label=nam)
                 pl.plot([-10,-10],[300,300],'k-',label='cumulus')
-                pl.legend(frameon=False,loc=2)  
+                pl.legend(frameon=False, loc=2, scatterpoints=1)  
                 pl.xlim(d.hour[t0],d.hour[t1])
                 pl.ylim(0,3000)
                 pl.ylabel('z [m AMSL]')
