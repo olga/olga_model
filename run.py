@@ -7,7 +7,7 @@ from src.main import *
 #from domain_test.domainSettings import olgaSettings as settings_d1
 from OLGA_NL.domainSettings import olgaSettings as settings_d1
 
-mode = 'post'
+mode = 'all'
 
 olga = settings_d1()
 
