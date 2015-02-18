@@ -80,12 +80,12 @@ def downloadGFSFile(localfile, remoteurl, filename):
                 check = urllib.urlopen(remoteurl)
                 if(check.code == 200):
                     # File available, download! 
-                    if(debug): printf('file available at GFS server -> downloading')
+                    if(debug): printf('file available at GFS server at %s -> downloading'%datetime.datetime.now().time())
                     urllib.urlretrieve(remoteurl,localfile)
                     #printf(' ')
                 else:
                     # File not (yet) available, sleep a while and re-do the checks 
-                    printf('file not found on server, sleep 5min')
+                    #printf('file not found on server, sleep 5min')
                     time.sleep(300)
         except:
             # Something weird happened. Sleep a bit, try again
@@ -371,7 +371,7 @@ def uploadPlots(olga):
     # What's the best way to do this.....? For now hard coded
     local  = '%s%04i%02i%02i_t%02iz'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle)
     remote = 'vanstratum-com@ssh.pcextreme.nl:~/domains/vanstratum.com/htdocs/olga/results/'
-    execute('scp -r %s %s'%(local, remote))
+    execute('scp -r %s %s &> /dev/null'%(local, remote))
 
     endTime = datetime.datetime.now()
     printf('finished upload at %s'%endTime)
