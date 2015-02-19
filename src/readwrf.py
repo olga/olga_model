@@ -253,7 +253,8 @@ class readwrf_all:
         # Calculate the PFD, only if there is a full day.
         if(np.size(self.t0_ana) > 0):
             self.date_PFD = [] # List to store the datetime string of PFD calculation
-            self.PFD = np.zeros((np.size(self.t0_ana), np.size(olga.pfdNames), self.nlat, self.nlon)) # Empty array for PFD
+            self.PFD1 = np.zeros((np.size(self.t0_ana), np.size(olga.pfdNames), self.nlat, self.nlon)) # Empty array for PFD
+            self.PFD2 = np.zeros((np.size(self.t0_ana), np.size(olga.pfdNames), self.nlat, self.nlon)) # Empty array for PFD
 
             # Loop over different days 
             for i in range(np.size(self.t0_ana)):
@@ -264,11 +265,14 @@ class readwrf_all:
                 # Loop over different glider types
                 for j in range(np.size(olga.pfdNames)):
                     # Calculate the instantaneous achievable cross-country velocity given updraft velocity. Some corrections are applied.
-                    pV  = VgemCrossCountry(self.zi[t0:t1], self.wglider[t0:t1], olga.pfdA[j], olga.pfdB[j], olga.pfdC[j], olga.pfdEff[j])
+                    pV1  = VgemCrossCountry(self.zi[t0:t1],  self.wglider[t0:t1],  olga.pfdA[j], olga.pfdB[j], olga.pfdC[j], olga.pfdEff[j])
+                    pV2  = VgemCrossCountry(self.zi2[t0:t1], self.wglider2[t0:t1], olga.pfdA[j], olga.pfdB[j], olga.pfdC[j], olga.pfdEff[j])
                     # integrate to obtain cumulative flyable distance. 
                     # At each time, the average distance over the past ouput period is added
-                    for t2 in range(1, pV.shape[0]):
-                        self.PFD[i,j,:,:] += 0.5*(pV[t2-1,:,:]+pV[t2,:,:]) * self.dt 
+                    for t2 in range(1, pV1.shape[0]):
+                        self.PFD1[i,j,:,:] += 0.5*(pV1[t2-1,:,:]+pV1[t2,:,:]) * self.dt 
+                        self.PFD2[i,j,:,:] += 0.5*(pV2[t2-1,:,:]+pV2[t2,:,:]) * self.dt 
+
         else:
             self.PFD = False
 
