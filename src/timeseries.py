@@ -28,10 +28,10 @@ from tools import *
 
 def w_discretized(w_in):
     """ Discretizes the updraft velocity, and define bar color """
-    if(w_in < 0.5):
+    if(w_in < 0.7):
         w_out = 0
         w_color = [1.00, 1.00, 1.00, 1.00]
-    elif(w_in >= 0.5 and w_in < 1.0):
+    if(w_in >= 0.7 and w_in < 1.0):
         w_out = 1
         w_color = [0.02, 0.71, 1.00, 1.00]
     elif(w_in >= 1.0 and w_in < 2.0):
@@ -58,7 +58,29 @@ def create_timeseries(olga,wrfout,dom,times):
     for name, longName, lon, lat, type in zip(olga.soundLoc[dom].shortName, olga.soundLoc[dom].longName, olga.soundLoc[dom].lon, olga.soundLoc[dom].lat, olga.soundLoc[dom].type):
         if(type == 0 or type == 2):
             # Read WRF data
-	    d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
+            d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
+
+            # DEBUGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+            #figure()
+            #for t in range(np.size(d.t0_ana)):
+            #    t0 = d.t0_ana[t]
+            #    t1 = d.t1_ana[t]
+            #    figure()
+            #    for tt in range(t0,t1):
+            #        sp = tt-t0
+            #        ax=subplot(5,4,sp+1)
+            #        title(str(tt))
+            #        d.w[tt,d.w[tt,:]<0] = 0
+            #        plot(d.w[tt,:], d.zf[tt,:],'r-',label='w_up')
+            #        plot(d.qltemf[tt,:]*10000, d.zf[tt,:],'b-',label='ql_up*1e4')
+            #        ylim(0,3000)
+            #        xlim(0,3)
+            #        if(tt == t0): legend(frameon=False)
+            #        if(sp % 4 != 0): ax.tick_params(labelleft='off')
+            #        if(sp < 16): ax.tick_params(labelbottom='off')
+            #        grid()
+
+            #    savefig('test_%s.png'%name) 
 
             # Loop over diffent day (if available):
             for t in range(np.size(d.t0_ana)):
@@ -117,10 +139,10 @@ def create_timeseries(olga,wrfout,dom,times):
 
                 # Loop over all time steps
                 for tt in range(t0,t1+1):
-                    # Limit to 'significant' buoyancy flux (fairly random choice)
-                    if(d.wthvs[tt] > 0.02):
+                    # TO-DO: TEMF often doesn't decay updraft velocity after convection stop.
+                    # Limit plot to conditions with unstable near-surface layer:
+                    if(d.thv[tt,1] < d.thv[tt,0]):
                         # Plot updraft velocity 
-                        cloud = False  # flag to see if we have cumulus
                         for k in range(key_nearest(d.zf[tt,:], 3000) + 1):
                             w  = np.max((0, d.w[tt,k]))
 
@@ -131,10 +153,10 @@ def create_timeseries(olga,wrfout,dom,times):
 
                             # Current discretized updraft velocity
                             wc_a, cc_a = w_discretized(w)                           
- 
+
                             # If current velocity differs from previous, draw bar from k_p to k
                             if(wc_a != wc_p):
-                                pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k+1], width=bw1, bottom=d.z[tt,k_p], color=cc_p, edgecolor='none')    
+                                pl.bar(d.hour[tt]-0.5*bw1, d.z[tt,k]-d.z[tt,k_p], width=bw1, bottom=d.z[tt,k_p], color=cc_p, edgecolor='none')    
                                 wc_p = wc_a 
                                 cc_p = cc_a
                                 k_p  = k
@@ -144,12 +166,12 @@ def create_timeseries(olga,wrfout,dom,times):
                         for k in range(key_nearest(d.zf[tt,:], 3000) + 1):
                             ql = np.max((0, d.qltemf[tt,k]))
 
-                            if(ql >= 1e-4 and cloud == False):
+                            if(ql >= 5e-5 and cloud == False):
                                 cloud = True
                                 kc_p = k
 
-                            if(ql < 1e-4 and cloud == True):
-                                pl.bar(d.hour[tt]-0.5*bw2, d.z[tt,k+1], width=bw2, bottom=d.z[tt,kc_p], color='0.9', edgecolor='k', alpha=0.5)    
+                            if(ql < 5e-5 and cloud == True):
+                                pl.bar(d.hour[tt]-0.5*bw2, d.z[tt,k+1]-d.z[tt,kc_p], width=bw2, bottom=d.z[tt,kc_p], color='0.9', edgecolor='k', alpha=0.5)    
                                 cloud = False 
 
                 # Add line at surface
@@ -157,8 +179,8 @@ def create_timeseries(olga,wrfout,dom,times):
                 pl.text(d.hour[t0]+0.2,zs,'surface',size=7,ha='left',va='bottom')
 
                 # Add sort-of colorbar
-                wups = ([0.5,1,2,3])
-                names = (['0.5-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
+                wups = ([0.7,1,2,3])
+                names = (['0.7-1 m/s','1-2 m/s','2-3 m/s','>3 m/s'])
                 for wu,nam in zip(wups,names): 
                     tmp, cc = w_discretized(wu)
                     pl.scatter([-10], [300], marker='s', color=cc, label=nam)
@@ -266,3 +288,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 #name = '%s%04i%02i%02i_t%02iz/%s_d%i_tser_%s.png'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle,tmp,dom+1,name)
                 name = '%s%04i%02i%02i_t%02iz/tser_%s_%02i_%s.png'%(olga.figRoot, olga.year, olga.month, olga.day, olga.cycle, name, dom+1, tmp)
                 pl.savefig(name, dpi=olga.fig_dpi)
+
+
+
+
