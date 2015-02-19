@@ -118,7 +118,7 @@ class olgaSettings:
 
         # ----------------------------------
         # Plot variables maps
-        vars1 = (['pfd','wstar','zidry','cudepth','convection','swd','rain','wind10m','wind1000m'])         
+        vars1 = (['pfd','pfd2','wglider','wgliderTEMF','zidry','ziglider','cudepth','swd','rain','wind10m','wind1000m'])         
         #vars1 = (['pfd'])         
         vars2 = ([''])         
         self.map_vars     = ([vars1,vars2]) # variables to plot per domain

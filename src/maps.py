@@ -99,7 +99,7 @@ def getFigureProperties(olga, map_height, map_width):
 """
 def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw, axh):
     # This is ugly :( TODO: fix
-    if(var == 'pfd'):
+    if(var == 'pfd' or var == 'pfd2'):
         nFig = np.size(olga.pfdNames)
     else:
         nFig = 1
@@ -222,14 +222,27 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
         # -------------------------------------------------
         # Updraft velocity wstar
         # -------------------------------------------------
-        elif(var == 'wstar'):
+        elif(var == 'wglider'):
             doplot = True 
-            title  = 'Updraft velocity (m/s)'
+            title  = 'Updraft velocity w* - %.1f m/s'%olga.sinkGlider
             units  = 'm/s'
             fSigma = 1.
 
             levs   = np.arange(0, 3.001, 0.5)
             data   = gaussianFilter(wrf.wglider[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.wglider[t,:,:]
+            cf     = m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
+
+        # -------------------------------------------------
+        # Updraft velocity TEMF
+        # -------------------------------------------------
+        elif(var == 'wgliderTEMF'):
+            doplot = True 
+            title  = 'Updraft velocity TEMF - %.1f m/s'%olga.sinkGlider
+            units  = 'm/s'
+            fSigma = 1.
+
+            levs   = np.arange(0, 3.001, 0.5)
+            data   = gaussianFilter(wrf.wglider2[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.wglider2[t,:,:]
             cf     = m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
 
         # -------------------------------------------------
@@ -244,7 +257,20 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             levs   = np.arange(0, 2500.01, 300.)
             data   = gaussianFilter(wrf.zi[t,:,:] + wrf.hgt[:,:], fSigma, mode='reflect') if smoothPlot else wrf.zi[t,:,:] + wrf.hgt[:,:]
             cf     = m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
-        
+       
+        # -------------------------------------------------
+        # Top of updraft (minus glider sink)
+        # -------------------------------------------------
+        elif(var == 'ziglider'):
+            doplot = True 
+            units  = 'm AMSL'
+            title  = 'Updraft height with %.1f m/s sink [m AMSL]'%olga.sinkGlider
+            fSigma = 1.
+
+            levs   = np.arange(0, 2500.01, 300.)
+            data   = gaussianFilter(wrf.zi2[t,:,:] + wrf.hgt[:,:], fSigma, mode='reflect') if smoothPlot else wrf.zi2[t,:,:] + wrf.hgt[:,:]
+            cf     = m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
+ 
         # -------------------------------------------------
         # Cumulus depth
         # -------------------------------------------------
@@ -263,12 +289,25 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
         # -------------------------------------------------
         elif((var == 'pfd') and t < np.size(wrf.date_PFD)):
             doplot = True 
-            title  = 'PFD %s [km]'%olga.pfdNotes[n]
+            title  = 'PFD (w*) %s [km]'%olga.pfdNotes[n]
             units  = 'km'
             fSigma = 1.
 
             levs   = np.arange(0, 800.1, 100)
-            data   = gaussianFilter(wrf.PFD[t,n,:,:], fSigma, mode='reflect') if filter else wrf.PFD[t,n,:,:]
+            data   = gaussianFilter(wrf.PFD1[t,n,:,:], fSigma, mode='reflect') if filter else wrf.PFD1[t,n,:,:]
+            cf     =  m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
+
+        # -------------------------------------------------
+        # Potential flight distance per day: TEMF corrected updraft velocity / height
+        # -------------------------------------------------
+        elif((var == 'pfd2') and t < np.size(wrf.date_PFD)):
+            doplot = True 
+            title  = 'PFD (TEMF) %s [km]'%olga.pfdNotes[n]
+            units  = 'km'
+            fSigma = 1.
+
+            levs   = np.arange(0, 800.1, 100)
+            data   = gaussianFilter(wrf.PFD2[t,n,:,:], fSigma, mode='reflect') if filter else wrf.PFD2[t,n,:,:]
             cf     =  m.contourf(lon, lat, data, levs, extend='both', cmap=wup)
 
         # -------------------------------------------------
@@ -324,7 +363,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             pl.figimage(olga.olga_logo, olga.fig_width_px-121, 4)
 
             # Get name and save figure 
-            if(var=='pfd'):
+            if(var=='pfd' or var == 'pfd2'):
                 tmp    = '%06i'%(t*24.) 
             else:
                 xtime  = wrf.time[t] / 3600.
@@ -332,7 +371,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
                 minute = int((xtime - hour) * 60.)
                 tmp    = str(hour).zfill(4) + str(minute).zfill(2)
 
-            if(var == 'pfd'):
+            if(var == 'pfd' or var == 'pfd2'):
                 name = '%s%04i%02i%02i_t%02iz/%s_%s_%02i_%s.png'%(olga.figRoot, olga.year, olga.month, olga.day, olga.cycle, var, olga.pfdNames[n], dom+1, tmp)
             else:
                 name = '%s%04i%02i%02i_t%02iz/%s_%02i_%s.png'%(olga.figRoot, olga.year, olga.month, olga.day, olga.cycle, var, dom+1, tmp)
