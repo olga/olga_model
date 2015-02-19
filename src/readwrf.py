@@ -27,6 +27,7 @@ from tools import *
 
 # TMP BVS
 from pylab import *
+from colormaps import *
 
 # Switch to read NetCDF as single or double precision
 # not sure if necessary; at least the NetCDF reader from 
@@ -163,6 +164,8 @@ class readwrf_all:
         self.hgt    = wrfin.variables["HGT"][0,:,:].astype(prec) # terrain height 
         self.nlat   = np.size(self.lat[:,0])
         self.nlon   = np.size(self.lon[0,:])
+        self.nz     = np.size(wrfin.variables["PH"][0,:,0,0])
+        self.nzf    = self.nz - 1
 
         # Base state variables
         self.T00    = wrfin.variables["T00"][t0:t1].astype(prec) # reference temperature [K]
@@ -194,26 +197,6 @@ class readwrf_all:
         self.zct    = wrfin.variables["HCT_TEMF"][t0:t1,:,:].astype(prec) # cloud top TEMF
         self.zlcl   = wrfin.variables["LCL_TEMF"][t0:t1,:,:].astype(prec) # LCL TEMF
       
-        # Derived from TEMF: 
-        #self.zi2    = np.zeros_like(self.zi, dtype=prec) # dry thermal top where w<0.5 m/s, or cloud base
-        #self.wup    = np.zeros_like(self.zi, dtype=prec) # sub-cloud layer averaged updraft velocity
-        #       
-        #for t in range(t0, t1, 1):
-        #    for j in range(self.nlat):
-        #        for i in range(self.nlon):
-        #            z        = (wrfin.variables["PH"][t,:,j,i] + wrfin.variables["PHB"][t,:,j,i]) / g # half levels [m]
-        #            zf       = 0.5*(z[1:]+z[:-1]) # full levels [m]
-        #            wup_temf = wrfin.variables["WUPD_TEMF"][t,:,j,i].astype(prec) # updraft velocity TEMF [m/s] 
-        #            ql_temf  = wrfin.variables["QLUP_TEMF"][t,:,j,i].astype(prec) # updraft liquid water TEMF [kg kg-1]
-
-        #            wpos  = np.where(wup_temf > 0.5)
-        #            qlpos = np.where(ql_temf > 1e-4)
-        #            
-        #            kzi = wpos[0][-1]  if np.size(wpos) >0 else 0
-        #            kcb = qlpos[0][-1] if np.size(qlpos)>0 else 0
-
-        #            if(kzi > 0):
-        #                print t,j,i,kzi,kcb
 
         # REALLLLY ugly (and incorrect), but seems to work quite okay...:
         #   in theory: if one grid level cloud cover = 100%, total column should be 100%
@@ -240,6 +223,53 @@ class readwrf_all:
         self.wstar  = (g * self.zi * wthvs / tref)**(1./3.) # convective velocity scale w* [m s-1]
         self.wglider= deepcopy(self.wstar) - olga.sinkGlider # w* minus sink glider [m s-1]
         self.wglider[self.wglider<0] = 0. # Limit updraft velocity glider to zero
+
+        # Derived from TEMF: 
+        self.zi2    = np.zeros_like(self.zi, dtype=prec) # dry thermal top where w<0.5 m/s, or cloud base
+        self.wup    = np.zeros_like(self.zi, dtype=prec) # sub-cloud layer averaged updraft velocity
+        
+        for t in range(t0, t1, 1):
+            print t
+            wup  = wrfin.variables["WUPD_TEMF"][t,:,:,:].astype(prec) - olga.sinkGlider
+            qlup = wrfin.variables["QLUP_TEMF"][t,:,:,:].astype(prec)
+            z    = (wrfin.variables["PH"][t,:,:,:] + wrfin.variables["PHB"][t,:,:,:]) / g
+            zf   = (z[1:,:,:]+z[:-1,:,:])/2.
+            flag = (wup > 0) & (qlup < 5e-5)
+
+            for j in range(self.nlat):
+                for i in range(self.nlon):
+                    if(wthvs[t,j,i] > 0.01):
+                        levs = np.where(flag[:,j,i] == True)[0]
+                        if(np.size(levs) > 0):
+                            self.wup[t,j,i] = np.average(wup[levs,j,i])
+                            self.zi2[t,j,i] = zf[levs[-1],j,i]
+
+            #cmap = make_colormap({0:'#0060ff',0.499:'#00ff9c',0.5:'#fcff00',1.0:'#ff005a'})
+
+            #figure()
+            #subplot(231)
+            #pcolormesh(self.wglider[t,:,:], vmin=0, vmax=2)
+            #colorbar()
+            #subplot(232)
+            #pcolormesh(self.wup[t,:,:], vmin=0, vmax=2)
+            #colorbar()
+            #subplot(233)
+            #pcolormesh(self.wup[t,:,:]-self.wglider[t,:,:], cmap=cmap, vmin=-1, vmax=1)
+            #colorbar()
+
+            #subplot(234)
+            #pcolormesh(self.zi[t,:,:], vmin=0, vmax=2000)
+            #colorbar()
+            #subplot(235)
+            #pcolormesh(self.zi2[t,:,:], vmin=0, vmax=2000)
+            #colorbar()
+            #subplot(236)
+            #pcolormesh(self.zi2[t,:,:]-self.zi[t,:,:], cmap=cmap, vmin=-500, vmax=500)
+            #colorbar()
+
+            #savefig('test_%i.png'%t)
+
+        #sys.exit()
 
         # Calculate the PFD, only if there is a full day.
         if(np.size(self.t0_ana) > 0):
