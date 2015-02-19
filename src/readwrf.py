@@ -197,7 +197,6 @@ class readwrf_all:
         self.zct    = wrfin.variables["HCT_TEMF"][t0:t1,:,:].astype(prec) # cloud top TEMF
         self.zlcl   = wrfin.variables["LCL_TEMF"][t0:t1,:,:].astype(prec) # LCL TEMF
       
-
         # REALLLLY ugly (and incorrect), but seems to work quite okay...:
         #   in theory: if one grid level cloud cover = 100%, total column should be 100%
         #   in WRF: this creates a 0% or 100% cloud cover switch. Averaging seems to do better.....
@@ -225,51 +224,31 @@ class readwrf_all:
         self.wglider[self.wglider<0] = 0. # Limit updraft velocity glider to zero
 
         # Derived from TEMF: 
-        self.zi2    = np.zeros_like(self.zi, dtype=prec) # dry thermal top where w<0.5 m/s, or cloud base
-        self.wup    = np.zeros_like(self.zi, dtype=prec) # sub-cloud layer averaged updraft velocity
+        self.zi2      = np.zeros_like(self.zi, dtype=prec) # Dry thermal top or cloud base
+        self.wglider2 = np.zeros_like(self.zi, dtype=prec) # Average TEMF velocity over sub-cloud layer
         
         for t in range(t0, t1, 1):
-            print t
             wup  = wrfin.variables["WUPD_TEMF"][t,:,:,:].astype(prec) - olga.sinkGlider
             qlup = wrfin.variables["QLUP_TEMF"][t,:,:,:].astype(prec)
             z    = (wrfin.variables["PH"][t,:,:,:] + wrfin.variables["PHB"][t,:,:,:]) / g
-            zf   = (z[1:,:,:]+z[:-1,:,:])/2.
-            flag = (wup > 0) & (qlup < 5e-5)
 
             for j in range(self.nlat):
                 for i in range(self.nlon):
-                    if(wthvs[t,j,i] > 0.01):
-                        levs = np.where(flag[:,j,i] == True)[0]
-                        if(np.size(levs) > 0):
-                            self.wup[t,j,i] = np.average(wup[levs,j,i])
-                            self.zi2[t,j,i] = zf[levs[-1],j,i]
+                    wmax = wup[:,j,i].max()
+                    if(wthvs[t,j,i] > 0.01 and wmax > 0.2):
 
-            #cmap = make_colormap({0:'#0060ff',0.499:'#00ff9c',0.5:'#fcff00',1.0:'#ff005a'})
+                        # Loop from max velocity upwards until either hitting cloud base, or w<0
+                        k0 = key_nearest(wup[:,j,i], wmax)
+                        for k in range(k0,self.nzf):
+                            if(wup[k,j,i] < 0 or qlup[k,j,i] > 5e-5):
+                                kzi = k
+                                break
 
-            #figure()
-            #subplot(231)
-            #pcolormesh(self.wglider[t,:,:], vmin=0, vmax=2)
-            #colorbar()
-            #subplot(232)
-            #pcolormesh(self.wup[t,:,:], vmin=0, vmax=2)
-            #colorbar()
-            #subplot(233)
-            #pcolormesh(self.wup[t,:,:]-self.wglider[t,:,:], cmap=cmap, vmin=-1, vmax=1)
-            #colorbar()
-
-            #subplot(234)
-            #pcolormesh(self.zi[t,:,:], vmin=0, vmax=2000)
-            #colorbar()
-            #subplot(235)
-            #pcolormesh(self.zi2[t,:,:], vmin=0, vmax=2000)
-            #colorbar()
-            #subplot(236)
-            #pcolormesh(self.zi2[t,:,:]-self.zi[t,:,:], cmap=cmap, vmin=-500, vmax=500)
-            #colorbar()
-
-            #savefig('test_%i.png'%t)
-
-        #sys.exit()
+                        # kzi is the first full level where w<0 or ql>5e-5. Average
+                        # updraft velocity to :kzi to skip this negative level.
+                        # For updraft height, use kzi on half levels (which are below the full levels)
+                        self.wglider2[t,j,i] = np.average(wup[:kzi,j,i])
+                        self.zi2     [t,j,i] = z[kzi,j,i] - self.hgt[j,i]
 
         # Calculate the PFD, only if there is a full day.
         if(np.size(self.t0_ana) > 0):
