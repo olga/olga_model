@@ -31,7 +31,7 @@ def w_discretized(w_in):
     if(w_in < 0.7):
         w_out = 0
         w_color = [1.00, 1.00, 1.00, 1.00]
-    if(w_in >= 0.7 and w_in < 1.0):
+    elif(w_in >= 0.7 and w_in < 1.0):
         w_out = 1
         w_color = [0.02, 0.71, 1.00, 1.00]
     elif(w_in >= 1.0 and w_in < 2.0):
@@ -142,17 +142,12 @@ def create_timeseries(olga,wrfout,dom,times):
                     # TO-DO: TEMF often doesn't decay updraft velocity after convection stop.
                     # Limit plot to conditions with unstable near-surface layer:
                     if(d.thv[tt,1] < d.thv[tt,0]):
-                        # Plot updraft velocity 
+                        # Plot updraft velocity
+                        wc_p, cc_p = w_discretized(d.w[tt,0])
+                        k_p = 0
                         for k in range(key_nearest(d.zf[tt,:], 3000) + 1):
-                            w  = np.max((0, d.w[tt,k]))
-
-                            # Set previous discretized updraft velocity (wc_p) and level (k_p)
-                            if(k == 0):
-                                wc_p, cc_p = w_discretized(w)
-                                k_p  = k
-
                             # Current discretized updraft velocity
-                            wc_a, cc_a = w_discretized(w)                           
+                            wc_a, cc_a = w_discretized(d.w[tt,k])                           
 
                             # If current velocity differs from previous, draw bar from k_p to k
                             if(wc_a != wc_p):
