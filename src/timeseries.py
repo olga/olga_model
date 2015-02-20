@@ -145,9 +145,11 @@ def create_timeseries(olga,wrfout,dom,times):
                         # Plot updraft velocity
                         wc_p, cc_p = w_discretized(d.w[tt,0])
                         k_p = 0
+                        wc_max = 0
                         for k in range(key_nearest(d.zf[tt,:], 3000) + 1):
                             # Current discretized updraft velocity
                             wc_a, cc_a = w_discretized(d.w[tt,k])                           
+                            wc_max = np.max((wc_max, wc_a))
 
                             # If current velocity differs from previous, draw bar from k_p to k
                             if(wc_a != wc_p):
@@ -156,18 +158,19 @@ def create_timeseries(olga,wrfout,dom,times):
                                 cc_p = cc_a
                                 k_p  = k
 
-                        # Plot cumulus clouds
-                        cloud = False  # flag to see if we have cumulus
-                        for k in range(key_nearest(d.zf[tt,:], 3000) + 1):
-                            ql = np.max((0, d.qltemf[tt,k]))
+                        # Plot cumulus clouds, only if there is something like an updraft below
+                        if(wc_max > 0):
+                            cloud = False  # flag to see if we have cumulus
+                            for k in range(key_nearest(d.zf[tt,:], 3000) + 1):
+                                ql = np.max((0, d.qltemf[tt,k]))
 
-                            if(ql >= 5e-5 and cloud == False):
-                                cloud = True
-                                kc_p = k
+                                if(ql >= 5e-5 and cloud == False):
+                                    cloud = True
+                                    kc_p = k
 
-                            if(ql < 5e-5 and cloud == True):
-                                pl.bar(d.hour[tt]-0.5*bw2, d.z[tt,k+1]-d.z[tt,kc_p], width=bw2, bottom=d.z[tt,kc_p], color='0.9', edgecolor='k', alpha=0.5)    
-                                cloud = False 
+                                if(ql < 5e-5 and cloud == True):
+                                    pl.bar(d.hour[tt]-0.5*bw2, d.z[tt,k+1]-d.z[tt,kc_p], width=bw2, bottom=d.z[tt,kc_p], color='0.9', edgecolor='k', alpha=0.5)    
+                                    cloud = False 
 
                 # Add line at surface
                 pl.plot([d.hour[t0], d.hour[t1]],[zs, zs], 'k:')
