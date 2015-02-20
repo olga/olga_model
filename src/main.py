@@ -51,14 +51,14 @@ def printf(message):
 ## Download single GFS input file, or waits until available
 # @ param blabla
 def downloadGFSFile(localfile, remoteurl, filename):
+    if(debug): printf('processing %s .. '%filename)
     success = False
     while(success == False):
         # Test: put try around everything to catch weird exceptions
         try:
-            if(debug): printf('processing %s .. '%filename)
             # Check if file locally available and valid
             if(os.path.isfile(localfile)):
-                if(debug): printf('found local .. '),
+                if(debug): printf('found %s local'%filename)
                 # Check if same size as remote:
                 remote = urllib.urlopen(remoteurl)
                 # for re-running old cases, the file might have been removed online.
@@ -68,30 +68,28 @@ def downloadGFSFile(localfile, remoteurl, filename):
                     local = open(localfile,'rb')
                     size_local = len(local.read())
                     if(int(size_remote) == int(size_local)):
-                        if(debug): printf('size remote/local match, success!')
+                        if(debug): printf('size %s remote/local match, success!'%filename)
                         success = True
                     else:
-                        if(debug): printf('size remote/local differ, re-download .. '),
+                        if(debug): printf('size %s remote/local differ, re-download .. '%filename)
                 else:
-                    if(debug): printf('remote not available for comparision: assume all is fine :)')
+                    if(debug): printf('remote %s not available (probably old run), pass'%filename)
                     success = True
             # If not, check if available at server:
             if(success == False):
                 check = urllib.urlopen(remoteurl)
                 if(check.code == 200):
                     # File available, download! 
-                    if(debug): printf('file available at GFS server at %s -> downloading'%datetime.datetime.now().time())
+                    if(debug): printf('file %s available at GFS server at %s -> downloading'%(filename,datetime.datetime.now().time()))
                     urllib.urlretrieve(remoteurl,localfile)
-                    #printf(' ')
                 else:
                     # File not (yet) available, sleep a while and re-do the checks 
-                    #printf('file not found on server, sleep 5min')
                     time.sleep(300)
         except:
             # Something weird happened. Sleep a bit, try again
-            printf('weird exception: '),
+            printf('weird exception on file %s: '%filename)
             printf(sys.exc_info()[0]) 
-            time.sleep(10)
+            time.sleep(30)
 
 ## Downloads the requested GFS data
 # @param olga Pointer to object with OLGA settings
