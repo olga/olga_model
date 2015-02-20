@@ -21,21 +21,26 @@ import numpy as np
 import pylab as pl
 import glob
 import sys
+import os
 from matplotlib.colors import LinearSegmentedColormap, ColorConverter
 
 def cmap_discrete(cmap_in,ints):
     return pl.get_cmap(cmap_in)(ints)
 
+# A bit hacky....
+filedir = os.path.dirname(__file__)
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create colormap from NCL's .rgb files
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def cmap_ncl(name):
-    files = glob.glob('include/colormaps/'+name+'.rgb')
-    if(len(files) < 1):
-        sys.exit('cant find file %s.*'%name) 
+    colormap = os.path.join(filedir, '../include/colormaps/%s.rgb'%name)
 
+    if not os.path.isfile(colormap):
+        sys.exit('cant find file %s.rgb! exit'%name) 
+      
     cols = []
-    f = open('include/colormaps/'+name+'.rgb','r')
+    f = open(colormap, 'r')
     l = 0
     for line in f:
         if(l==0):
