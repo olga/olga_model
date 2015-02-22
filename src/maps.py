@@ -422,7 +422,7 @@ def createMaps(olga, wrfout, dom, times):
     for var in olga.map_vars[dom]:
         processList = []
         # For each variable, plot all maps in parallel:
-        for t in times:
+        for t in range(wrf.nt):
             processList.append(Process(target=createFigure, \
                 args=(olga, dom, wrf, basem, var, t, fig_width_in, fig_height_in, olga.fig_dpi, ax_left, ax_bot, ax_width, ax_height,)))
             processList[-1].start()

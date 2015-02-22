@@ -35,7 +35,7 @@ def create_sounding(olga,wrfout,dom,times):
             d = readwrf_loc(olga,wrfout,lon,lat,times[0],times[-1])
             sset = skewt_input()
 
-            for t in times:
+            for t in range(d.nt):
                 stype = 0
                 sset.stype  = stype
                 sset.hgt    = d.hgt[t]
