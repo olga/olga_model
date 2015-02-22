@@ -292,18 +292,26 @@ def execWRF(olga):
 ## Wait until the required restart file is available (i.e. WRF finished)
 # @param olga Pointer to object with OLGA settings
 def wait4WRF(olga):
+    startTime = datetime.datetime.now()
     printf('Waiting for WRF to finish')
 
     es = olga.endstruct
     wrfrst = '%swrfrst_d01_%04i-%02i-%02i_%02i:%02i:00'%(olga.wrfRoot,es.year,es.month,es.day,es.hour,es.minute)
 
     # Check if 'wrfrst' is available, else sleep
+    maxExecutionWRF = 10800  # Maximum time allowed for WRF, in case restart is never written
     while(True):
+        elapsedTime = datetime.datetime.now()-startTime
+        printf(elapsedTime.seconds)
+        if(elapsedTime.seconds > maxExecutionWRF):
+            printf("WRF hit runtime limit of %i s!!!"%maxExecutionWRF)
+            return 1 
+
         if(not os.path.isfile(wrfrst)):
             time.sleep(10)
         else: 
             printf('finished WRF at %s'%datetime.datetime.now().time())
-            break
+            return 0
 
 ## Copy WRF output to wrfDataRoot
 # @param olga Pointer to object with OLGA settings

@@ -11,13 +11,9 @@ mode = 'all'
 
 olga = settings_d1()
 
-olga.year    = 2015 #int(time.strftime('%Y'))
-olga.month   = 2 #int(time.strftime('%m'))
-olga.day     = 19 #int(time.strftime('%d'))
-olga.tstart  = 00   # start time of simulation
-olga.cycle   = 0    # which GFS cycle? {0,6,12,18}
-
-#olga.basestr = "%s%s%s_t%02iz"%(olga.year, olga.month, olga.day, olga.cycle) # base string for output
+olga.year    = int(time.strftime('%Y'))
+olga.month   = int(time.strftime('%m'))
+olga.day     = int(time.strftime('%d'))
 
 print('--------------------------------')
 print('Starting OLGA for %02i-%02i-%04i %02iz'%(olga.day, olga.month, olga.year, olga.cycle))
@@ -39,12 +35,19 @@ for islice in range(nslice):
         updateNamelists(olga) # update WRf & WPS namelists
         execWPS(olga) # run the WPS routines
         execWRF(olga) # run the WRF routines
-        wait4WRF(olga) # Wait until the restart file is available
-        moveWRFOutput(olga)
+
+        nerr = wait4WRF(olga) # Wait until the restart file is available
+        if(nerr > 0):
+            print("Something went wrong with WRF.... Stopping after this time slice")
+
+        moveWRFOutput(olga) # Merge NetCDF output, and move to output dir
     if(mode == 'all' or mode == 'post'):
-        execPlots(olga)
+        execPlots(olga) # Make all maps, time series, etc.
     if(mode == 'all'):
-        uploadPlots(olga) 
+        uploadPlots(olga) # Upload to server
+
+    if(nerr > 0):
+        break
 
 print('--------------------------------')
 print('Execution time OLGA: %s'%(datetime.datetime.now()-startTime))
