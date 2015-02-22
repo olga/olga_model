@@ -282,8 +282,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 pl.figtext(0.01, 0.011, '%s'%(olga.map_desc[dom]), size=7, ha='left')
 
                 # Save figure
-                tmp  = '%06i'%(olga.islice*24.)
-                #name = '%s%04i%02i%02i_t%02iz/%s_d%i_tser_%s.png'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle,tmp,dom+1,name)
+                tmp  = '%06i'%(olga.islice*24*100)
                 name = '%s%04i%02i%02i_t%02iz/tser_%s_%02i_%s.png'%(olga.figRoot, olga.year, olga.month, olga.day, olga.cycle, name, dom+1, tmp)
                 pl.savefig(name, dpi=olga.fig_dpi)
 
