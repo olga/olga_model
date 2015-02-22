@@ -83,7 +83,7 @@ class olgaSettings:
         self.tstart      = 0 # start time of simulation
         self.cycle       = 0 # which GFS cycle? {0,6,12,18}
 
-        self.ttotal       = 24 # Total time to simulate [h]
+        self.ttotal       = 48 # Total time to simulate [h]
         self.tslice       = 24 # Split 'ttotal' in 'tslice' chunks [h]
         self.dt_output    = ([60,60]) # 'history_interval' from namelist, per domain, in minutes
 
@@ -119,7 +119,6 @@ class olgaSettings:
         # ----------------------------------
         # Plot variables maps
         vars1 = (['pfd','pfd2','wglider','wgliderTEMF','zidry','ziglider','cudepth','swd','rain','wind10m','wind1000m'])         
-        #vars1 = (['pfd'])         
         vars2 = ([''])         
         self.map_vars     = ([vars1,vars2]) # variables to plot per domain
 
