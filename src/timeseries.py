@@ -138,7 +138,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 bw2 = 0.85       # width of cloud updrafts
 
                 # Loop over all time steps
-                for tt in range(t0,t1+1):
+                for tt in range(d.nt):
                     # TO-DO: TEMF often doesn't decay updraft velocity after convection stop.
                     # Limit plot to conditions with unstable near-surface layer:
                     if(d.thv[tt,1] < d.thv[tt,0]):

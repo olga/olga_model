@@ -304,7 +304,7 @@ class readwrf_loc:
         self.p           = wrfin.variables["P"][t0:t1,:,jj,ii] + wrfin.variables["PB"][t0:t1,:,jj,ii] # pressure [pa]
         self.phyd        = wrfin.variables["P_HYD"][t0:t1,:,jj,ii] # hydrostatic pressure [pa] (difference with pressure??)
         self.z           = (wrfin.variables["PH"][t0:t1,:,jj,ii] + wrfin.variables["PHB"][t0:t1,:,jj,ii]) / g # height [m]
-        self.zf          = (self.z[t0:t1,1:]+self.z[t0:t1,:-1])/2. # height at full (mid gridpoint) levels [m]
+        self.zf          = (self.z[:,1:]+self.z[:,:-1])/2. # height at full (mid gridpoint) levels [m]
         self.hgt         = wrfin.variables["HGT"][t0:t1,jj,ii] # terrain height 
 
         # Read in the different time variables, and do some conversions in "wrf_time_conversion"
@@ -347,7 +347,7 @@ class readwrf_loc:
         # This is still messy.. Tacking the maximum cloud fraction from each layer results mostly in an on-off cloud
         # fraction (either 0 or 100%). Taking the mean over all layers which have clouds seems to work ~okay.
         self.ccl         = np.zeros((3,nt))
-        for t in range(t0,t1,1):
+        for t in range(nt):
             tmp1 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,:k2000,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
             self.ccl[0,t] = tmp1[tmp1>0].mean() if tmp1.max() > 0 else 0  
             tmp2 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k2000:k6000,jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
