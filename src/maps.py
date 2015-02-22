@@ -364,7 +364,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
 
             # Get name and save figure 
             if(var=='pfd' or var == 'pfd2'):
-                tmp    = '%06i'%(t*24.) 
+                tmp    = '%06i'%(olga.islice*24*100) 
             else:
                 xtime  = wrf.time[t] / 3600.
                 hour   = int(np.floor(xtime))
