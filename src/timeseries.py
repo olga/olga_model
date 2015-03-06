@@ -131,7 +131,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 # Updraft velocity / height: vertical velocity TEMF
                 # -------------------------------------------------
                 ax = pl.subplot(gs[:2,0]); modplot(ax)
-                ax.set_title('Updraft velocity and height',loc='left')
+                ax.set_title('Updraft velocity and height',loc='left', size=8)
                 zs  = d.z[0,0]  # terrain height (lowest half level)
                 wm  = 4         # scaling for colormap
                 bw1 = 0.70       # width of sub-cloud updrafts
@@ -194,7 +194,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 # Pressure
                 # -------------------------------------------------
                 ax = pl.subplot(gs[0,1]); modplot(ax)
-                ax.set_title('Surface pressure',loc='left')
+                ax.set_title('Surface pressure',loc='left', size=8)
                 slp = d.slps[t0:t1]/100.
                 pl.plot(d.hour[t0:t1], slp, 'k-')
                 pl.xlim(d.hour[t0],d.hour[t1])
@@ -207,7 +207,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 # Air temperature / dew poiunt temperature
                 # -------------------------------------------------
                 ax = pl.subplot(gs[1,1]); modplot(ax)
-                ax.set_title('T and Td at 2m',loc='left')
+                ax.set_title('T and Td at 2m',loc='left', size=8)
                 pl.plot(d.hour[t0:t1], d.T2[t0:t1]-273.15, 'k-', label='T')
                 pl.plot(d.hour[t0:t1], d.Td2[t0:t1]-273.15, 'k-', label='Td', dashes=[4,2])
                 pl.ylabel('celcius')
@@ -219,7 +219,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 # Rain
                 # -------------------------------------------------
                 ax = pl.subplot(gs[2,1]); modplot(ax)
-                ax.set_title('Rain',loc='left')
+                ax.set_title('Rain',loc='left', size=8)
                 pl.bar(d.hour[t0:t1], d.drr_mp[t0:t1], color='g', edgecolor='none')
                 pl.bar(d.hour[t0:t1], d.drr_con[t0:t1], bottom=d.drr_mp[t0:t1], color='b', edgecolor='none')
                 pl.ylabel('mm')
@@ -231,7 +231,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 # Shortwave radiation
                 # -------------------------------------------------
                 ax = pl.subplot(gs[3,1]); modplot(ax)
-                ax.set_title('Shortwave radiation',loc='left')
+                ax.set_title('Shortwave radiation',loc='left', size=8)
                 pl.plot(d.hour[t0:t1], d.swd[t0:t1], 'k-')
                 pl.plot(d.hour[t0:t1], d.swdc[t0:t1], 'k-', label='Pot.', dashes=[4,2])
                 pl.ylabel('W/m2')
@@ -246,7 +246,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 # Cloud cover
                 # -------------------------------------------------
                 ax = pl.subplot(gs[2,0]); modplot(ax)
-                ax.set_title('Cloud cover',loc='left')
+                ax.set_title('Cloud cover',loc='left', size=8)
                 pl.pcolormesh(d.ccl,cmap=cld,vmin=0,vmax=1)
                 pl.text(d.hour[t0]-0.4,0.5,'low',size=7,ha='right',va='center')
                 pl.text(d.hour[t0]-0.4,1.5,'middle',size=7,ha='right',va='center')
@@ -259,7 +259,7 @@ def create_timeseries(olga,wrfout,dom,times):
                 # Wind
                 # -------------------------------------------------
                 ax = pl.subplot(gs[3,0]); modplot(ax)
-                ax.set_title('Wind',loc='left')
+                ax.set_title('Wind',loc='left', size=8)
                 k500  = key_nearest(d.zf[0,:],500)
                 k1000 = key_nearest(d.zf[0,:],1000)
                 k2000 = key_nearest(d.zf[0,:],2000)
