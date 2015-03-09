@@ -302,7 +302,7 @@ def wait4WRF(olga):
     maxExecutionWRF = 10800  # Maximum time allowed for WRF, in case restart is never written
     while(True):
         elapsedTime = datetime.datetime.now()-startTime
-        printf(elapsedTime.seconds)
+        #printf(elapsedTime.seconds)
         if(elapsedTime.seconds > maxExecutionWRF):
             printf("WRF hit runtime limit of %i s!!!"%maxExecutionWRF)
             return 1 
