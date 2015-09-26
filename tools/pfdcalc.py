@@ -20,7 +20,7 @@ dt = 0.1  # Time step calculation
 
 time  = np.arange(t0, t1+0.01, dt)
 wstar = 5*np.sin(np.pi*(time-t0)/(t1-t0)) # Updraft velocity
-wglider = wstar - 0.7 # Assume 1m/s sink glider in updraft
+wglider = wstar - 1. # Assume 1m/s sink glider in updraft
 wglider[wglider<0] = 0.
 
 v1 = Vgem(wglider, a[0], b[0], c[0]) # Ventus2 
