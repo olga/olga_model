@@ -3,10 +3,18 @@
 
 # -------------------------
 # Change WPSPath to relative or absolute path to WPS installation directory
-WRFPath="/home/zmaw/m300241/WRFnl/WRFv361" # MPIPC
+#WRFPath="/home/zmaw/m300241/WRFnl/WRFv361" # MPIPC
 #WRFPath="../../../WRFv361" # Mint
 #WRFPath="../../../WRF_v3.6.1" # Thunder
 # -------------------------
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <path>"
+	echo "Example: $0 /home/zmaw/m300241/WRFnl/WRFv361"
+	exit 1
+fi
+
+WRFPath="$1"
 
 # Cleanup
 rm -rf wrf.exe

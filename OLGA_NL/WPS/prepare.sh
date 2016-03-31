@@ -3,10 +3,18 @@
 
 # -------------------------
 # Change WPSPath to relative or absolute path to WPS installation directory
-WPSPath="/home/zmaw/m300241/WRFnl/WPSv361"  # MPIPC
+#WPSPath="/home/zmaw/m300241/WRFnl/WPSv361"  # MPIPC
 #WPSPath="../../../WPSv361"  # Mint
 #WPSPath="../../../WPS_v3.6.1" # Thunder
 # -------------------------
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <path>"
+	echo "Example: $0 /home/zmaw/m300241/WRFnl/WPSv361"
+	exit 1
+fi
+
+WPSPath="$1"
 
 # Cleanup
 rm -rf geogrid
