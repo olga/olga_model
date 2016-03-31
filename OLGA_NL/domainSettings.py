@@ -49,6 +49,7 @@ class olgaSettings:
             self.figRoot      = '/scratch/local2/WRFnl/outputOLGA/' # Path to sve OLGA output
             self.wrfDataRoot  = '/scratch/local2/WRFnl/outputWRF/'  # Path to store the WRF output
             self.gfsDataRoot  = '/scratch/local2/WRFnl/inputGFS/'   # Path to store the GFS data
+            self.geogDataRoot = '/scratch/local2/WRFnl/GEOFILES/'   # Path where geo files are located
 
         if(False): # Thunder -----------------
             self.olgaRoot     = '/scratch/mpi/mpiaes/m300241/WRFnl/olga_model/' # Thunder

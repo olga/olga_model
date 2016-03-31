@@ -192,6 +192,7 @@ def updateNamelists(olga):
     replace(namelist_wps,'end_minute',    printn(olga.endstruct.minute,   olga.ndom))
     replace(namelist_wps,'end_second',    printn(olga.endstruct.second,   olga.ndom))
     replace(namelist_wps,'max_dom',       str(olga.ndom))
+    replace(namelist_wps,'geog_data_path',str(olga.geogDataRoot))
 
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
