@@ -20,6 +20,7 @@ rm -rf SOILPARM.TBL
 rm -rf GENPARM.TBL
 rm -rf RRTM*
 rm -rf CLM*
+rm -rf *.formatted
 
 # Link the required files to current directory
 ln -s $WRFPath/main/wrf.exe .
@@ -33,3 +34,4 @@ ln -s $WRFPath/run/SOILPARM.TBL .
 ln -s $WRFPath/run/GENPARM.TBL .
 ln -s $WRFPath/run/RRTM* .
 ln -s $WRFPath/run/CLM* .
+ln -s $WRFPath/run/*.formatted .
