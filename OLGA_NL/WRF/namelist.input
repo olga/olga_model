@@ -4,14 +4,14 @@
  run_minutes                         = 0,
  run_seconds                         = 0,
  start_year = 2015,
- start_month = 2,
- start_day = 2,
+ start_month = 10,
+ start_day = 16,
  start_hour = 0,
  start_minute = 0,
  start_second = 0,
  end_year = 2015,
- end_month = 2,
- end_day = 3,
+ end_month = 10,
+ end_day = 17,
  end_hour = 0,
  end_minute = 0,
  end_second = 0,
@@ -19,7 +19,7 @@
  input_from_file                     = .true.,.true.,
  history_interval                    = 60,   60,
  frames_per_outfile                  = 1000, 1000,
- restart  = .false.
+ restart  = .true.
  restart_interval = 1440
  io_form_history                     = 2
  io_form_restart                     = 2
@@ -29,15 +29,16 @@
  /
 
  &domains
- time_step                           = 100,
+ time_step                           = 100
  time_step_fract_num                 = 0,
  time_step_fract_den                 = 1,
- max_time_step                       = 150
+ max_time_step                       = 45
+ min_time_step                       = 15
+ starting_time_step                  = 25
  use_adaptive_time_step = .true.
  step_to_output_time = .true. 
  target_cfl = 1.2
  max_step_increase_pct = 5, 51,
- starting_time_step = 50
  numtiles = 16
 
  max_dom = 1
