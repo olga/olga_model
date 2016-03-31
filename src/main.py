@@ -157,39 +157,41 @@ def updateNamelists(olga):
     printf('updating namelists WPS and WRF...')
 
     # Update WRF namelist
-    replace(olga.wrfRoot+'namelist.input','start_year',   printn(olga.startstruct.year,   olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','start_month',  printn(olga.startstruct.month,  olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','start_day',    printn(olga.startstruct.day,    olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','start_hour',   printn(olga.startstruct.hour,   olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','start_minute', printn(olga.startstruct.minute, olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','start_second', printn(olga.startstruct.second, olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','end_year',     printn(olga.endstruct.year,     olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','end_month',    printn(olga.endstruct.month,    olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','end_day',      printn(olga.endstruct.day,      olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','end_hour',     printn(olga.endstruct.hour,     olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','end_minute',   printn(olga.endstruct.minute,   olga.ndom))
-    replace(olga.wrfRoot+'namelist.input','end_second',   printn(olga.endstruct.second,   olga.ndom))
+    namelist_input = olga.wrfRoot + 'namelist.input'
+    replace(namelist_input,'start_year',   printn(olga.startstruct.year,   olga.ndom))
+    replace(namelist_input,'start_month',  printn(olga.startstruct.month,  olga.ndom))
+    replace(namelist_input,'start_day',    printn(olga.startstruct.day,    olga.ndom))
+    replace(namelist_input,'start_hour',   printn(olga.startstruct.hour,   olga.ndom))
+    replace(namelist_input,'start_minute', printn(olga.startstruct.minute, olga.ndom))
+    replace(namelist_input,'start_second', printn(olga.startstruct.second, olga.ndom))
+    replace(namelist_input,'end_year',     printn(olga.endstruct.year,     olga.ndom))
+    replace(namelist_input,'end_month',    printn(olga.endstruct.month,    olga.ndom))
+    replace(namelist_input,'end_day',      printn(olga.endstruct.day,      olga.ndom))
+    replace(namelist_input,'end_hour',     printn(olga.endstruct.hour,     olga.ndom))
+    replace(namelist_input,'end_minute',   printn(olga.endstruct.minute,   olga.ndom))
+    replace(namelist_input,'end_second',   printn(olga.endstruct.second,   olga.ndom))
 
     # Set restart file frequency, restart flag and number of domains
     rflag = '.true.' if olga.islice>0 else '.false.'
-    replace(olga.wrfRoot+'namelist.input','restart_interval' ,str(olga.tslice*60))
-    replace(olga.wrfRoot+'namelist.input',' restart ',   rflag) # KEEP SPACES AROUND restart'
-    replace(olga.wrfRoot+'namelist.input','max_dom',     str(olga.ndom))
+    replace(namelist_input,'restart_interval' ,str(olga.tslice*60))
+    replace(namelist_input,' restart ',   rflag) # KEEP SPACES AROUND restart'
+    replace(namelist_input,'max_dom',     str(olga.ndom))
 
     # Update WPS namelist
-    replace(olga.wpsRoot+'namelist.wps','start_year',    printn(olga.startstruct.year,   olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','start_month',   printn(olga.startstruct.month,  olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','start_day',     printn(olga.startstruct.day,    olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','start_hour',    printn(olga.startstruct.hour,   olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','start_minute',  printn(olga.startstruct.minute, olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','start_second',  printn(olga.startstruct.second, olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','end_year',      printn(olga.endstruct.year,     olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','end_month',     printn(olga.endstruct.month,    olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','end_day',       printn(olga.endstruct.day,      olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','end_hour',      printn(olga.endstruct.hour,     olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','end_minute',    printn(olga.endstruct.minute,   olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','end_second',    printn(olga.endstruct.second,   olga.ndom))
-    replace(olga.wpsRoot+'namelist.wps','max_dom',       str(olga.ndom))
+    namelist_wps = olga.wpsRoot + 'namelist.wps'
+    replace(namelist_wps,'start_year',    printn(olga.startstruct.year,   olga.ndom))
+    replace(namelist_wps,'start_month',   printn(olga.startstruct.month,  olga.ndom))
+    replace(namelist_wps,'start_day',     printn(olga.startstruct.day,    olga.ndom))
+    replace(namelist_wps,'start_hour',    printn(olga.startstruct.hour,   olga.ndom))
+    replace(namelist_wps,'start_minute',  printn(olga.startstruct.minute, olga.ndom))
+    replace(namelist_wps,'start_second',  printn(olga.startstruct.second, olga.ndom))
+    replace(namelist_wps,'end_year',      printn(olga.endstruct.year,     olga.ndom))
+    replace(namelist_wps,'end_month',     printn(olga.endstruct.month,    olga.ndom))
+    replace(namelist_wps,'end_day',       printn(olga.endstruct.day,      olga.ndom))
+    replace(namelist_wps,'end_hour',      printn(olga.endstruct.hour,     olga.ndom))
+    replace(namelist_wps,'end_minute',    printn(olga.endstruct.minute,   olga.ndom))
+    replace(namelist_wps,'end_second',    printn(olga.endstruct.second,   olga.ndom))
+    replace(namelist_wps,'max_dom',       str(olga.ndom))
 
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
