@@ -332,10 +332,10 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             # If filled contour, add colorbar
             if(cf != False):
                 cax = pl.axes([axl+axw+0.02, axb+ 0.1*axh, 0.02, 0.8*axh])
-                cb  = pl.colorbar(cf, drawedges=False, cax=cax)
+                cb  = pl.colorbar(cf, drawedges=True, cax=cax)
                 cb.ax.tick_params(labelsize = 8) 
                 cb.ax.yaxis.set_tick_params(width = 0)
-                cb.outline.set_color('white')
+#                cb.outline.set_color('white')
                 cb.set_label(units)
             pl.axes(ax)
         
