@@ -1,0 +1,4 @@
+install:
+- sudo apt-get update
+- sudo apt-get install python-scipy python-mpltoolkits.basemap python-matplotlib python-numpy 
+
