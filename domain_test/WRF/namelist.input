@@ -45,7 +45,7 @@
  e_sn                                = 32,    121,
  e_vert                              = 64,     64,
  p_top_requested                     = 10000,
- num_metgrid_levels                  = 27,
+ num_metgrid_levels                  = 32,
  num_metgrid_soil_levels             = 4,
  dx                                  = 30000, 6000,
  dy                                  = 30000, 6000,
