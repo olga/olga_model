@@ -22,9 +22,9 @@ class olgaSettings:
         # Local file system settings.
         # Full path to directory of this script. Append with '/' !!
         
-        if(False): # Mint ---------------------
-            self.olgaRoot     = '/home/bart/WRFnl/olga_model/' # Mint 
-            self.domainRoot   = '/home/bart/WRFnl/olga_model/OLGA_NL/' # Mint 
+        if(True): # Mint ---------------------
+            self.olgaRoot     = '/home/baardman/WRFnl/olga_model/' # Mint 
+            self.domainRoot   = '/home/baardman/WRFnl/olga_model/OLGA_NL/' # Mint 
 
             # The following directories are by default defined relative to the current directory. 
             # However, also absolute paths, at other disks/partitions/etc. are possible to store
@@ -32,13 +32,14 @@ class olgaSettings:
             self.wpsRoot      = self.domainRoot + 'WPS/'        # Path to root of WPS run directory
             self.wrfRoot      = self.domainRoot + 'WRF/'        # Path to root of WRF run directory
             self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
-            self.figRoot      = '/home/scratch1/WRFnl/outputOLGA/' # Path to save OLGA output
-            self.wrfDataRoot  = '/home/scratch1/WRFnl/outputWRF/'  # Path to store the WRF output
-            self.gfsDataRoot  = '/home/scratch1/WRFnl/inputGFS/'   # Path to store the GFS data
+            self.figRoot      = '/home/baardman/WRFnl/outputOLGA/' # Path to save OLGA output
+            self.wrfDataRoot  = '/home/baardman/WRFnl/outputWRF/'  # Path to store the WRF output
+            self.gfsDataRoot  = '/home/baardman/WRFnl/inputGFS/'   # Path to store the GFS data
+            self.geogDataRoot = '/home/baardman/WRFnl/GEOFILES/'   # Path where geo files are located
 
-        if(True): # MPIPC ---------------------
-            self.olgaRoot     = '/home/zmaw/m300241/WRFnl/olga_model/'
-            self.domainRoot   = '/home/zmaw/m300241/WRFnl/olga_model/OLGA_NL/'
+        if(False): # MPIPC ---------------------
+            self.olgaRoot     = '/home/baardman/WRFnl/olga_model/'
+            self.domainRoot   = '/home/baardman/WRFnl/olga_model/OLGA_NL/'
 
             # The following directories are by default defined relative to the current directory. 
             # However, also absolute paths, at other disks/partitions/etc. are possible to store
@@ -71,8 +72,8 @@ class olgaSettings:
 
         # ----------------------------------
         # Computational settings. 
-        self.mpiTasks    = 4 # Number of MPI tasks, only use if compiled with DMEM 
-        self.ompThreads  = 1 # Number of OpenMP threads, ignored if not compiled with SMEM
+        self.mpiTasks    = 1 # Number of MPI tasks, only use if compiled with DMEM 
+        self.ompThreads  = 3 # Number of OpenMP threads, ignored if not compiled with SMEM
 
         # ----------------------------------
         # Number of domains. This can be less than the size of the arrays below
@@ -84,7 +85,7 @@ class olgaSettings:
         self.tstart      = 0 # start time of simulation
         self.cycle       = 0 # which GFS cycle? {0,6,12,18}
 
-        self.ttotal       = 48 # Total time to simulate [h]
+        self.ttotal       = 240 #Total time to simulate [h]
         self.tslice       = 24 # Split 'ttotal' in 'tslice' chunks [h]
         self.dt_output    = ([60,60]) # 'history_interval' from namelist, per domain, in minutes
 
@@ -107,7 +108,7 @@ class olgaSettings:
         self.drawRivers   = ([True,False]) # Draw rivers
         self.drawCities   = ([True,False]) # Draw cities
         self.cityLoc      = ([loc1, loc1]) # Location of city/airport/.. markers on maps
-        self.map_desc     = (['6x6km GFS-initiated WRF-ARW [olga.vanstratum.com]',''])
+        self.map_desc     = (['12x12km GFS-initiated WRF-ARW [olga.vanstratum.com]',''])
 
         # Figure settings. For maps, the height is determined from the map aspect ratio
         self.fig_width_px  = 650  # width of figure [px]
