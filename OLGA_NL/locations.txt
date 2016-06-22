@@ -4,7 +4,7 @@
 # Short name (second column) can't contains spaces within name as it is used for the file name
 # Airfields:
 Eelde,        EHGG, 06.583, 53.125, 0
-Hamburg,      EDDH, 09.993, 53.631, 0
+Hamburg,      EDDH, 09.993, 53.631 ,0
 Woensdrecht,  EHWO, 04.341, 51.448, 0
 Eindhoven,    EHEH, 05.342, 51.453, 0
 Saint-Hubert, EBSH, 05.404, 50.037, 0
