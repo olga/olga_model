@@ -4,8 +4,7 @@
 # Short name (second column) can't contains spaces within name as it is used for the file name
 # Airfields:
 Eelde,        EHGG, 06.583, 53.125, 0
-Hamburg,      EDDH, 09.993, 53.631 ,0
-#Soesterberg,  EHSB, 05.271, 52.131, 0
+Hamburg,      EDDH, 09.993, 53.631, 0
 Woensdrecht,  EHWO, 04.341, 51.448, 0
 Eindhoven,    EHEH, 05.342, 51.453, 0
 Saint-Hubert, EBSH, 05.404, 50.037, 0
@@ -13,14 +12,16 @@ Bruchsal,     EDTC, 08.564, 49.135, 0
 Meschede,     EDKM, 08.239, 51.303, 0
 Leipzig,      EDDP, 12.228, 51.421, 0
 Hannover,     EDDV, 09.685, 52.463, 0
+Lingen,       EDWN, 07.11,  52.28,  0
 
 # Sounding locations:
-Norderney,    10113, 07.15, 53.71, 1
 Bergen,       10238, 09.93, 52.81, 1
 Essen,        10410, 06.96, 51.40, 1
 Meiningen,    10548, 10.38, 50.56, 1
 Idar-Obers,   10618, 07.33, 49.70, 1
 deBilt,       06260, 05.18, 52.10, 2
 Beauvecchain, 06458, 04.77, 50.75, 1
+Eelde,        EHGG,  06.58, 53.13, 1
+Lingen,       EDWN,  07.11, 52.28, 1
 
 
