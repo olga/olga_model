@@ -154,6 +154,7 @@ Note: after reading, data is stored as [time, lat, lon]
 class readwrf_all:
     def __init__(self,olga,file_in,t0,t1):
         t1         += 1
+
         wrfin       = get_nc_obj(file_in)
         ntglob      = wrfin.variables["XTIME"][:].size # number of time steps in NetCDF file
         self.nt     = wrfin.variables["XTIME"][t0:t1].size # number of time steps in current slice 
@@ -228,9 +229,9 @@ class readwrf_all:
         self.wglider2 = np.zeros_like(self.zi, dtype=prec) # Average TEMF velocity over sub-cloud layer
         
         for t in range(self.nt):
-            wup  = wrfin.variables["WUPD_TEMF"][t,:,:,:].astype(prec) - olga.sinkGlider
-            qlup = wrfin.variables["QLUP_TEMF"][t,:,:,:].astype(prec)
-            z    = (wrfin.variables["PH"][t,:,:,:] + wrfin.variables["PHB"][t,:,:,:]) / g
+            wup  = wrfin.variables["WUPD_TEMF"][t0+t,:,:,:].astype(prec) - olga.sinkGlider
+            qlup = wrfin.variables["QLUP_TEMF"][t0+t,:,:,:].astype(prec)
+            z    = (wrfin.variables["PH"][t0+t,:,:,:] + wrfin.variables["PHB"][t0+t,:,:,:]) / g
 
             for j in range(self.nlat):
                 for i in range(self.nlon):
