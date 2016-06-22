@@ -36,6 +36,7 @@ res = '0.25' # '0.25' or 'old'
 ## Execute command
 # @param task Task to start
 def execute(task):
+    print "Executing '%s'" % task
     subprocess.call(task, shell=True, executable='/bin/bash')
 
 def progress(count, blockSize, totalSize):
@@ -84,7 +85,8 @@ def downloadGFSFile(localfile, remoteurl, filename):
                     urllib.urlretrieve(remoteurl,localfile)
                 else:
                     # File not (yet) available, sleep a while and re-do the checks 
-                    time.sleep(300)
+                    #printf('file %s not yet available at GFS server at %s -> sleeping' % (remoteurl,datetime.datetime.now().time()))
+                    time.sleep(60)
         except:
             # Something weird happened. Sleep a bit, try again
             printf('weird exception on file %s: '%filename)
@@ -191,8 +193,8 @@ def updateNamelists(olga):
     replace(namelist_wps,'end_hour',      printn(olga.endstruct.hour,     olga.ndom))
     replace(namelist_wps,'end_minute',    printn(olga.endstruct.minute,   olga.ndom))
     replace(namelist_wps,'end_second',    printn(olga.endstruct.second,   olga.ndom))
+    replace(namelist_wps,'geog_data_path',printn(olga.geogDataRoot,       olga.ndom))
     replace(namelist_wps,'max_dom',       str(olga.ndom))
-    replace(namelist_wps,'geog_data_path',str(olga.geogDataRoot))
 
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
@@ -283,14 +285,15 @@ def execWRF(olga):
     # Run WRF as background process to allow other processes (download GFS, ..) to run at the same time..
     if(debug): printf('... WRF -> wrf.exe')
     if(olga.mpiTasks > 1):
-        execute('mpirun -n %i ./wrf.exe >& %swrf.%s &'%(olga.mpiTasks,olga.olgaLogs,logappend))
+        ret = execute('mpirun -n %i ./wrf.exe >& %swrf.%s '%(olga.mpiTasks,olga.olgaLogs,logappend))
     else:
-        execute('./wrf.exe >& %swrf.%s &'%(olga.olgaLogs,logappend))
+        ret = execute('./wrf.exe >& %swrf.%s '%(olga.olgaLogs,logappend))
 
     # Load balancer Thunder
     #subprocess.call('sbatch run.slurm',shell=True,executable='/bin/bash')
 
     os.chdir(olga.domainRoot)
+    return ret
 
 ## Wait until the required restart file is available (i.e. WRF finished)
 # @param olga Pointer to object with OLGA settings
@@ -302,7 +305,7 @@ def wait4WRF(olga):
     wrfrst = '%swrfrst_d01_%04i-%02i-%02i_%02i:%02i:00'%(olga.wrfRoot,es.year,es.month,es.day,es.hour,es.minute)
 
     # Check if 'wrfrst' is available, else sleep
-    maxExecutionWRF = 10800  # Maximum time allowed for WRF, in case restart is never written
+    maxExecutionWRF = 24*3600  # Maximum time allowed for WRF, in case restart is never written
     while(True):
         elapsedTime = datetime.datetime.now()-startTime
         #printf(elapsedTime.seconds)
@@ -380,6 +383,7 @@ def uploadPlots(olga):
     # What's the best way to do this.....? For now hard coded
     local  = '%s%04i%02i%02i_t%02iz'%(olga.figRoot,olga.year,olga.month,olga.day,olga.cycle)
     remote = 'vanstratum-com@ssh.pcextreme.nl:~/domains/vanstratum.com/htdocs/olga/results/'
+#    remote = 'wrf@cumulus-humilis.nl:~/public_html/'
     execute('scp -r %s %s &> /dev/null'%(local, remote))
 
     endTime = datetime.datetime.now()

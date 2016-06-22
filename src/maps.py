@@ -151,7 +151,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True
             title  = 'Precip. between t=%02i-%02i UTC (mm, //=convective)'%(wrf.hour[t-1],wrf.hour[t])
             units  = 'mm'
-            fSigma = 0.5
+            fSigma = 0.25
 
             # At first output time instantaneous precipitation field is given
             # At consecutive steps, precipitation is accumulated. Calculate difference
@@ -182,7 +182,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True
             title  = 'Cloud fraction (- low  / mid  . high)'
             units  = 'fraction'
-            fSigma = 0.5
+            fSigma = 0.25
 
             cclow  = gaussianFilter(wrf.cclow[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.cclow[t,:,:]
             ccmid  = gaussianFilter(wrf.ccmid[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.ccmid[t,:,:]
@@ -207,7 +207,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True
             title  = 'Incoming solar radiation (// = night)'
             units  = 'percentage'
-            fSigma = 0.5
+            fSigma = 0.25
 
             data  = gaussianFilter(wrf.swdf[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.swdf[t,:,:]
 
@@ -226,7 +226,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True 
             title  = 'Updraft velocity w* - %.1f m/s'%olga.sinkGlider
             units  = 'm/s'
-            fSigma = 1.
+            fSigma = 0.5
 
             levs   = np.arange(0, 3.001, 0.5)
             data   = gaussianFilter(wrf.wglider[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.wglider[t,:,:]
@@ -239,7 +239,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True 
             title  = 'Updraft velocity TEMF - %.1f m/s'%olga.sinkGlider
             units  = 'm/s'
-            fSigma = 1.
+            fSigma = 0.5
 
             levs   = np.arange(0, 3.001, 0.5)
             data   = gaussianFilter(wrf.wglider2[t,:,:], fSigma, mode='reflect') if smoothPlot else wrf.wglider2[t,:,:]
@@ -252,7 +252,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True 
             units  = 'm AMSL'
             title  = 'Updraft height [m AMSL]'
-            fSigma = 1.
+            fSigma = 0.5
 
             levs   = np.arange(0, 2500.01, 300.)
             data   = gaussianFilter(wrf.zi[t,:,:] + wrf.hgt[:,:], fSigma, mode='reflect') if smoothPlot else wrf.zi[t,:,:] + wrf.hgt[:,:]
@@ -265,7 +265,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True 
             units  = 'm AMSL'
             title  = 'Updraft height with %.1f m/s sink [m AMSL]'%olga.sinkGlider
-            fSigma = 1.
+            fSigma = 0.5
 
             levs   = np.arange(0, 2500.01, 300.)
             data   = gaussianFilter(wrf.zi2[t,:,:] + wrf.hgt[:,:], fSigma, mode='reflect') if smoothPlot else wrf.zi2[t,:,:] + wrf.hgt[:,:]
@@ -278,7 +278,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True 
             title  = 'Cumulus depth [m]'
             units  = 'm'
-            fSigma = 1.
+            fSigma = 0.5
 
             levs   = np.arange(0, 4000, 400)
             data   = gaussianFilter(wrf.zct[t,:,:] - wrf.zi[t,:,:], fSigma, mode='reflect') if filter else wrf.zct[t,:,:] - wrf.zi[t,:,:]
@@ -291,7 +291,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True 
             title  = 'PFD (w*) %s [km]'%olga.pfdNotes[n]
             units  = 'km'
-            fSigma = 1.
+            fSigma = 0.5
 
             levs   = np.arange(0, 800.1, 100)
             data   = gaussianFilter(wrf.PFD1[t,n,:,:], fSigma, mode='reflect') if filter else wrf.PFD1[t,n,:,:]
@@ -304,7 +304,7 @@ def createFigure(olga, dom, wrf, basem, var, t, figwi, fighi, dpi, axl, axb, axw
             doplot = True 
             title  = 'PFD (TEMF) %s [km]'%olga.pfdNotes[n]
             units  = 'km'
-            fSigma = 1.
+            fSigma = 0.5
 
             levs   = np.arange(0, 800.1, 100)
             data   = gaussianFilter(wrf.PFD2[t,n,:,:], fSigma, mode='reflect') if filter else wrf.PFD2[t,n,:,:]
