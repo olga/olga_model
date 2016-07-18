@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2013-2014 Bart van Stratum (bart@vanstratum.com)
+# Copyright (c) 2013-2016 Bart van Stratum
+# Copyright (c) 2015-2016 Roel Baardman
 # 
 # This file is part of OLGA.
 # 
