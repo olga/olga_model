@@ -37,7 +37,7 @@ res = '0.25' # '0.25' or 'old'
 ## Execute command
 # @param task Task to start
 def execute(task):
-    print "Executing '%s'" % task
+    print('Executing {}'.format(task))
     subprocess.call(task, shell=True, executable='/bin/bash')
 
 def progress(count, blockSize, totalSize):

@@ -31,9 +31,9 @@ import pylab as pl
 pl.matplotlib.rc('font', size=9)
 pl.matplotlib.rc('legend', fontsize=8)
 
-from maps import *         # plot maps
-from timeseries import *   # plot time series
-from sounding import *     # plot soundings
+from .maps import *         # plot maps
+from .timeseries import *   # plot time series
+from .sounding import *     # plot soundings
 
 def plot_driver(olga,dom,ptype):
     # Check if wrfout file is available
@@ -47,7 +47,7 @@ def plot_driver(olga,dom,ptype):
         try:
             os.makedirs(figpath)
         except:
-            print 'BvS have to solve this for parallel execution...' # Jul2014: should be solved now..
+            print('BvS have to solve this for parallel execution...') # Jul2014: should be solved now..
 
     # Create array with times to plot:
     t0=olga.t0/(olga.dt_output[dom]/60.)

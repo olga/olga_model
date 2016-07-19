@@ -63,16 +63,16 @@ def cmap_ncl(name):
     mymap = LinearSegmentedColormap('mymap',cmap_dict)
     return mymap
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Create colormap from list of colors
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def make_colormap(colors):
-    z = np.sort(colors.keys())
-    n = len(z)
+    from matplotlib.colors import LinearSegmentedColormap, ColorConverter
+    from numpy import sort
+
+    z  = np.array(sorted(colors.keys()))
+    n  = len(z)
     z1 = min(z)
     zn = max(z)
     x0 = (z - z1) / (zn - z1)
-    
+
     CC = ColorConverter()
     R = []
     G = []
@@ -88,9 +88,9 @@ def make_colormap(colors):
         B.append(RGB[2])
 
     cmap_dict = {}
-    cmap_dict['red'] = [(x0[i],R[i],R[i]) for i in range(len(R))]
+    cmap_dict['red']   = [(x0[i],R[i],R[i]) for i in range(len(R))]
     cmap_dict['green'] = [(x0[i],G[i],G[i]) for i in range(len(G))]
-    cmap_dict['blue'] = [(x0[i],B[i],B[i]) for i in range(len(B))]
+    cmap_dict['blue']  = [(x0[i],B[i],B[i]) for i in range(len(B))]
     mymap = LinearSegmentedColormap('mymap',cmap_dict)
     return mymap
 
@@ -114,34 +114,10 @@ def nonlin_cmap(cmap_in,fac):
     mymap = LinearSegmentedColormap('mymap',cmap_dict)
     return mymap
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Pre-define some color maps
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-c1='#7b0000';c2='#e3dab9';c3='#cee1e5';c4='#00037b'
-rb    = make_colormap({0:c1,0.499:c2,0.5:c3,1.0:c4})
-br    = make_colormap({0:c4,0.499:c3,0.5:c2,1.0:c1})
-rwb   = make_colormap({0:c1,0.5:'#ffffff',1.0:c4})
-bwr   = make_colormap({0:c4,0.5:'#ffffff',1.0:c1})
-red   = make_colormap({0.:'#ffffff',1.0:c1})
-blue  = make_colormap({0.:'#ffffff',1.0:c4})
-green = make_colormap({0.:'#ffffff',1.0:'#008600'})
-blk   = make_colormap({0.:'#ffffff',1.0:'#000000'})
-cld   = make_colormap({0.:'#ffffff',0.2:'#4682b4',0.5:'#0bbd17',0.8:'#fdfe00',1.:'#bf5f2d'})
-wnd   = cmap_ncl('precip3_16lev') #make_colormap({0.:'#ffffff',0.4:'#4682b4',0.6:'#0bbd17',0.8:'#fdfe00',1.:'#bf5f2d'})
-rain  = make_colormap({0.:'#ffffff',0.1:'#4682b4',0.2:'#0bbd17',0.4:'#fdfe00',1.:'#bf5f2d'})
-wup   = make_colormap({0.:'#ffffff',0.25:'#4682b4',0.5:'#0bbd17',0.75:'#fdfe00',1.:'#cc2900'})
-cent  = make_colormap({0.:'#ffffff',0.25:'#fdfe00',0.5:'#0bbd17',0.75:'#fdfe00',1.:'#ffffff'})
-wupnl = make_colormap({0.:'#ffffff',0.1:'#4682b4',0.2:'#0bbd17',0.6:'#fdfe00',1.:'#cc2900'})
-rain2   = cmap_ncl('precip2_17lev') 
-rain2nl = nonlin_cmap(rain2,2.) 
-rain3 = cmap_ncl('precip3_16lev') 
-rain3nl = nonlin_cmap(rain3,2.) 
-cloud = pl.cm.Greys
-
 # -------------------------
 # Test colormaps
 # -------------------------
-def show_cmap(cmap, levs):
+def show_cmap(cmap):
     n = 10
     x = np.linspace(0,n,n)
     y = np.linspace(0,n,n)
@@ -151,9 +127,47 @@ def show_cmap(cmap, levs):
     pl.contourf(x,y,z,levs,extend='both',cmap=cmap)
     pl.colorbar() 
 
-#pl.close('all')
-#levs  = np.arange(0, 1.001, 0.1)
-#show_cmap(sun, levs)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Pre-define some color maps
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+c1='#7b0000';c2='#e3dab9';c3='#cee1e5';c4='#00037b'
+rb      = make_colormap({0:c1,0.499:c2,0.5:c3,1.0:c4})
+br      = make_colormap({0:c4,0.499:c3,0.5:c2,1.0:c1})
+rwb     = make_colormap({0:c1,0.5:'#ffffff',1.0:c4})
+bwr     = make_colormap({0:c4,0.5:'#ffffff',1.0:c1})
+red     = make_colormap({0.:'#ffffff',1.0:c1})
+blue    = make_colormap({0.:'#ffffff',1.0:c4})
+green   = make_colormap({0.:'#ffffff',1.0:'#008600'})
+blk     = make_colormap({0.:'#ffffff',1.0:'#000000'})
+cld     = make_colormap({0.:'#ffffff',0.2:'#4682b4',0.5:'#0bbd17',0.8:'#fdfe00',1.:'#bf5f2d'})
+wnd     = cmap_ncl('precip3_16lev')
+rain    = make_colormap({0.:'#ffffff',0.1:'#4682b4',0.2:'#0bbd17',0.4:'#fdfe00',1.:'#bf5f2d'})
+wup     = make_colormap({0.:'#ffffff',0.25:'#4682b4',0.5:'#0bbd17',0.75:'#fdfe00',1.:'#cc2900'})
+cent    = make_colormap({0.:'#ffffff',0.25:'#fdfe00',0.5:'#0bbd17',0.75:'#fdfe00',1.:'#ffffff'})
+wupnl   = make_colormap({0.:'#ffffff',0.1:'#4682b4',0.2:'#0bbd17',0.6:'#fdfe00',1.:'#cc2900'})
+rain2   = cmap_ncl('precip2_17lev') 
+rain2nl = nonlin_cmap(rain2,2.) 
+rain3   = cmap_ncl('precip3_16lev') 
+rain3nl = nonlin_cmap(rain3,2.) 
+cloud   = pl.cm.Greys
 
-#levs  = np.arange(0, 3.01, 0.5)
-#show_cmap(wup, levs)
+# Test colormaps
+if __name__ == "__main__":
+    cmaps = ['rb','br','rwb','bwr','red','blue','green','blk','cld','wnd','rain','wup',\
+             'cent','wupnl','rain2','rain2nl','rain3','rain3nl','cloud']
+
+    n  = len(cmaps)
+    n1 = np.ceil(np.sqrt(n))
+    n2 = np.ceil(n / n1)
+
+    print(n,n1,n2)
+
+    data = np.random.random((10,10))
+
+    pl.figure()
+    for i in range(n):
+        pl.subplot(int(n1),int(n2),i+1)
+        pl.imshow(data, interpolation='nearest', cmap=eval(cmaps[i]))
+        pl.colorbar()
+         
+    pl.savefig('color_maps.png')

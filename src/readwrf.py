@@ -23,12 +23,12 @@ from copy import deepcopy
 import sys
 import datetime
 
-from constants import *
-from tools import *
+from .constants import *
+from .tools import *
 
 # TMP BVS
 from pylab import *
-from colormaps import *
+from .colormaps import *
 
 # Switch to read NetCDF as single or double precision
 # not sure if necessary; at least the NetCDF reader from 

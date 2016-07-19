@@ -27,9 +27,9 @@ from scipy.ndimage.filters import gaussian_filter as gaussianFilter
 from multiprocessing import Process
 
 # Custom modules
-from readwrf import *
-from colormaps import *
-from tools import *
+from .readwrf import *
+from .colormaps import *
+from .tools import *
 
 smoothPlot = True  # Apply Gaussian filter to variables
 #fsigma = 0.5     # std dev of Gaussian filter 
