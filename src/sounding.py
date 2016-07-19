@@ -23,11 +23,11 @@ import numpy as np
 import pylab as pl
 import sys
 
-from readwrf import *
-from colormaps import *
-from tools import *
-from skewtlogp import *
-from readsounding import *
+from .readwrf import *
+from .colormaps import *
+from .tools import *
+from .skewtlogp import *
+#from .readsounding import *
 
 ## Function to create maps
 def create_sounding(olga,wrfout,dom,times):

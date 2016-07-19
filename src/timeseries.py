@@ -23,9 +23,9 @@ import numpy as np
 import pylab as pl
 from copy import deepcopy
 
-from readwrf import *
-from colormaps import *
-from tools import *
+from .readwrf import *
+from .colormaps import *
+from .tools import *
 
 def w_discretized(w_in):
     """ Discretizes the updraft velocity, and define bar color """
