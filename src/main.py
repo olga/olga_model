@@ -22,12 +22,21 @@ import numpy as np
 import os
 import sys
 import glob
-import urllib
 import time
 import datetime
 import subprocess
 import threading
 from multiprocessing import Process
+
+# Switch between Python 2.7 en 3.x
+try:
+    from urllib.request import urlopen
+    from urllib.request import urlretrieve
+    PYTHON3 = True
+except ImportError:
+    from urllib import urlopen
+    from urllib import urlretrieve
+    PYTHON3 = False
 
 from src.plotdriver import plot_driver
 
@@ -62,11 +71,14 @@ def downloadGFSFile(localfile, remoteurl, filename):
             if(os.path.isfile(localfile)):
                 if(debug): printf('found %s local'%filename)
                 # Check if same size as remote:
-                remote = urllib.urlopen(remoteurl)
+                remote = urlopen(remoteurl)
                 # for re-running old cases, the file might have been removed online.
                 if(remote.code == 200):
-                    meta = remote.info()
-                    size_remote = meta.getheaders("Content-Length")[0] 
+                    if (PYTHON3):
+                        size_remote = remote.getheader("Content-Length")
+                    else:
+                        size_remote = remote.info().getheaders("Content-Length")[0]
+
                     local = open(localfile,'rb')
                     size_local = len(local.read())
                     if(int(size_remote) == int(size_local)):
@@ -79,11 +91,11 @@ def downloadGFSFile(localfile, remoteurl, filename):
                     success = True
             # If not, check if available at server:
             if(success == False):
-                check = urllib.urlopen(remoteurl)
+                check = urlopen(remoteurl)
                 if(check.code == 200):
                     # File available, download! 
                     if(debug): printf('file %s available at GFS server at %s -> downloading'%(filename,datetime.datetime.now().time()))
-                    urllib.urlretrieve(remoteurl,localfile)
+                    urlretrieve(remoteurl,localfile)
                 else:
                     # File not (yet) available, sleep a while and re-do the checks 
                     #printf('file %s not yet available at GFS server at %s -> sleeping' % (remoteurl,datetime.datetime.now().time()))
