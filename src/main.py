@@ -339,6 +339,9 @@ def moveWRFOutput(olga):
             # write own routine to do the merge (shouldn't be difficult)
             execute('ncrcat -O %s %s%s'%(tmp,olga.wrfDataRoot,outname))
 
+            #Reduce the output to what we actually are interested in
+            execute('ncks -O -v XTIME,XLAT,XLONG,HGT,PH,T00,P00,PSFC,T2,HFX,LH,RAINNC,RAINC,U10,V10,U,V,UST,PSFC,SWDNB,SWDNBC,HD_TEMF,HCT_TEMF,LCL_TEMF,CLDFRA,Times,WUPD_TEMF,QLUP_TEMF,PH,PHB,P,PB,P_HYD,Q2,QVAPOR,QCLOUD,T,THUP_TEMF,QTUP_TEMF,CF3D_TEMF,PBLH %s%s %s%s' % (olga.wrfDataRoot,outname,olga.wrfDataRoot,outname))
+
 ## Create the plots / maps / soundings
 # @param olga Pointer to object with OLGA settings
 def execPlots(olga):
