@@ -48,7 +48,7 @@ print('--------------------------------')
 
 execute('rm -rf %s/*' % olga.figRoot)
 execute('rm -rf %s/*' % olga.wrfDataRoot)
-#execute('rm -rf %s/*' % olga.gfsDataRoot)
+execute('rm -rf %s/*' % olga.gfsDataRoot)
 execute('rm -rf %s/*' % olga.olgaLogs)
 
 # Loop over the time slices
@@ -65,7 +65,7 @@ for islice in range(0, nslice):
     if mode == 'all' or mode == 'download':
         downloadGFS(olga,islice) # download GFS data
    
-    
+    if mode == 'all':
         updateNamelists(olga) # update WRf & WPS namelists
         execWPS(olga) # run the WPS routines
         nerr = execWRF(olga) # run the WRF routines
