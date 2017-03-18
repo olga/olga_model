@@ -23,8 +23,8 @@ class olgaSettings:
         # Full path to directory of this script. Append with '/' !!
         
         if(True): # Mint ---------------------
-            self.olgaRoot     = '/home/baardman/WRFnl/olga_model/' # Mint 
-            self.domainRoot   = '/home/baardman/WRFnl/olga_model/OLGA_NL/' # Mint 
+            self.olgaRoot     = '/home/roeles/WRFnl/olga_model/' # Mint 
+            self.domainRoot   = '/home/roeles/WRFnl/olga_model/OLGA_NL/' # Mint 
 
             # The following directories are by default defined relative to the current directory. 
             # However, also absolute paths, at other disks/partitions/etc. are possible to store
@@ -32,14 +32,14 @@ class olgaSettings:
             self.wpsRoot      = self.domainRoot + 'WPS/'        # Path to root of WPS run directory
             self.wrfRoot      = self.domainRoot + 'WRF/'        # Path to root of WRF run directory
             self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
-            self.figRoot      = '/home/baardman/WRFnl/outputOLGA/' # Path to save OLGA output
-            self.wrfDataRoot  = '/home/baardman/WRFnl/outputWRF/'  # Path to store the WRF output
-            self.gfsDataRoot  = '/home/baardman/WRFnl/inputGFS/'   # Path to store the GFS data
-            self.geogDataRoot = '/home/baardman/WRFnl/GEOFILES/'   # Path where geo files are located
+            self.figRoot      = '/home/roeles/WRFnl/outputOLGA/' # Path to save OLGA output
+            self.wrfDataRoot  = '/home/roeles/WRFnl/outputWRF/'  # Path to store the WRF output
+            self.gfsDataRoot  = '/home/roeles/WRFnl/inputGFS/'   # Path to store the GFS data
+            self.geogDataRoot = '/home/roeles/WRFnl/GEOFILES/'   # Path where geo files are located
 
         if(False): # MPIPC ---------------------
-            self.olgaRoot     = '/home/baardman/WRFnl/olga_model/'
-            self.domainRoot   = '/home/baardman/WRFnl/olga_model/OLGA_NL/'
+            self.olgaRoot     = '/home/roeles/WRFnl/olga_model/'
+            self.domainRoot   = '/home/roeles/WRFnl/olga_model/OLGA_NL/'
 
             # The following directories are by default defined relative to the current directory. 
             # However, also absolute paths, at other disks/partitions/etc. are possible to store
@@ -104,8 +104,8 @@ class olgaSettings:
         self.map_lon      = ([7.9,-1]) # Central longitude of map [deg]
         self.map_width    = ([690000,-1]) # Domain plot width [m]
         self.map_height   = ([680000,-1]) # Domain plot height [m]
-        self.grid_sn      = ([70])
-        self.grid_we      = ([70])
+        self.grid_sn      = ([70,-1])
+        self.grid_we      = ([70,-1])
         self.map_res      = (['i','i']) # Details of map (c=crude, l=low, i=interm, h=high)
         self.drawRivers   = ([True,False]) # Draw rivers
         self.drawCities   = ([True,False]) # Draw cities

@@ -159,6 +159,9 @@ def printn(string,n,separator=','):
 def updateNamelists(olga):
     printf('updating namelists WPS and WRF...')
 
+    dx = [a/b for a,b in zip(olga.map_width,olga.grid_we)]
+    dy = [a/b for a,b in zip(olga.map_height,olga.grid_sn)]
+
     # Update WRF namelist
     namelist_input = olga.wrfRoot + 'namelist.input'
     replace(namelist_input,'start_year',   printn(olga.startstruct.year,   olga.ndom))
@@ -173,6 +176,10 @@ def updateNamelists(olga):
     replace(namelist_input,'end_hour',     printn(olga.endstruct.hour,     olga.ndom))
     replace(namelist_input,'end_minute',   printn(olga.endstruct.minute,   olga.ndom))
     replace(namelist_input,'end_second',   printn(olga.endstruct.second,   olga.ndom))
+    replace(namelist_input,'e_we',         printn(olga.grid_we,            olga.ndom))
+    replace(namelist_input,'e_sn',         printn(olga.grid_sn,            olga.ndom))
+    replace(namelist_input,'dx',           printn(dx,                      olga.ndom))
+    replace(namelist_input,'dy',           printn(dy,                      olga.ndom))
 
     # Set restart file frequency, restart flag and number of domains
     rflag = '.true.' if olga.islice>0 else '.false.'
@@ -196,6 +203,10 @@ def updateNamelists(olga):
     replace(namelist_wps,'end_second',    printn(olga.endstruct.second,   olga.ndom))
     replace(namelist_wps,'geog_data_path',str(olga.geogDataRoot.replace("/", "\/")))
     replace(namelist_wps,'max_dom',       str(olga.ndom))
+    replace(namelist_wps,'e_we',          printn(olga.grid_we,            3))
+    replace(namelist_wps,'e_sn',          printn(olga.grid_sn,            3))
+    replace(namelist_wps,'dx',            str(dx[0]))
+    replace(namelist_wps,'dy',            str(dy[0]))
 
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
