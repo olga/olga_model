@@ -104,6 +104,8 @@ class olgaSettings:
         self.map_lon      = ([7.9,-1]) # Central longitude of map [deg]
         self.map_width    = ([690000,-1]) # Domain plot width [m]
         self.map_height   = ([680000,-1]) # Domain plot height [m]
+        self.grid_sn      = ([70])
+        self.grid_we      = ([70])
         self.map_res      = (['i','i']) # Details of map (c=crude, l=low, i=interm, h=high)
         self.drawRivers   = ([True,False]) # Draw rivers
         self.drawCities   = ([True,False]) # Draw cities
