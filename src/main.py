@@ -206,7 +206,7 @@ def updateNamelists(olga):
     replace(namelist_wps,'end_hour',      printn(olga.endstruct.hour,     olga.ndom))
     replace(namelist_wps,'end_minute',    printn(olga.endstruct.minute,   olga.ndom))
     replace(namelist_wps,'end_second',    printn(olga.endstruct.second,   olga.ndom))
-    replace(namelist_wps,'geog_data_path',str(olga.geogDataRoot.replace("/", "\/")))
+    replace(namelist_wps,'geog_data_path',"'"+str(olga.geogDataRoot.replace("/", "\/")+"'"))
     replace(namelist_wps,'max_dom',       str(olga.ndom))
     replace(namelist_wps,'e_we',          printn(olga.grid_we[0],            3))
     replace(namelist_wps,'e_sn',          printn(olga.grid_sn[0],            3))
