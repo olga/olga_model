@@ -211,8 +211,13 @@ def updateNamelists(olga):
     replace(namelist_wps,'max_dom',       str(olga.ndom))
     replace(namelist_wps,'e_we',          printn(olga.grid_we[0],            3))
     replace(namelist_wps,'e_sn',          printn(olga.grid_sn[0],            3))
-    replace(namelist_wps,' dx',            str(maxdxdy[0])+",")
-    replace(namelist_wps,' dy',            str(maxdxdy[0])+",") #TODO: it appears that WRF wants a square grid
+    replace(namelist_wps,' dx',           str(maxdxdy[0])+",")
+    replace(namelist_wps,' dy',           str(maxdxdy[0])+",") #TODO: it appears that WRF wants a square grid
+    replace(namelist_wps,'ref_lat',       str(olga.map_lat[0])+",")
+    replace(namelist_wps,'ref_lon',       str(olga.map_lon[0])+",")
+    replace(namelist_wps,'truelat1',      str(olga.map_lat[0])+",")
+    replace(namelist_wps,'truelat2',      str(olga.map_lat[0])+",")
+    replace(namelist_wps,'stand_lon',     str(olga.map_lon[0])+",")
 
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
