@@ -110,7 +110,11 @@ class olgaSettings:
         self.drawRivers   = ([True,False]) # Draw rivers
         self.drawCities   = ([True,False]) # Draw cities
         self.cityLoc      = ([loc1, loc1]) # Location of city/airport/.. markers on maps
-        self.map_desc     = (['12x12km GFS-initiated WRF-ARW [olga.vanstratum.com]',''])
+
+        gridsize_x = self.map_width[0]/self.grid_we[0]
+        gridsize_y = self.map_height[0]/self.grid_sn[0]
+        gridsize = int(max(gridsize_x, gridsize_y)/1000)
+        self.map_desc     = (['%sx%skm GFS-initiated WRF-ARW [olga.vanstratum.com]' % (gridsize, gridsize),''])
 
         # Figure settings. For maps, the height is determined from the map aspect ratio
         self.fig_width_px  = 650  # width of figure [px]
