@@ -184,8 +184,10 @@ def updateNamelists(olga):
     replace(namelist_input,'end_second',   printn(olga.endstruct.second,   olga.ndom))
     replace(namelist_input,'e_we',         printl(olga.grid_we))
     replace(namelist_input,'e_sn',         printl(olga.grid_sn))
-    replace(namelist_input,' dx',           printl(maxdxdy))
-    replace(namelist_input,' dy',           printl(maxdxdy)) #TODO: it appears that WRF wants a square grid
+    replace(namelist_input,' dx',          printl(maxdxdy))
+    replace(namelist_input,' dy',          printl(maxdxdy)) #TODO: it appears that WRF wants a square grid
+    replace(namelist_input,'start_hour',   str(olga.cycle)+",")
+    replace(namelist_input,'end_hour',     str(olga.cycle)+",")
 
     # Set restart file frequency, restart flag and number of domains
     rflag = '.true.' if olga.islice>0 else '.false.'
@@ -218,6 +220,8 @@ def updateNamelists(olga):
     replace(namelist_wps,'truelat1',      str(olga.map_lat[0])+",")
     replace(namelist_wps,'truelat2',      str(olga.map_lat[0])+",")
     replace(namelist_wps,'stand_lon',     str(olga.map_lon[0])+",")
+    replace(namelist_wps,'start_hour',    str(olga.cycle)+",")
+    replace(namelist_wps,'end_hour',      str(olga.cycle)+",")
 
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
