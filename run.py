@@ -35,11 +35,11 @@ olga.day     = int(time.strftime('%d'))
 if len(sys.argv) > 2:
     mode = sys.argv[2]
 if len(sys.argv) > 3:
-    year = int(sys.argv[3])
+    olga.year = int(sys.argv[3])
 if len(sys.argv) > 4:
-    month = int(sys.argv[4])
+    olga.month = int(sys.argv[4])
 if len(sys.argv) > 5:
-    day = int(sys.argv[5])
+    olga.day = int(sys.argv[5])
 
 print('--------------------------------')
 print('Starting OLGA for %02i-%02i-%04i %02iz'%(olga.day, olga.month, olga.year, olga.cycle))
@@ -84,7 +84,7 @@ for islice in range(0, nslice):
         break
 
 local = olga.gfsDataRoot
-remote = "wrf@cumulus-humilis.nl:~/"
+remote = "wrf@baardman.net:~/"
 execute("scp -l 8192 -r %s %s" % (local, remote))
 
 print('--------------------------------')
