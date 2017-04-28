@@ -17,7 +17,7 @@ def myfloor(x, base=6):
 	return int(base * math.floor(float(x)/base))
 
 if len(sys.argv) < 2:
-    print >>sys.stderr, "Usage: %s domain [mode] [year] [month] [day]" % sys.argv[0]
+    print >>sys.stderr, "Usage: %s domain [mode] [year] [month] [day] [first_slice] [last_slice]" % sys.argv[0]
     sys.exit(-1)
 
 
@@ -41,6 +41,7 @@ if len(sys.argv) > 4:
 if len(sys.argv) > 5:
     olga.day = int(sys.argv[5])
 
+
 print('--------------------------------')
 print('Starting OLGA for %02i-%02i-%04i %02iz'%(olga.day, olga.month, olga.year, olga.cycle))
 print('Start time: %s'%(datetime.datetime.now()))
@@ -48,13 +49,16 @@ print('--------------------------------')
 
 execute('rm -rf %s/*' % olga.figRoot)
 execute('rm -rf %s/*' % olga.wrfDataRoot)
-execute('rm -rf %s/*' % olga.gfsDataRoot)
+#execute('rm -rf %s/*' % olga.gfsDataRoot)
 execute('rm -rf %s/*' % olga.olgaLogs)
 
 # Loop over the time slices
 startTime = datetime.datetime.now()
-nslice = int(olga.ttotal/olga.tslice)
-for islice in range(0, nslice):
+fslice = 0 if not len(sys.argv) > 6 else int(sys.argv[6])
+nslice = int(olga.ttotal/olga.tslice) if not len(sys.argv) > 7 else int(sys.argv[7])
+
+
+for islice in range(fslice, nslice):
     print('--------------------------------')
     print('Processing time slice %i of %i'%(islice+1,nslice))
     print('--------------------------------')
