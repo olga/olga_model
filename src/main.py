@@ -166,10 +166,19 @@ def printn(string,n,separator=','):
         str_out += str(string) + str(separator)
     return str_out
 
+def printl(lst, separator=','):
+    ret = separator.join([str(x) for x in lst])
+    ret = ret + ","
+    return ret
+
 ## Update WRF and WPS namelists
 # @param olga Pointer to object with OLGA settings
 def updateNamelists(olga):
     printf('updating namelists WPS and WRF...')
+
+    dx = [str(int(a/b)) for a,b in zip(olga.map_width,olga.grid_we)]
+    dy = [str(int(a/b)) for a,b in zip(olga.map_height,olga.grid_sn)]
+    maxdxdy = [ max(a,b) for a,b in zip(dx, dy) ]
 
     # Update WRF namelist
     namelist_input = olga.wrfRoot + 'namelist.input'
@@ -185,6 +194,12 @@ def updateNamelists(olga):
     replace(namelist_input,'end_hour',     printn(olga.endstruct.hour,     olga.ndom))
     replace(namelist_input,'end_minute',   printn(olga.endstruct.minute,   olga.ndom))
     replace(namelist_input,'end_second',   printn(olga.endstruct.second,   olga.ndom))
+    replace(namelist_input,'e_we',         printl(olga.grid_we))
+    replace(namelist_input,'e_sn',         printl(olga.grid_sn))
+    replace(namelist_input,' dx',          printl(maxdxdy))
+    replace(namelist_input,' dy',          printl(maxdxdy)) #TODO: it appears that WRF wants a square grid
+    replace(namelist_input,'start_hour',   str(olga.cycle)+",")
+    replace(namelist_input,'end_hour',     str(olga.cycle)+",")
 
     # Set restart file frequency, restart flag and number of domains
     rflag = '.true.' if olga.islice>0 else '.false.'
@@ -206,8 +221,19 @@ def updateNamelists(olga):
     replace(namelist_wps,'end_hour',      printn(olga.endstruct.hour,     olga.ndom))
     replace(namelist_wps,'end_minute',    printn(olga.endstruct.minute,   olga.ndom))
     replace(namelist_wps,'end_second',    printn(olga.endstruct.second,   olga.ndom))
-    replace(namelist_wps,'geog_data_path',printn(olga.geogDataRoot,       olga.ndom))
+    replace(namelist_wps,'geog_data_path',"'"+str(olga.geogDataRoot.replace("/", "\/")+"'"))
     replace(namelist_wps,'max_dom',       str(olga.ndom))
+    replace(namelist_wps,'e_we',          printn(olga.grid_we[0],            3))
+    replace(namelist_wps,'e_sn',          printn(olga.grid_sn[0],            3))
+    replace(namelist_wps,' dx',           str(maxdxdy[0])+",")
+    replace(namelist_wps,' dy',           str(maxdxdy[0])+",") #TODO: it appears that WRF wants a square grid
+    replace(namelist_wps,'ref_lat',       str(olga.map_lat[0])+",")
+    replace(namelist_wps,'ref_lon',       str(olga.map_lon[0])+",")
+    replace(namelist_wps,'truelat1',      str(olga.map_lat[0])+",")
+    replace(namelist_wps,'truelat2',      str(olga.map_lat[0])+",")
+    replace(namelist_wps,'stand_lon',     str(olga.map_lon[0])+",")
+    replace(namelist_wps,'start_hour',    str(olga.cycle)+",")
+    replace(namelist_wps,'end_hour',      str(olga.cycle)+",")
 
 ## Run the WPS steps
 # @param olga Pointer to object with OLGA settings
@@ -350,6 +376,9 @@ def moveWRFOutput(olga):
             # If this turns out to be problematic (availability NCO on different linux distributions),
             # write own routine to do the merge (shouldn't be difficult)
             execute('ncrcat -O %s %s%s'%(tmp,olga.wrfDataRoot,outname))
+
+            #Reduce the output to what we actually are interested in
+            execute('ncks -O -v XTIME,XLAT,XLONG,HGT,PH,T00,P00,PSFC,T2,HFX,LH,RAINNC,RAINC,U10,V10,U,V,UST,PSFC,SWDNB,SWDNBC,HD_TEMF,HCT_TEMF,LCL_TEMF,CLDFRA,Times,WUPD_TEMF,QLUP_TEMF,PH,PHB,P,PB,P_HYD,Q2,QVAPOR,QCLOUD,T,THUP_TEMF,QTUP_TEMF,CF3D_TEMF,PBLH %s%s %s%s' % (olga.wrfDataRoot,outname,olga.wrfDataRoot,outname))
 
 ## Create the plots / maps / soundings
 # @param olga Pointer to object with OLGA settings
