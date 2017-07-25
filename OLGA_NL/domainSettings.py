@@ -22,7 +22,22 @@ class olgaSettings:
         # Local file system settings.
         # Full path to directory of this script. Append with '/' !!
         
-        if(True): # Mint ---------------------
+        if(True): # Mint (BvS) ---------------------
+            self.olgaRoot     = '/home/bart/meteo/OLGA/olga_model/'
+            self.domainRoot   = '/home/bart/meteo/OLGA/olga_model/OLGA_NL/'
+
+            # The following directories are by default defined relative to the current directory. 
+            # However, also absolute paths, at other disks/partitions/etc. are possible to store
+            # e.g. the large input and output files somwhere else.
+            self.wpsRoot      = self.domainRoot + 'WPS/'        # Path to root of WPS run directory
+            self.wrfRoot      = self.domainRoot + 'WRF/'        # Path to root of WRF run directory
+            self.olgaLogs     = self.domainRoot + 'logs/'       # Location to save logs
+            self.figRoot      = '/home/scratch1/OLGA/output_OLGA/' # Path to save OLGA output
+            self.wrfDataRoot  = '/home/scratch1/OLGA/output_WRF/'  # Path to store the WRF output
+            self.gfsDataRoot  = '/home/scratch1/OLGA/input_GFS/'   # Path to store the GFS data
+            self.geogDataRoot = '/home/scratch1/OLGA/GEOFILES/'   # Path where geo files are located
+
+        if(False): # Mint (RB) ---------------------
             self.olgaRoot     = '/home/roeles/WRFnl/olga_model/' # Mint 
             self.domainRoot   = '/home/roeles/WRFnl/olga_model/OLGA_NL/' # Mint 
 
@@ -72,8 +87,8 @@ class olgaSettings:
 
         # ----------------------------------
         # Computational settings. 
-        self.mpiTasks    = 1 # Number of MPI tasks, only use if compiled with DMEM 
-        self.ompThreads  = 3 # Number of OpenMP threads, ignored if not compiled with SMEM
+        self.mpiTasks    = 4 # Number of MPI tasks, only use if compiled with DMEM 
+        self.ompThreads  = 1 # Number of OpenMP threads, ignored if not compiled with SMEM
 
         # ----------------------------------
         # Number of domains. This can be less than the size of the arrays below
@@ -85,7 +100,7 @@ class olgaSettings:
         self.tstart      = 0 # start time of simulation
         self.cycle       = 0 # which GFS cycle? {0,6,12,18}
 
-        self.ttotal       = 240 #Total time to simulate [h]
+        self.ttotal       = 120 #Total time to simulate [h]
         self.tslice       = 24 # Split 'ttotal' in 'tslice' chunks [h]
         self.dt_output    = ([60,60]) # 'history_interval' from namelist, per domain, in minutes
 

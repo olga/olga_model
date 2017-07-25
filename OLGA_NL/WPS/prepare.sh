@@ -33,5 +33,4 @@ ln -s $WPSPath/metgrid.exe .
 ln -s $WPSPath/ungrib .
 ln -s $WPSPath/ungrib.exe .
 ln -s $WPSPath/link_grib.csh
-
-
+ln -s $WPSPath/ungrib/Variable_Tables/Vtable.GFS Vtable

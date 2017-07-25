@@ -39,7 +39,7 @@ prec = np.float32
 ## Convert the output from WRF ("Times" variable) to a time in hours
 # @param ts_in Single line of WRF's "Times" variable
 def timestring2time(ts_in):
-    return float("".join(ts_in[11:13])) + float("".join(ts_in[14:16]))/60.
+    return float(b"".join(ts_in[11:13])) + float(b"".join(ts_in[14:16]))/60.
 
 ## Some date-time conversions from WRF's "Times" variable to more useful merged format
 # @param ncobj Pointer to the read NetCDF object
@@ -53,11 +53,11 @@ def wrf_time_conversion(ncobj):
     ncobj.hour        = [] # hour of day as merged string
     ncobj.doy         = [] # day of the year
     for t in range(ncobj.nt):
-        ncobj.datetime.append("".join(ncobj.times[t,:10])+' '+"".join(ncobj.times[t,11:19])) 
-        ncobj.date.append("".join(ncobj.times[t,:10])) 
-        ncobj.year.append(float("".join(ncobj.times[t,:4])))
-        ncobj.month.append(float("".join(ncobj.times[t,5:7])))
-        ncobj.day.append(float("".join(ncobj.times[t,8:10])))
+        ncobj.datetime.append(b"".join(ncobj.times[t,:10])+b' '+b"".join(ncobj.times[t,11:19])) 
+        ncobj.date.append(b"".join(ncobj.times[t,:10])) 
+        ncobj.year.append(float(b"".join(ncobj.times[t,:4])))
+        ncobj.month.append(float(b"".join(ncobj.times[t,5:7])))
+        ncobj.day.append(float(b"".join(ncobj.times[t,8:10])))
         ncobj.hour.append(float(ncobj.times[t,11] + ncobj.times[t,12]))
         ncobj.doy.append(datetime.datetime.strptime('%i %i %i %i'%(ncobj.day[-1],\
                         ncobj.month[-1],ncobj.year[-1],ncobj.hour[-1]),"%d %m %Y %H").timetuple().tm_yday)
@@ -350,11 +350,11 @@ class readwrf_loc:
         # fraction (either 0 or 100%). Taking the mean over all layers which have clouds seems to work ~okay.
         self.ccl         = np.zeros((3,nt))
         for t in range(nt):
-            tmp1 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,:k2000,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            tmp1 = np.apply_over_axes(np.mean, wrfin.variables["CLDFRA"][t,:k2000,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
             self.ccl[0,t] = tmp1[tmp1>0].mean() if tmp1.max() > 0 else 0  
-            tmp2 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k2000:k6000,jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            tmp2 = np.apply_over_axes(np.mean, wrfin.variables["CLDFRA"][t,k2000:k6000,jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
             self.ccl[1,t] = tmp1[tmp2>0].mean() if tmp2.max() > 0 else 0 
-            tmp3 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k6000:,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
+            tmp3 = np.apply_over_axes(np.mean, wrfin.variables["CLDFRA"][t,k6000:,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
             self.ccl[2,t] = tmp1[tmp3>0].mean() if tmp3.max() > 0 else 0 
 
         try: # Try if the TEMF (bl_pbl_physics=10) variables are available:

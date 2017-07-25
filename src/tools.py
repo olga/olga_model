@@ -18,13 +18,22 @@
 # along with OLGA.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function   # for the print_error function in Python 2.x
 import numpy as np
 import pylab as pl
-from math import radians, cos, sin, asin, sqrt
+from math import radians, cos, sin, asin, sqrt, floor
+import sys
 
 R    = 6371.   # radius earth
 UP   = 0      
 DOWN = 1
+
+def print_error(*args, **kwargs):
+    print('ERROR: ', *args, file=sys.stderr, **kwargs)
+    sys.exit(-1)
+
+def myfloor(x, base=6):
+	return int(base * floor(float(x)/base))
 
 def key_nearest(array, value):
     return (np.abs(array-value)).argmin()

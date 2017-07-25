@@ -46,7 +46,7 @@ res = '0.25' # '0.25' or 'old'
 ## Execute command
 # @param task Task to start
 def execute(task):
-    print('Executing {}'.format(task))
+    #print('Executing {}'.format(task))
     subprocess.call(task, shell=True, executable='/bin/bash')
 
 def progress(count, blockSize, totalSize):
@@ -267,11 +267,11 @@ def execWPS(olga):
 
     # Temp for switching between old and new GFS
     # --------------------
-    execute('rm Vtable >& /dev/null')
-    if(res == '0.25'):
-        execute('cp Vtable.GFS_0.25d Vtable')
-    elif(res == 'old'):
-        execute('cp Vtable.GFS_0.5d Vtable')
+    #execute('rm Vtable >& /dev/null')
+    #if(res == '0.25'):
+    #    execute('cp Vtable.GFS_0.25d Vtable')
+    #elif(res == 'old'):
+    #    execute('cp Vtable.GFS_0.5d Vtable')
     # --------------------
 
     if(debug): printf('... WPS -> ungrib')
