@@ -353,9 +353,9 @@ class readwrf_loc:
             tmp1 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,:k2000,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
             self.ccl[0,t] = tmp1[tmp1>0].mean() if tmp1.max() > 0 else 0  
             tmp2 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k2000:k6000,jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
-            self.ccl[1,t] = tmp1[tmp2>0].mean() if tmp2.max() > 0 else 0 
+            self.ccl[1,t] = tmp2[tmp2>0].mean() if tmp2.max() > 0 else 0 
             tmp3 = np.apply_over_axes(np.mean,wrfin.variables["CLDFRA"][t,k6000:,     jj-n:jj+n1,ii-n:ii+n1],[1,2])[:,0,0]
-            self.ccl[2,t] = tmp1[tmp3>0].mean() if tmp3.max() > 0 else 0 
+            self.ccl[2,t] = tmp3[tmp3>0].mean() if tmp3.max() > 0 else 0 
 
         try: # Try if the TEMF (bl_pbl_physics=10) variables are available:
             self.w       = np.apply_over_axes(np.mean,wrfin.variables["WUPD_TEMF"][t0:t1,:,jj-n:jj+n1,ii-n:ii+n1],[2,3])[:,:,0,0] # updraft velocity TEMF 
